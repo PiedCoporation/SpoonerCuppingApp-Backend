@@ -11,7 +11,6 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <TestNativeWind />
-        hahha
         {/* <MainNavigator /> */}
         <StatusBar style="auto" />
       </QueryClientProvider>
