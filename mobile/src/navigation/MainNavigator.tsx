@@ -4,7 +4,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "../screens/HomeScreen";
 import UsersScreen from "../screens/UsersScreen";
 import CuppingEventDetailScreen from "../screens/CuppingEventDetailScreen";
-import CuppingRegistration from "@/screens/CuppingRegistration";
+import CuppingRegistrationMinimalist from "@/screens/CuppingRegistrationMinimalist";
+import CuppingRegistrationOverview from "@/screens/CuppingRegistrationOverview";
 
 const Stack = createNativeStackNavigator();
 
@@ -28,11 +29,21 @@ const MainNavigator: React.FC = () => {
           options={{ title: "Event Details" }}
         />
         <Stack.Screen
-          name="CuppingRegistration"
-          component={CuppingRegistration}
+          name="CuppingRegistrationMinimalist"
+          component={CuppingRegistrationMinimalist}
           options={{
             title: "Register for Event",
             headerBackTitle: "Events",
+            headerStyle: { backgroundColor: "#552507" },
+            headerTintColor: "#fff",
+          }}
+        />
+        <Stack.Screen
+          name="CuppingRegistrationOverview"
+          component={CuppingRegistrationOverview}
+          options={{
+            title: "Register for Event1",
+            headerBackTitle: "Events1",
             headerStyle: { backgroundColor: "#552507" },
             headerTintColor: "#fff",
           }}

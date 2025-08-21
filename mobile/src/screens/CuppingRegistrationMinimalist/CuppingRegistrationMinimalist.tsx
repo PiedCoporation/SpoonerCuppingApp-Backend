@@ -1,4 +1,4 @@
-import { items } from "@/data/data";
+import { itemsV2 } from "@/data/dataV2";
 import { Sample } from "@/types/sample";
 import React, { useRef, useState, useEffect } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   Animated,
   StyleSheet,
   Text,
+  TouchableOpacity,
 } from "react-native";
 import Svg, { G, Path, Polygon } from "react-native-svg";
 
@@ -41,6 +42,7 @@ function createSector(
 
 // Function to determine which slice is selected based on rotation
 function getSelectedSlice(rotationValue: number, itemsArray: Sample[]) {
+  console.log(rotationValue);
   let normalizedRotation = rotationValue % 360;
   if (normalizedRotation < 0) normalizedRotation += 360;
 
@@ -53,12 +55,55 @@ function getSelectedSlice(rotationValue: number, itemsArray: Sample[]) {
   return itemsArray[sliceIndex];
 }
 
-export default function CuppingRegistration() {
-  // Add this debug log at the very beginning
-  console.log("🔍 Component render start");
+// Function to calculate initial rotation to position FRUITY under the pointer
+function calculateInitialRotation() {
+  // FRUITY is the first item (index 0) in itemsV2
+  // Each slice is 360/9 = 40 degrees
+  // The wheel has a -90 degree rotation applied in SVG
+  // To center FRUITY under the pointer, we need to account for this offset
+  // Since FRUITY starts at 0 degrees and we want it centered under the pointer (top),
+  // we need to rotate by negative half slice angle to move it left to center
+  const halfSliceAngle = sliceAngle / 2;
+  return -halfSliceAngle;
+}
 
-  const rotation = useRef(new Animated.Value(0)).current;
-  const lastRotation = useRef(0);
+// Function to calculate initial rotation for second circle to position BERRY under the pointer
+function calculateInitialRotation2(selectedParent: Sample | null) {
+  if (!selectedParent || !(selectedParent as any).childrens) return 0;
+
+  // BERRY is the first child (index 0) of FRUITY
+  const childrenCount = (selectedParent as any).childrens.length;
+  const childSliceAngle = 360 / childrenCount;
+  const halfChildSliceAngle = childSliceAngle / 2;
+
+  // Similar to first circle, rotate by negative half slice angle to center BERRY
+  return -halfChildSliceAngle;
+}
+
+// Function to calculate initial rotation for third circle to position RASPBERRY under the pointer
+function calculateInitialRotation3(selectedChild: Sample | null) {
+  if (!selectedChild || !(selectedChild as any).childrens) return 0;
+
+  // RASPBERRY is the second child (index 1) of BERRY
+  const grandchildrenCount = (selectedChild as any).childrens.length;
+  const grandchildSliceAngle = 360 / grandchildrenCount;
+
+  // Position RASPBERRY (index 1) under the pointer
+  // First slice starts at 0, second slice starts at grandchildSliceAngle
+  // To center RASPBERRY, we need to rotate by -(grandchildSliceAngle + halfSliceAngle)
+  const raspberryStartAngle = 1 * grandchildSliceAngle;
+  const halfGrandchildSliceAngle = grandchildSliceAngle / 2;
+  const raspberryCenterAngle = raspberryStartAngle + halfGrandchildSliceAngle;
+
+  return -raspberryCenterAngle;
+}
+
+export default function CuppingRegistrationMinimalist() {
+  // Calculate initial rotation to position FRUITY under the pointer
+  const initialRotationValue = calculateInitialRotation();
+
+  const rotation = useRef(new Animated.Value(initialRotationValue)).current;
+  const lastRotation = useRef(initialRotationValue);
   const rotation2 = useRef(new Animated.Value(0)).current;
   const lastRotation2 = useRef(0);
   const rotation3 = useRef(new Animated.Value(0)).current;
@@ -69,96 +114,179 @@ export default function CuppingRegistration() {
   const [isSpinning2, setIsSpinning2] = useState(false);
   const [isSpinning3, setIsSpinning3] = useState(false);
 
-  // Debug version of selectedParent state
-  const [selectedParentState, setSelectedParentState] = useState<Sample | null>(
-    null
+  // Selection states - Initialize with FRUITY, BERRY, and RASPBERRY
+  const [selectedParent, setSelectedParentState] = useState<Sample | null>(
+    itemsV2[0] // FRUITY is at index 0
   );
-  const [selectedChild, setSelectedChildState] = useState<Sample | null>(null);
-  const [selectedChild2, setSelectedChild2State] = useState<Sample | null>(
-    null
+  const [selectedChild, setSelectedChildState] = useState<Sample | null>(
+    itemsV2[0] && (itemsV2[0] as any).childrens
+      ? (itemsV2[0] as any).childrens[0]
+      : null // BERRY is at index 0 of FRUITY's children
+  );
+  const [selectedChild2, setSelectedChild2] = useState<Sample | null>(
+    itemsV2[0] &&
+      (itemsV2[0] as any).childrens &&
+      (itemsV2[0] as any).childrens[0] &&
+      ((itemsV2[0] as any).childrens[0] as any).childrens
+      ? ((itemsV2[0] as any).childrens[0] as any).childrens[1] // RASPBERRY is at index 1 of BERRY's children
+      : null
   );
 
-  // Refs to store current values for pan responders
-  const selectedParentRef = useRef<Sample | null>(null);
-  const selectedChildRef = useRef<Sample | null>(null);
+  // Saved selections for tags
+  const [savedSelections, setSavedSelections] = useState<
+    Array<{
+      parent: Sample | null;
+      child1: Sample | null;
+      child2: Sample | null;
+      id: string;
+    }>
+  >([]);
 
-  // Wrapper function to log when selectedParent changes
+  // Refs to store current values for pan responders - Initialize with FRUITY, BERRY, and RASPBERRY
+  const selectedParentRef = useRef<Sample | null>(itemsV2[0]);
+  const selectedChildRef = useRef<Sample | null>(
+    itemsV2[0] && (itemsV2[0] as any).childrens
+      ? (itemsV2[0] as any).childrens[0]
+      : null
+  );
+
+  // Wrapper function for selectedParent
   const setSelectedParent = (value: Sample | null) => {
-    console.log("🔄 Setting selectedParent to:", value);
-    console.trace("Called from:"); // This will show you the call stack
-    selectedParentRef.current = value; // Update ref immediately
+    selectedParentRef.current = value;
     setSelectedParentState(value);
   };
 
-  // Wrapper function to log when selectedChild changes
+  // Wrapper function for selectedChild
   const setSelectedChild = (value: Sample | null) => {
-    console.log("🔄 Setting selectedChild to:", value);
-    selectedChildRef.current = value; // Update ref immediately
+    selectedChildRef.current = value;
     setSelectedChildState(value);
-    setSelectedChild2State(null); // Reset third level selection when second level changes
+    setSelectedChild2(null); // Reset third level selection when second level changes
   };
 
-  // Wrapper function for selectedChild2
-  const setSelectedChild2 = (value: Sample | null) => {
-    console.log("🔄 Setting selectedChild2 to:", value);
-    setSelectedChild2State(value);
+  // Set initial selection and rotation for second and third circles on component mount
+  useEffect(() => {
+    console.log("Initial selection set to:", itemsV2[0].label);
+    setSelectedParent(itemsV2[0]); // FRUITY
+
+    // Set initial selection for second circle (BERRY)
+    if (itemsV2[0] && (itemsV2[0] as any).childrens) {
+      const berry = (itemsV2[0] as any).childrens[0]; // BERRY
+      setSelectedChild(berry);
+      console.log("Initial child selection set to:", berry.label);
+
+      // Set initial rotation for second circle to position BERRY under the pointer
+      const initialRotation2Value = calculateInitialRotation2(itemsV2[0]);
+      rotation2.setValue(initialRotation2Value);
+      lastRotation2.current = initialRotation2Value;
+
+      // Set initial selection for third circle (RASPBERRY)
+      if (
+        berry &&
+        (berry as any).childrens &&
+        (berry as any).childrens.length > 1
+      ) {
+        const raspberry = (berry as any).childrens[1]; // RASPBERRY is at index 1
+        setSelectedChild2(raspberry);
+        console.log("Initial grandchild selection set to:", raspberry.label);
+
+        // Set initial rotation for third circle to position RASPBERRY under the pointer
+        const initialRotation3Value = calculateInitialRotation3(berry);
+        rotation3.setValue(initialRotation3Value);
+        lastRotation3.current = initialRotation3Value;
+      }
+    }
+  }, []);
+
+  // Function to save current selections
+  const saveCurrentSelection = () => {
+    if (selectedParent) {
+      const newSelection = {
+        parent: selectedParent,
+        child1: selectedChild,
+        child2: selectedChild2,
+        id: Date.now().toString(), // Unique ID for each selection
+      };
+
+      setSavedSelections((prev) => [...prev, newSelection]);
+
+      console.log("Saved selection:", {
+        parent: selectedParent?.label,
+        child1: selectedChild?.label,
+        child2: selectedChild2?.label,
+      });
+    }
   };
 
-  // Monitor selectedParent changes
-  useEffect(() => {
-    console.log("📍 selectedParent changed to:", selectedParentState);
-  }, [selectedParentState]);
-
-  // Monitor selectedChild changes
-  useEffect(() => {
-    console.log("📍 selectedChild changed to:", selectedChild);
-  }, [selectedChild]);
-
-  // Monitor selectedChild2 changes
-  useEffect(() => {
-    console.log("📍 selectedChild2 changed to:", selectedChild2);
-  }, [selectedChild2]);
-
-  // Debug log current state
-  console.log("🔍 Current selectedParent:", selectedParentState);
-  console.log("🔍 Current selectedChild:", selectedChild);
-  console.log("🔍 Current selectedChild2:", selectedChild2);
-  console.log("🔍 Current isSpinning:", isSpinning);
-  console.log("🔍 Current isSpinning2:", isSpinning2);
-  console.log("🔍 Current isSpinning3:", isSpinning3);
+  // Function to remove a saved selection
+  const removeSavedSelection = (id: string) => {
+    setSavedSelections((prev) =>
+      prev.filter((selection) => selection.id !== id)
+    );
+  };
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => {
-        console.log(
-          "🎯 First circle - onStartShouldSetPanResponder, isSpinning2:",
-          isSpinning2,
-          "isSpinning3:",
-          isSpinning3
-        );
-        return !isSpinning2 && !isSpinning3; // Don't respond if second or third circle is spinning
-      },
-      onPanResponderGrant: () => {
-        console.log("🎯 First circle - onPanResponderGrant");
-        setIsSpinning(true);
-      },
+      onStartShouldSetPanResponder: () => !isSpinning2 && !isSpinning3,
+      onPanResponderGrant: () => setIsSpinning(true),
       onPanResponderMove: (_, gesture) => {
         const newRotation = lastRotation.current + gesture.dx / 2;
         rotation.setValue(newRotation);
       },
       onPanResponderRelease: (_, gesture) => {
-        console.log("🎯 First circle - onPanResponderRelease");
         setIsSpinning(false);
         const finalRotation = lastRotation.current + gesture.dx / 2;
         lastRotation.current = finalRotation;
 
         try {
-          const selectedSlice = getSelectedSlice(finalRotation, items);
+          const selectedSlice = getSelectedSlice(finalRotation, itemsV2);
           if (selectedSlice && selectedSlice.id) {
             console.log("Selected parent ID:", selectedSlice.id);
             console.log("Selected parent label:", selectedSlice.label);
             setSelectedParent(selectedSlice);
-            setSelectedChild(null); // Reset child selection
+            setSelectedChild(null);
+
+            // Reset second and third circle rotations when parent changes
+            rotation2.setValue(0);
+            lastRotation2.current = 0;
+            rotation3.setValue(0);
+            lastRotation3.current = 0;
+
+            // If new parent has children, set first child as default and position it
+            if (
+              (selectedSlice as any).childrens &&
+              (selectedSlice as any).childrens.length > 0
+            ) {
+              const firstChild = (selectedSlice as any).childrens[0];
+              setSelectedChild(firstChild);
+
+              // Set rotation to position first child under pointer
+              const childInitialRotation =
+                calculateInitialRotation2(selectedSlice);
+              rotation2.setValue(childInitialRotation);
+              lastRotation2.current = childInitialRotation;
+
+              // If first child has grandchildren, set appropriate default and position it
+              if (
+                (firstChild as any).childrens &&
+                (firstChild as any).childrens.length > 0
+              ) {
+                // For BERRY, use RASPBERRY (index 1), for others use first grandchild (index 0)
+                const defaultGrandchildIndex =
+                  firstChild.label === "BERRY" ? 1 : 0;
+                const defaultGrandchild =
+                  (firstChild as any).childrens[defaultGrandchildIndex] ||
+                  (firstChild as any).childrens[0];
+                setSelectedChild2(defaultGrandchild);
+
+                // Set rotation to position default grandchild under pointer
+                const grandchildInitialRotation =
+                  firstChild.label === "BERRY"
+                    ? calculateInitialRotation3(firstChild)
+                    : calculateInitialRotation2(firstChild); // Use same logic for other categories
+                rotation3.setValue(grandchildInitialRotation);
+                lastRotation3.current = grandchildInitialRotation;
+              }
+            }
           }
         } catch (error) {
           console.log("Error getting selected slice:", error);
@@ -169,61 +297,61 @@ export default function CuppingRegistration() {
 
   const panResponder2 = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => {
-        console.log(
-          "🎯 Second circle - onStartShouldSetPanResponder, isSpinning:",
-          isSpinning,
-          "isSpinning3:",
-          isSpinning3
-        );
-        return !isSpinning && !isSpinning3; // Don't respond if first or third circle is spinning
-      },
-      onPanResponderGrant: () => {
-        console.log("🎯 Second circle - onPanResponderGrant");
-        setIsSpinning2(true);
-      },
+      onStartShouldSetPanResponder: () => !isSpinning && !isSpinning3,
+      onPanResponderGrant: () => setIsSpinning2(true),
       onPanResponderMove: (_, gesture) => {
         const newRotation = lastRotation2.current + gesture.dx / 2;
         rotation2.setValue(newRotation);
       },
       onPanResponderRelease: (_, gesture) => {
-        console.log("🎯 Second circle - onPanResponderRelease");
         setIsSpinning2(false);
-        console.log("=== Second circle spin ended ===");
         const finalRotation = lastRotation2.current + gesture.dx / 2;
         lastRotation2.current = finalRotation;
-
-        console.log("Final rotation:", finalRotation);
-        console.log("Selected parent from ref:", selectedParentRef.current);
-        console.log("Selected parent from state:", selectedParentState);
 
         if (
           selectedParentRef.current &&
           (selectedParentRef.current as any).childrens
         ) {
-          console.log(
-            "Childrens array length:",
-            (selectedParentRef.current as any).childrens.length
-          );
           try {
             const selectedSlice = getSelectedSlice(
               finalRotation,
               (selectedParentRef.current as any).childrens
             );
-            console.log("Selected slice result:", selectedSlice);
 
             if (selectedSlice && selectedSlice.id) {
-              console.log("✅ Selected child ID:", selectedSlice.id);
-              console.log("✅ Selected child label:", selectedSlice.label);
+              console.log("Selected child ID:", selectedSlice.id);
+              console.log("Selected child label:", selectedSlice.label);
               setSelectedChild(selectedSlice);
-            } else {
-              console.log("❌ No valid selectedSlice or missing ID");
+
+              // Reset third circle rotation when child changes
+              rotation3.setValue(0);
+              lastRotation3.current = 0;
+
+              // If new child has grandchildren, set appropriate default and position it
+              if (
+                (selectedSlice as any).childrens &&
+                (selectedSlice as any).childrens.length > 0
+              ) {
+                // For BERRY, use RASPBERRY (index 1), for others use first grandchild (index 0)
+                const defaultGrandchildIndex =
+                  selectedSlice.label === "BERRY" ? 1 : 0;
+                const defaultGrandchild =
+                  (selectedSlice as any).childrens[defaultGrandchildIndex] ||
+                  (selectedSlice as any).childrens[0];
+                setSelectedChild2(defaultGrandchild);
+
+                // Set rotation to position default grandchild under pointer
+                const grandchildInitialRotation =
+                  selectedSlice.label === "BERRY"
+                    ? calculateInitialRotation3(selectedSlice)
+                    : calculateInitialRotation2(selectedSlice); // Use same logic for other categories
+                rotation3.setValue(grandchildInitialRotation);
+                lastRotation3.current = grandchildInitialRotation;
+              }
             }
           } catch (error) {
-            console.log("❌ Error getting selected child slice:", error);
+            console.log("Error getting selected child slice:", error);
           }
-        } else {
-          console.log("❌ No selectedParent found or no childrens");
         }
       },
     })
@@ -231,61 +359,35 @@ export default function CuppingRegistration() {
 
   const panResponder3 = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => {
-        console.log(
-          "🎯 Third circle - onStartShouldSetPanResponder, isSpinning:",
-          isSpinning,
-          "isSpinning2:",
-          isSpinning2
-        );
-        return !isSpinning && !isSpinning2; // Don't respond if first or second circle is spinning
-      },
-      onPanResponderGrant: () => {
-        console.log("🎯 Third circle - onPanResponderGrant");
-        setIsSpinning3(true);
-      },
+      onStartShouldSetPanResponder: () => !isSpinning && !isSpinning2,
+      onPanResponderGrant: () => setIsSpinning3(true),
       onPanResponderMove: (_, gesture) => {
         const newRotation = lastRotation3.current + gesture.dx / 2;
         rotation3.setValue(newRotation);
       },
       onPanResponderRelease: (_, gesture) => {
-        console.log("🎯 Third circle - onPanResponderRelease");
         setIsSpinning3(false);
-        console.log("=== Third circle spin ended ===");
         const finalRotation = lastRotation3.current + gesture.dx / 2;
         lastRotation3.current = finalRotation;
-
-        console.log("Final rotation:", finalRotation);
-        console.log("Selected child from ref:", selectedChildRef.current);
-        console.log("Selected child from state:", selectedChild);
 
         if (
           selectedChildRef.current &&
           (selectedChildRef.current as any).childrens
         ) {
-          console.log(
-            "Child's childrens array length:",
-            (selectedChildRef.current as any).childrens.length
-          );
           try {
             const selectedSlice = getSelectedSlice(
               finalRotation,
               (selectedChildRef.current as any).childrens
             );
-            console.log("Selected slice result:", selectedSlice);
 
             if (selectedSlice && selectedSlice.id) {
-              console.log("✅ Selected child2 ID:", selectedSlice.id);
-              console.log("✅ Selected child2 label:", selectedSlice.label);
+              console.log("Selected child2 ID:", selectedSlice.id);
+              console.log("Selected child2 label:", selectedSlice.label);
               setSelectedChild2(selectedSlice);
-            } else {
-              console.log("❌ No valid selectedSlice or missing ID");
             }
           } catch (error) {
-            console.log("❌ Error getting selected child2 slice:", error);
+            console.log("Error getting selected child2 slice:", error);
           }
-        } else {
-          console.log("❌ No selectedChild found or no childrens");
         }
       },
     })
@@ -293,6 +395,52 @@ export default function CuppingRegistration() {
 
   return (
     <View style={styles.container}>
+      {/* Saved selections tags at the top */}
+      <View style={styles.tagsContainer}>
+        {savedSelections.map((selection) => (
+          <View key={selection.id} style={styles.tag}>
+            <Text style={styles.tagText}>
+              {selection.parent?.label}
+              {selection.child1 && ` → ${selection.child1.label}`}
+              {selection.child2 && ` → ${selection.child2.label}`}
+            </Text>
+            <TouchableOpacity
+              onPress={() => removeSavedSelection(selection.id)}
+              style={styles.removeButton}
+            >
+              <Text style={styles.removeButtonText}>×</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+
+      {/* Display current selection for debugging */}
+      <View style={styles.selectionDisplay}>
+        <Text style={styles.selectionText}>
+          Selected: {selectedParent?.label || "None"}
+        </Text>
+      </View>
+
+      {/* Save button in the center */}
+      <TouchableOpacity
+        style={[
+          styles.saveButton,
+          !selectedParent && styles.saveButtonDisabled,
+        ]}
+        onPress={saveCurrentSelection}
+        disabled={!selectedParent}
+      >
+        <Text
+          style={[
+            styles.saveButtonText,
+            styles.saveButtonPosition,
+            !selectedParent && styles.saveButtonTextDisabled,
+          ]}
+        >
+          SAVE
+        </Text>
+      </TouchableOpacity>
+
       {/* First circle - Parent categories */}
       <View style={styles.firstCircleWrapper}>
         <View style={styles.pointer}>
@@ -321,7 +469,7 @@ export default function CuppingRegistration() {
           >
             <Svg width={radius} height={radius}>
               <G rotation={-90} originX={center} originY={center}>
-                {items.map((item, index) => {
+                {itemsV2.map((item, index) => {
                   const startAngle = index * sliceAngle;
                   const endAngle = startAngle + sliceAngle;
                   return (
@@ -337,7 +485,7 @@ export default function CuppingRegistration() {
               </G>
             </Svg>
 
-            {items.map((item, index) => {
+            {itemsV2.map((item, index) => {
               const startAngle = index * sliceAngle;
               const endAngle = startAngle + sliceAngle;
               const midAngle = (startAngle + endAngle) / 2;
@@ -390,7 +538,7 @@ export default function CuppingRegistration() {
       </View>
 
       {/* Second circle - Child categories */}
-      {selectedParentState && (
+      {selectedParent && (
         <View style={styles.secondCircleWrapper}>
           <View style={styles.pointer2}>
             <Svg width={25} height={25} style={styles.pointerSvg}>
@@ -418,10 +566,10 @@ export default function CuppingRegistration() {
             >
               <Svg width={radius2} height={radius2}>
                 <G rotation={-90} originX={center2} originY={center2}>
-                  {(selectedParentState as any).childrens.map(
+                  {(selectedParent as any).childrens.map(
                     (child: any, index: number) => {
                       const childSliceAngle =
-                        360 / (selectedParentState as any).childrens.length;
+                        360 / (selectedParent as any).childrens.length;
                       const startAngle = index * childSliceAngle;
                       const endAngle = startAngle + childSliceAngle;
                       return (
@@ -443,10 +591,10 @@ export default function CuppingRegistration() {
                 </G>
               </Svg>
 
-              {(selectedParentState as any).childrens.map(
+              {(selectedParent as any).childrens.map(
                 (child: any, index: number) => {
                   const childSliceAngle =
-                    360 / (selectedParentState as any).childrens.length;
+                    360 / (selectedParent as any).childrens.length;
                   const startAngle = index * childSliceAngle;
                   const endAngle = startAngle + childSliceAngle;
                   const midAngle = (startAngle + endAngle) / 2;
@@ -624,6 +772,105 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
     position: "relative",
+  },
+  selectionDisplay: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    right: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    padding: 10,
+    borderRadius: 8,
+    zIndex: 50,
+  },
+  selectionText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  tagsContainer: {
+    position: "absolute",
+    top: 100,
+    left: 20,
+    right: 20,
+    zIndex: 50,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  tag: {
+    backgroundColor: "#f0f0f0",
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  tagText: {
+    fontSize: 12,
+    color: "#333",
+    fontWeight: "500",
+    marginRight: 8,
+  },
+  removeButton: {
+    width: 18,
+    height: 18,
+    backgroundColor: "#ff4444",
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  removeButtonText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+    lineHeight: 12,
+  },
+  saveButton: {
+    position: "absolute",
+    bottom: -50, // Fixed position at bottom of screen
+    left: "50%",
+    marginLeft: -75, // Half of button width to center it
+    width: 150,
+    height: 150,
+    backgroundColor: "#ffffff",
+    borderRadius: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 40,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  saveButtonPosition: {
+    position: "absolute",
+    top: 55,
+  },
+  saveButtonDisabled: {
+    backgroundColor: "#cccccc",
+    shadowOpacity: 0.1,
+  },
+  saveButtonText: {
+    color: "black",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  saveButtonTextDisabled: {
+    color: "#999999",
   },
   firstCircleWrapper: {
     position: "absolute",

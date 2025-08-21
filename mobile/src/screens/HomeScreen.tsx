@@ -10,7 +10,11 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleCuppingRegistrationPress = () => {
-    (navigation as any).navigate("CuppingRegistration");
+    (navigation as any).navigate("CuppingRegistrationMinimalist");
+  };
+
+  const handleCuppingRegistration1Press = () => {
+    (navigation as any).navigate("CuppingRegistrationOverview");
   };
 
   return (
@@ -43,7 +47,10 @@ const HomeScreen: React.FC = () => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity className="bg-white p-4 rounded-xl flex-1 ml-2 shadow-sm border border-gray-100">
+          <TouchableOpacity
+            onPress={handleCuppingRegistration1Press}
+            className="bg-white p-4 rounded-xl flex-1 ml-2 shadow-sm border border-gray-100"
+          >
             <View className="items-center">
               <Text className="text-2xl mb-2">📊</Text>
               <Text className="text-gray-700 font-medium">My Ratings</Text>

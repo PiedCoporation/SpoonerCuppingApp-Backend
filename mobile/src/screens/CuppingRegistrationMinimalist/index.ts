@@ -1,0 +1,3 @@
+import CuppingRegistrationMinimalist from "@/screens/CuppingRegistrationMinimalist/CuppingRegistrationMinimalist";
+
+export default CuppingRegistrationMinimalist;

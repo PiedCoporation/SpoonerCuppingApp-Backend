@@ -1,6 +1,6 @@
 import { Sample } from "@/types/sample";
 
-export const items: Sample[] = [
+export const itemsV2: Sample[] = [
   {
     id: "1_1",
     label: "FRUITY",
