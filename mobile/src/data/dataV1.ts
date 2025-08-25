@@ -1,4 +1,6 @@
-export var firstCircle = {
+import { FlavorItem } from "@/types/Flavor";
+
+export var firstCircle: { numbers: number; data: FlavorItem[] } = {
   numbers: 85,
   // { id: "1_0", label: "BLIND", color: "#cbcfce", numbers: 1 },
   data: [
@@ -60,9 +62,8 @@ export var firstCircle = {
 };
 
 export var fullCircle = {
-  numbers: 86,
+  numbers: 85,
   data: [
-    { id: "1_0", label: "BLIND", color: "#cbcfce", numbers: 1 },
     {
       id: "1_1",
       label: "FRUITY",
@@ -356,7 +357,7 @@ export var fullCircle = {
   ],
 };
 
-export var secondCircle = {
+export var secondCircle: { numbers: number; data: FlavorItem[] } = {
   numbers: 85,
   data: [
     {
@@ -556,5 +557,554 @@ export var secondCircle = {
       numbers: 1,
       parentId: "1_9",
     },
+  ],
+};
+
+export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
+  numbers: 85,
+  data: [
+    // Other Fruit
+    {
+      id: "1_1_1_1",
+      label: "COCONUT",
+      color: "#e38f29",
+      parentId: "1_1_1",
+      numbers: 1,
+    },
+    {
+      id: "1_1_1_2",
+      label: "CHERRY",
+      color: "#e71256",
+      parentId: "1_1_1",
+      numbers: 1,
+    },
+    {
+      id: "1_1_1_3",
+      label: "POMEGRANATE",
+      color: "#ee3c5c",
+      parentId: "1_1_1",
+      numbers: 1,
+    },
+    {
+      id: "1_1_1_4",
+      label: "PINEAPPLE",
+      color: "#f89c1c",
+      parentId: "1_1_1",
+      numbers: 1,
+    },
+    {
+      id: "1_1_1_5",
+      label: "GRAPE",
+      color: "#9ec536",
+      parentId: "1_1_1",
+      numbers: 1,
+    },
+    {
+      id: "1_1_1_6",
+      label: "APPLE",
+      color: "#69c071",
+      parentId: "1_1_1",
+      numbers: 1,
+    },
+    {
+      id: "1_1_1_7",
+      label: "PEACH",
+      color: "#f28051",
+      parentId: "1_1_1",
+      numbers: 1,
+    },
+    {
+      id: "1_1_1_8",
+      label: "PEAR",
+      color: "#b2a91e",
+      parentId: "1_1_1",
+      numbers: 1,
+    },
+    // Berry
+    {
+      id: "1_1_2_1",
+      label: "BLACKBERRY",
+      color: "#090819",
+      parentId: "1_1_2",
+      numbers: 1,
+    },
+    {
+      id: "1_1_2_2",
+      label: "RASPBERRY",
+      color: "#e32885",
+      parentId: "1_1_2",
+      numbers: 1,
+    },
+    {
+      id: "1_1_2_3",
+      label: "BLUEBERRY",
+      color: "#6569ab",
+      parentId: "1_1_2",
+      numbers: 1,
+    },
+    {
+      id: "1_1_2_4",
+      label: "STRAWBERRY",
+      color: "#ee273b",
+      parentId: "1_1_2",
+      numbers: 1,
+    },
+    // CITRUS FRUIT
+    {
+      id: "1_1_3_1",
+      label: "GRAPEFRUIT",
+      color: "#f05961",
+      parentId: "1_1_3",
+      numbers: 1,
+    },
+    {
+      id: "1_1_3_2",
+      label: "ORANGE",
+      color: "#f47921",
+      parentId: "1_1_3",
+      numbers: 1,
+    },
+    {
+      id: "1_1_3_3",
+      label: "LEMON",
+      color: "#f4d903",
+      parentId: "1_1_3",
+      numbers: 1,
+    },
+    {
+      id: "1_1_3_4",
+      label: "LIME",
+      color: "#8fc254",
+      parentId: "1_1_3",
+      numbers: 1,
+    },
+    // DRIED FRUIT
+    {
+      id: "1_1_4_1",
+      label: "RAISIN",
+      color: "#9e1d78",
+      parentId: "1_1_4",
+      numbers: 1,
+    },
+    {
+      id: "1_1_4_2",
+      label: "PRUNE",
+      color: "#84548e",
+      parentId: "1_1_4",
+      numbers: 1,
+    },
+    // SOUR
+    {
+      id: "1_2_1_1",
+      label: "SOUR AROMATICS",
+      color: "#bfbc1f",
+      parentId: "1_2_1",
+      numbers: 1,
+    },
+    {
+      id: "1_2_1_2",
+      label: "ACETIC ACID",
+      color: "#9fc58a",
+      parentId: "1_2_1",
+      numbers: 1,
+    },
+    {
+      id: "1_2_1_3",
+      label: "BUTYRIC ACID",
+      color: "#d6c40b",
+      parentId: "1_2_1",
+      numbers: 1,
+    },
+    {
+      id: "1_2_1_4",
+      label: "ISOVALERIC ACID",
+      color: "#71c059",
+      parentId: "1_2_1",
+      numbers: 1,
+    },
+    {
+      id: "1_2_1_5",
+      label: "CITRIC ACID",
+      color: "#e3d511",
+      parentId: "1_2_1",
+      numbers: 1,
+    },
+    {
+      id: "1_2_1_6",
+      label: "MALIC ACID",
+      color: "#b2c327",
+      parentId: "1_2_1",
+      numbers: 1,
+    },
+    //ALCOHOL/FERMENTED
+    {
+      id: "1_2_2_1",
+      label: "WINEY",
+      color: "#a50a70",
+      parentId: "1_2_2",
+      numbers: 1,
+    },
+    {
+      id: "1_2_2_2",
+      label: "WHISKEY",
+      color: "#b03a53",
+      parentId: "1_2_2",
+      numbers: 1,
+    },
+    {
+      id: "1_2_2_3",
+      label: "FERMENTED",
+      color: "#d2a808",
+      parentId: "1_2_2",
+      numbers: 1,
+    },
+    {
+      id: "1_2_2_4",
+      label: "OVERRIPE",
+      color: "#7d6f29",
+      parentId: "1_2_2",
+      numbers: 1,
+    },
+    // GREEN/VEGETATIVE
+    {
+      id: "1_3_1_1",
+      label: "UNDER-RIPE",
+      color: "#a9c946",
+      parentId: "1_3_1",
+      numbers: 1,
+    },
+    {
+      id: "1_3_1_2",
+      label: "PEAPOD",
+      color: "#47b44a",
+      parentId: "1_3_1",
+      numbers: 1,
+    },
+    {
+      id: "1_3_1_3",
+      label: "FRESH",
+      color: "#01ab6f",
+      parentId: "1_3_1",
+      numbers: 1,
+    },
+    {
+      id: "1_3_1_4",
+      label: "DARK GREEN",
+      color: "#00603d",
+      parentId: "1_3_1",
+      numbers: 1,
+    },
+    {
+      id: "1_3_1_5",
+      label: "VEGETATIVE",
+      color: "#1eb26a",
+      parentId: "1_3_1",
+      numbers: 1,
+    },
+    {
+      id: "1_3_1_6",
+      label: "HAY-LIKE",
+      color: "#9fa021",
+      parentId: "1_3_1",
+      numbers: 1,
+    },
+    {
+      id: "1_3_1_7",
+      label: "HERB-LIKE",
+      color: "#78c258",
+      parentId: "1_3_1",
+      numbers: 1,
+    },
+    { id: "1_3_2_1", label: "", color: "", parentId: "1_3_2", numbers: 1 },
+    { id: "1_3_3_1", label: "", color: "", parentId: "1_3_3", numbers: 1 },
+    { id: "1_3_4_1", label: "", color: "", parentId: "1_3_4", numbers: 1 },
+    // PAPERY/MUSTY
+    {
+      id: "1_4_1_1",
+      label: "STALE",
+      color: "#657c6a",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_2",
+      label: "CARDBOARD",
+      color: "#d9c245",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_3",
+      label: "PAPERY",
+      color: "#ffffff",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_4",
+      label: "WOODY",
+      color: "#725d26",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_5",
+      label: "MOLDY/DAMP",
+      color: "#a1ac74",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_6",
+      label: "MUSTY/DUSTY",
+      color: "#caa669",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_7",
+      label: "MUSTY/EARTHY",
+      color: "#948546",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_8",
+      label: "ANIMALIC",
+      color: "#9ea176",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_9",
+      label: "MEATY BROTHY",
+      color: "#cb8079",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    {
+      id: "1_4_1_10",
+      label: "PHENOLIC",
+      color: "#e87d87",
+      parentId: "1_4_1",
+      numbers: 1,
+    },
+    // CHEMICAL
+    {
+      id: "1_4_2_1",
+      label: "BITTER",
+      color: "#6ec8be",
+      parentId: "1_4_2",
+      numbers: 1,
+    },
+    {
+      id: "1_4_2_2",
+      label: "SALTY",
+      color: "#f6fbfe",
+      parentId: "1_4_2",
+      numbers: 1,
+    },
+    {
+      id: "1_4_2_3",
+      label: "MEDICINAL",
+      color: "#6bacc4",
+      parentId: "1_4_2",
+      numbers: 1,
+    },
+    {
+      id: "1_4_2_4",
+      label: "PETROLEUM",
+      color: "#00a9bf",
+      parentId: "1_4_2",
+      numbers: 1,
+    },
+    {
+      id: "1_4_2_5",
+      label: "SKUNKY",
+      color: "#5d8295",
+      parentId: "1_4_2",
+      numbers: 1,
+    },
+    {
+      id: "1_4_2_6",
+      label: "RUBBER",
+      color: "#001531",
+      parentId: "1_4_2",
+      numbers: 1,
+    },
+    //BURNT
+    {
+      id: "1_5_1_1",
+      label: "ACRID",
+      color: "#afa067",
+      parentId: "1_5_1",
+      numbers: 1,
+    },
+    {
+      id: "1_5_1_2",
+      label: "ASHY",
+      color: "#92a892",
+      parentId: "1_5_1",
+      numbers: 1,
+    },
+    {
+      id: "1_5_1_3",
+      label: "SMOKY",
+      color: "#a87e33",
+      parentId: "1_5_1",
+      numbers: 1,
+    },
+    {
+      id: "1_5_1_4",
+      label: "BROWN,ROAST",
+      color: "#835621",
+      parentId: "1_5_1",
+      numbers: 1,
+    },
+    // CEREAL
+    {
+      id: "1_5_2_1",
+      label: "GRAIN",
+      color: "#cea488",
+      parentId: "1_5_2",
+      numbers: 1,
+    },
+    {
+      id: "1_5_2_2",
+      label: "MALT",
+      color: "#ea9a64",
+      parentId: "1_5_2",
+      numbers: 1,
+    },
+    //
+    { id: "1_5_3_1", label: "", color: "", parentId: "1_5_3", numbers: 1 },
+    { id: "1_5_4_1", label: "", color: "", parentId: "1_5_4", numbers: 1 },
+    // BROWN SPICE
+    {
+      id: "1_6_1_1",
+      label: "ANISE",
+      color: "#c89e18",
+      parentId: "1_6_1",
+      numbers: 1,
+    },
+    {
+      id: "1_6_1_2",
+      label: "NUTMEG",
+      color: "#a51518",
+      parentId: "1_6_1",
+      numbers: 1,
+    },
+    {
+      id: "1_6_1_3",
+      label: "CINNAMON",
+      color: "#e6912f",
+      parentId: "1_6_1",
+      numbers: 1,
+    },
+    {
+      id: "1_6_1_4",
+      label: "CLOVE",
+      color: "#b5786d",
+      parentId: "1_6_1",
+      numbers: 1,
+    },
+    //
+    { id: "1_6_2_1", label: "", color: "", parentId: "1_6_2", numbers: 1 },
+    { id: "1_6_3_1", label: "", color: "", parentId: "1_6_3", numbers: 1 },
+    // NUTTY
+    {
+      id: "1_7_1_1",
+      label: "PEANUTS",
+      color: "#e3b409",
+      parentId: "1_7_1",
+      numbers: 1,
+    },
+    {
+      id: "1_7_1_2",
+      label: "HAZENUT",
+      color: "#935e20",
+      parentId: "1_7_1",
+      numbers: 1,
+    },
+    {
+      id: "1_7_1_3",
+      label: "ALMOND",
+      color: "#d8a89b",
+      parentId: "1_7_1",
+      numbers: 1,
+    },
+    // COCOA
+    {
+      id: "1_7_2_1",
+      label: "CHOCOLATE",
+      color: "#6b2720",
+      parentId: "1_7_2",
+      numbers: 1,
+    },
+    {
+      id: "1_7_2_2",
+      label: "DARK CHOCOLATE",
+      color: "#49261d",
+      parentId: "1_7_2",
+      numbers: 1,
+    },
+    //BROWN SUGAR
+    {
+      id: "1_8_1_1",
+      label: "MOLASSES",
+      color: "#230007",
+      parentId: "1_8_1",
+      numbers: 1,
+    },
+    {
+      id: "1_8_1_2",
+      label: "MAPLE SYRUP",
+      color: "#d75d24",
+      parentId: "1_8_1",
+      numbers: 1,
+    },
+    {
+      id: "1_8_1_3",
+      label: "CARAMELIZED",
+      color: "#e1a126",
+      parentId: "1_8_1",
+      numbers: 1,
+    },
+    {
+      id: "1_8_1_4",
+      label: "HONEY",
+      color: "#f47d2a",
+      parentId: "1_8_1",
+      numbers: 1,
+    },
+    //
+    { id: "1_8_2_1", label: "", color: "", parentId: "1_8_2", numbers: 1 },
+    { id: "1_8_3_1", label: "", color: "", parentId: "1_8_3", numbers: 1 },
+    { id: "1_8_4_1", label: "", color: "", parentId: "1_8_4", numbers: 1 },
+    { id: "1_8_5_1", label: "", color: "", parentId: "1_8_5", numbers: 1 },
+    // FLORAL
+    {
+      id: "1_9_1_1",
+      label: "CHAMOMILE",
+      color: "#fbaf25",
+      parentId: "1_9_1",
+      numbers: 1,
+    },
+    {
+      id: "1_9_1_2",
+      label: "ROSE",
+      color: "#e472a6",
+      parentId: "1_9_1",
+      numbers: 1,
+    },
+    {
+      id: "1_9_1_3",
+      label: "JASMINE",
+      color: "#fffde9",
+      parentId: "1_9_1",
+      numbers: 1,
+    },
+    //
+    { id: "1_9_2_1", label: "", color: "", parentId: "1_9_2", numbers: 1 },
   ],
 };

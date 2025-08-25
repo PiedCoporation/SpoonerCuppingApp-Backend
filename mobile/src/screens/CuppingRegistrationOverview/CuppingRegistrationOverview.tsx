@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   View,
   Dimensions,
@@ -7,10 +7,12 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Easing,
 } from "react-native";
 import Svg, { Path, Polygon, G } from "react-native-svg";
 import { firstCircle, secondCircle } from "@/data/dataV1";
 import { Text as SvgText } from "react-native-svg";
+import { FlavorItem } from "@/types/Flavor";
 
 function polarToCartesian(
   centerX: number,
@@ -53,7 +55,6 @@ function getSelectedSlice(
       normalizedRotation >= cumulativeAngle &&
       normalizedRotation < endAngle
     ) {
-      console.log(`Selected slice: ${item.label}`);
       return item;
     }
 
@@ -82,32 +83,22 @@ function describeArc(
   return d;
 }
 
-// Function to darken a color by reducing brightness
 function darkenColor(color: string, factor: number = 0.4): string {
-  // Remove # if present
   const hex = color.replace("#", "");
-
-  // Parse RGB values
   const r = parseInt(hex.substr(0, 2), 16);
   const g = parseInt(hex.substr(2, 2), 16);
   const b = parseInt(hex.substr(4, 2), 16);
-
-  // Darken by reducing each component
   const newR = Math.floor(r * factor);
   const newG = Math.floor(g * factor);
   const newB = Math.floor(b * factor);
-
-  // Convert back to hex
   const newHex =
     "#" +
     newR.toString(16).padStart(2, "0") +
     newG.toString(16).padStart(2, "0") +
     newB.toString(16).padStart(2, "0");
-
   return newHex;
 }
 
-// Function to calculate initial rotation to position FRUITY under the pointer
 function calculateInitialRotation(
   data: Array<{ id: string; label: string; color: string; numbers: number }>,
   total: number
@@ -118,19 +109,16 @@ function calculateInitialRotation(
   return fruityCenterAngle;
 }
 
-// Function to calculate initial rotation for second circle
 function calculateInitialRotation2(
   data: Array<{ id: string; label: string; color: string; numbers: number }>,
   total: number
 ) {
-  // BERRY is the first item in secondCircle data
   const berryIndex = 0;
   const berrySliceAngle = (data[berryIndex].numbers / total) * 360;
   const berryCenterAngle = berrySliceAngle / 2;
   return berryCenterAngle;
 }
 
-// FIXED FUNCTION: Calculate rotation needed to center a specific parent item
 function calculateRotationForParent(
   parentId: string,
   data: Array<{ id: string; label: string; color: string; numbers: number }>,
@@ -139,48 +127,75 @@ function calculateRotationForParent(
   const parentIndex = data.findIndex((item) => item.id === parentId);
   if (parentIndex === -1) return 0;
 
-  // Calculate cumulative angle up to this parent
   let cumulativeAngle = 0;
   for (let i = 0; i < parentIndex; i++) {
     cumulativeAngle += (data[i].numbers / total) * 360;
   }
 
-  // Add half of this parent's slice angle to get center
   const parentSliceAngle = (data[parentIndex].numbers / total) * 360;
   const parentCenterAngle = cumulativeAngle + parentSliceAngle / 2;
 
-  // Apply the same transformations as in getSelectedSlice but in reverse
-  // We want the normalized rotation after transformations to equal parentCenterAngle
-  // Working backwards from getSelectedSlice transformations:
-  // 1. normalizedRotation = (normalizedRotation + 90) % 360 -> subtract 90
-  // 2. normalizedRotation = (360 - normalizedRotation) % 360 -> apply 360 - x
-
-  // Step 1: Subtract 90 degrees
   let targetRotation = parentCenterAngle - 90;
   if (targetRotation < 0) targetRotation += 360;
+  targetRotation = (360 - targetRotation) % 360;
 
-  // Step 2: Reverse the direction flip
+  return targetRotation;
+}
+
+function calculateRotationForChild(
+  parentId: string,
+  data: Array<{
+    id: string;
+    label: string;
+    color: string;
+    numbers: number;
+    parentId?: string;
+  }>,
+  total: number
+) {
+  const firstChildIndex = data.findIndex((item) => item.parentId === parentId);
+  if (firstChildIndex === -1) return 0;
+
+  let cumulativeAngle = 0;
+  for (let i = 0; i < firstChildIndex; i++) {
+    cumulativeAngle += (data[i].numbers / total) * 360;
+  }
+
+  const childSliceAngle = (data[firstChildIndex].numbers / total) * 360;
+  const childCenterAngle = cumulativeAngle + childSliceAngle / 2;
+
+  let targetRotation = childCenterAngle - 90;
+  if (targetRotation < 0) targetRotation += 360;
   targetRotation = (360 - targetRotation) % 360;
 
   return targetRotation;
 }
 
 const { width: screenWidth } = Dimensions.get("window");
-
-// First circle (parent categories)
 const radius = screenWidth * 1.6;
 const center = radius / 2;
 const data = firstCircle.data;
 const total = firstCircle.numbers;
-
-// Second circle (child categories) - larger and behind first circle
 const radius2 = screenWidth * 2.5;
 const center2 = radius2 / 2;
-const data2 = secondCircle.data;
-const total2 = secondCircle.numbers;
 
 export default function CuppingRegistrationOverview() {
-  // Calculate initial rotations
+  const [data2, setData2] = useState<FlavorItem[]>(secondCircle.data);
+  const [total2, setTotal2] = useState(secondCircle.numbers);
+
+  const stateRef = useRef({
+    data2: secondCircle.data,
+    total2: secondCircle.numbers,
+    selectedParent: data[0],
+    selectedChild: secondCircle.data[0],
+    isUpdating: false,
+  });
+
+  useEffect(() => {
+    stateRef.current.data2 = data2;
+    stateRef.current.total2 = total2;
+  }, [data2, total2]);
+
   const initialRotationValue = calculateInitialRotation(data, total);
   const initialRotationValue2 = calculateInitialRotation2(data2, total2);
 
@@ -193,32 +208,161 @@ export default function CuppingRegistrationOverview() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [isSpinning2, setIsSpinning2] = useState(false);
 
-  // Initialize with FRUITY and BERRY selected
   const [selectedParent, setSelectedParentState] = useState<any | null>(
     data[0]
   );
   const [selectedChild, setSelectedChildState] = useState<any | null>(data2[0]);
 
-  const selectedParentRef = useRef<any | null>(data[0]);
-  const selectedChildRef = useRef<any | null>(data2[0]);
-
-  const setSelectedParent = (value: any | null) => {
-    selectedParentRef.current = value;
+  const setSelectedParent = useCallback((value: any | null) => {
+    stateRef.current.selectedParent = value;
     setSelectedParentState(value);
-  };
-
-  const setSelectedChild = (value: any | null) => {
-    selectedChildRef.current = value;
-    setSelectedChildState(value);
-  };
-
-  // Set initial selection on component mount
-  useEffect(() => {
-    console.log("Initial parent selection set to:", data[0].label);
-    console.log("Initial child selection set to:", data2[0].label);
-    setSelectedParent(data[0]); // FRUITY
-    setSelectedChild(data2[0]); // BERRY
   }, []);
+
+  const setSelectedChild = useCallback((value: any | null) => {
+    stateRef.current.selectedChild = value;
+    setSelectedChildState(value);
+  }, []);
+
+  const blindItemTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // FIX: Simplified BLIND item management without rotation adjustment
+  const addBlindItem = useCallback((parentId: string) => {
+    if (stateRef.current.isUpdating) return;
+
+    if (blindItemTimeoutRef.current) {
+      clearTimeout(blindItemTimeoutRef.current);
+    }
+
+    blindItemTimeoutRef.current = setTimeout(() => {
+      stateRef.current.isUpdating = true;
+
+      const blindItem: FlavorItem = {
+        id: "0_0_0",
+        label: "BLIND",
+        color: "#cbcfce",
+        numbers: 1,
+        parentId: parentId,
+      };
+
+      setData2((prevData) => {
+        const dataWithoutBlind = prevData.filter((item) => item.id !== "0_0_0");
+        const insertionIndex = dataWithoutBlind.findIndex(
+          (item) => item.parentId === parentId
+        );
+        const finalInsertionIndex =
+          insertionIndex === -1 ? dataWithoutBlind.length : insertionIndex;
+
+        const newData = [
+          ...dataWithoutBlind.slice(0, finalInsertionIndex),
+          blindItem,
+          ...dataWithoutBlind.slice(finalInsertionIndex),
+        ];
+
+        // REMOVED: No automatic rotation adjustment
+        // The circle will stay exactly where the user positioned it
+
+        return newData;
+      });
+
+      setTotal2((prevTotal) => {
+        const hasExistingBlind = stateRef.current.data2.some(
+          (item) => item.id === "0_0_0"
+        );
+        return hasExistingBlind ? prevTotal : prevTotal + 1;
+      });
+
+      setTimeout(() => {
+        stateRef.current.isUpdating = false;
+      }, 100);
+    }, 50);
+  }, []);
+
+  const removeBlindItem = useCallback(() => {
+    const blindItem = stateRef.current.data2.find(
+      (item) => item.id === "0_0_0"
+    );
+    if (blindItem) {
+      setData2((prevData) => prevData.filter((item) => item.id !== "0_0_0"));
+      setTotal2((prevTotal) => prevTotal - 1);
+    }
+  }, []);
+
+  useEffect(() => {
+    setSelectedParent(data[0]);
+    setSelectedChild(data2[0]);
+  }, [setSelectedParent, setSelectedChild]);
+
+  useEffect(() => {
+    if (selectedParent && selectedParent.id && !stateRef.current.isUpdating) {
+      addBlindItem(selectedParent.id);
+    }
+  }, [selectedParent, addBlindItem]);
+
+  // FIX: Added flag to prevent unwanted rotation during manual pan
+  const isManuallyPanning2 = useRef(false);
+
+  const panResponder2 = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => !isSpinning,
+      onPanResponderGrant: () => {
+        setIsSpinning2(true);
+        isManuallyPanning2.current = true; // Mark as manual panning
+      },
+      onPanResponderMove: (_, gesture) => {
+        const newRotation = lastRotation2.current + gesture.dx / 2;
+        rotation2.setValue(newRotation);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        setIsSpinning2(false);
+        const finalRotation = lastRotation2.current + gesture.dx / 2;
+        lastRotation2.current = finalRotation;
+
+        try {
+          const selectedSlice = getSelectedSlice(
+            finalRotation,
+            stateRef.current.data2,
+            stateRef.current.total2
+          );
+
+          if (selectedSlice && selectedSlice.id) {
+            const currentParentId = stateRef.current.selectedParent?.id;
+            const childParentId = selectedSlice.parentId;
+
+            if (childParentId && currentParentId !== childParentId) {
+              const newParent = data.find((item) => item.id === childParentId);
+
+              if (newParent) {
+                const targetRotation = calculateRotationForParent(
+                  childParentId,
+                  data,
+                  total
+                );
+
+                Animated.timing(rotation, {
+                  toValue: targetRotation,
+                  duration: 800,
+                  useNativeDriver: false,
+                  easing: Easing.out(Easing.quad),
+                }).start();
+
+                lastRotation.current = targetRotation;
+                setSelectedParent(newParent);
+              }
+            }
+
+            setSelectedChild(selectedSlice);
+          }
+        } catch (error) {
+          console.log("Error getting selected child slice:", error);
+        }
+
+        // Reset manual panning flag after a delay
+        setTimeout(() => {
+          isManuallyPanning2.current = false;
+        }, 200);
+      },
+    })
+  ).current;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -236,8 +380,36 @@ export default function CuppingRegistrationOverview() {
         try {
           const selectedSlice = getSelectedSlice(finalRotation, data, total);
           if (selectedSlice && selectedSlice.id) {
-            console.log("Selected parent ID:", selectedSlice.id);
-            console.log("Selected parent label:", selectedSlice.label);
+            const currentParentId = stateRef.current.selectedParent?.id;
+            const newParentId = selectedSlice.id;
+
+            if (currentParentId !== newParentId) {
+              const firstChild = stateRef.current.data2.find(
+                (item) => item.parentId === newParentId
+              );
+
+              if (firstChild) {
+                // FIX: Only auto-rotate second circle if it's not being manually panned
+                if (!isManuallyPanning2.current) {
+                  const targetRotation2 = calculateRotationForChild(
+                    newParentId,
+                    stateRef.current.data2,
+                    stateRef.current.total2
+                  );
+
+                  Animated.timing(rotation2, {
+                    toValue: targetRotation2,
+                    duration: 800,
+                    useNativeDriver: false,
+                    easing: Easing.out(Easing.quad),
+                  }).start();
+
+                  lastRotation2.current = targetRotation2;
+                }
+                setSelectedChild(firstChild);
+              }
+            }
+
             setSelectedParent(selectedSlice);
           }
         } catch (error) {
@@ -247,77 +419,13 @@ export default function CuppingRegistrationOverview() {
     })
   ).current;
 
-  const panResponder2 = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => !isSpinning,
-      onPanResponderGrant: () => setIsSpinning2(true),
-      onPanResponderMove: (_, gesture) => {
-        const newRotation = lastRotation2.current + gesture.dx / 2;
-        rotation2.setValue(newRotation);
-      },
-      onPanResponderRelease: (_, gesture) => {
-        setIsSpinning2(false);
-        const finalRotation = lastRotation2.current + gesture.dx / 2;
-        lastRotation2.current = finalRotation;
-
-        try {
-          const selectedSlice = getSelectedSlice(finalRotation, data2, total2);
-          if (selectedSlice && selectedSlice.id) {
-            console.log("Selected child ID:", selectedSlice.id);
-            console.log("Selected child label:", selectedSlice.label);
-
-            // Check if the selected child belongs to a different parent
-            const currentParentId = selectedParentRef.current?.id;
-            const childParentId = selectedSlice.parentId;
-
-            if (childParentId && currentParentId !== childParentId) {
-              // Find the new parent in the first circle data
-              const newParent = data.find((item) => item.id === childParentId);
-
-              if (newParent) {
-                console.log("Switching to new parent:", newParent.label);
-
-                // Calculate the rotation needed to center the new parent (FIXED)
-                const targetRotation = calculateRotationForParent(
-                  childParentId,
-                  data,
-                  total
-                );
-
-                console.log(
-                  `Rotating to ${targetRotation} degrees for parent ${newParent.label}`
-                );
-
-                // Animate the first circle to the new position
-                Animated.timing(rotation, {
-                  toValue: targetRotation,
-                  duration: 500, // 500ms animation
-                  useNativeDriver: false,
-                }).start(() => {
-                  // Verify the rotation worked correctly
-                  console.log("Animation completed, verifying selection...");
-                  const verifySlice = getSelectedSlice(
-                    targetRotation,
-                    data,
-                    total
-                  );
-                  console.log("Verification result:", verifySlice?.label);
-                });
-
-                // Update the lastRotation ref and selectedParent
-                lastRotation.current = targetRotation;
-                setSelectedParent(newParent);
-              }
-            }
-
-            setSelectedChild(selectedSlice);
-          }
-        } catch (error) {
-          console.log("Error getting selected child slice:", error);
-        }
-      },
-    })
-  ).current;
+  useEffect(() => {
+    return () => {
+      if (blindItemTimeoutRef.current) {
+        clearTimeout(blindItemTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -327,17 +435,25 @@ export default function CuppingRegistrationOverview() {
         </Text>
       </TouchableOpacity>
 
-      {/* Display current selection for debugging */}
       <View style={styles.selectionDisplay}>
         <Text style={styles.selectionText}>
-          Parent: {selectedParent?.label || "None"}
+          Parent: {selectedParent?.label || "None"} ({selectedParent?.id})
         </Text>
         <Text style={styles.selectionText}>
-          Child: {selectedChild?.label || "None"}
+          Child: {selectedChild?.label || "None"} ({selectedChild?.id})
+        </Text>
+        <Text style={styles.selectionText}>
+          Child Parent: {selectedChild?.parentId || "None"}
+        </Text>
+        <Text style={styles.selectionText}>
+          Match: {selectedChild?.parentId === selectedParent?.id ? "✅" : "❌"}
+        </Text>
+        <Text style={styles.selectionText}>Total Items: {total2}</Text>
+        <Text style={styles.selectionText}>
+          BLIND Items: {data2.filter((item) => item.id === "0_0_0").length}
         </Text>
       </View>
 
-      {/* Second circle - Child categories (larger, behind first circle) */}
       <View style={styles.secondCircleWrapper}>
         <View style={styles.pointer2}>
           <Svg width={25} height={25} style={styles.pointerSvg}>
@@ -379,9 +495,8 @@ export default function CuppingRegistrationOverview() {
                     );
                     const midAngle = (cumulativeAngle + endAngle) / 2;
 
-                    // Position text closer to inner radius (top of slice)
-                    const innerRadius = radius / 2 + 145; // Start from first circle's outer edge plus padding
-                    const labelRadius = innerRadius + 15; // Small offset from inner edge
+                    const innerRadius = radius / 2 + 145;
+                    const labelRadius = innerRadius + 15;
 
                     const rad = ((midAngle - 90) * Math.PI) / 180;
                     const x = center2 + labelRadius * Math.cos(rad);
@@ -389,16 +504,19 @@ export default function CuppingRegistrationOverview() {
 
                     const textRotation = midAngle + 90;
 
-                    // Check if this item belongs to the selected parent
                     const isChildOfSelectedParent =
                       selectedParent && item.parentId === selectedParent.id;
 
-                    // Determine the fill color and opacity based on parent relationship
                     const fillColor = isChildOfSelectedParent
                       ? item.color
-                      : darkenColor(item.color, 0.3);
-                    const fillOpacity = isChildOfSelectedParent ? 1 : 0.4;
-                    const textOpacity = isChildOfSelectedParent ? 1 : 0.5;
+                      : darkenColor(item.color, 0.15);
+                    const fillOpacity = isChildOfSelectedParent ? 1 : 0.25;
+                    const textOpacity = isChildOfSelectedParent ? 1 : 0.3;
+
+                    const isSelected =
+                      selectedChild && selectedChild.id === item.id;
+                    const strokeWidth = isSelected ? 4 : 2;
+                    const strokeColor = isSelected ? "#FFD700" : "#fff";
 
                     const arc = (
                       <React.Fragment key={item.id}>
@@ -406,8 +524,8 @@ export default function CuppingRegistrationOverview() {
                           d={path}
                           fill={fillColor}
                           fillOpacity={fillOpacity}
-                          stroke="#fff"
-                          strokeWidth={2}
+                          stroke={strokeColor}
+                          strokeWidth={strokeWidth}
                           strokeOpacity={isChildOfSelectedParent ? 1 : 0.5}
                         />
                         <SvgText
@@ -437,7 +555,6 @@ export default function CuppingRegistrationOverview() {
         </View>
       </View>
 
-      {/* First circle - Parent categories (in front) */}
       <View style={styles.firstCircleWrapper}>
         <View style={styles.pointer}>
           <Svg width={20} height={20} style={styles.pointerSvg}>
@@ -478,13 +595,18 @@ export default function CuppingRegistrationOverview() {
                       endAngle
                     );
 
+                    const isSelected =
+                      selectedParent && selectedParent.id === item.id;
+                    const strokeWidth = isSelected ? 4 : 2;
+                    const strokeColor = isSelected ? "#FFD700" : "#fff";
+
                     const arc = (
                       <Path
                         key={item.id}
                         d={path}
                         fill={item.color}
-                        stroke="#fff"
-                        strokeWidth={2}
+                        stroke={strokeColor}
+                        strokeWidth={strokeWidth}
                       />
                     );
                     cumulativeAngle = endAngle;
@@ -573,7 +695,7 @@ const styles = StyleSheet.create({
   },
   selectionText: {
     color: "white",
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: "bold",
     textAlign: "center",
   },
@@ -585,7 +707,7 @@ const styles = StyleSheet.create({
     height: radius / 2,
     overflow: "hidden",
     alignItems: "center",
-    zIndex: 30, // Higher z-index to appear in front
+    zIndex: 30,
   },
   secondCircleWrapper: {
     position: "absolute",
@@ -595,7 +717,7 @@ const styles = StyleSheet.create({
     height: radius2 / 2,
     overflow: "hidden",
     alignItems: "center",
-    zIndex: 20, // Lower z-index to appear behind first circle
+    zIndex: 20,
   },
   halfCircle: {
     width: radius,
