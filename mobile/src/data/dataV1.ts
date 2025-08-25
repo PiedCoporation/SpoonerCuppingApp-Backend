@@ -9,350 +9,63 @@ export var firstCircle: { numbers: number; data: FlavorItem[] } = {
       label: "FRUITY",
       color: "#ee1e23",
       numbers: 18,
+      hasChild: true,
     },
     {
       id: "1_2",
       label: "SOUR/FERMENTED",
       color: "#f4cc00",
       numbers: 10,
+      hasChild: true,
     },
     {
       id: "1_3",
       label: "GREEN/VEGETATIVE",
       color: "#157f3b",
       numbers: 10,
+      hasChild: true,
     },
     {
       id: "1_4",
       label: "OTHER",
       color: "#04a5d1",
       numbers: 16,
+      hasChild: true,
     },
     {
       id: "1_5",
       label: "ROASTED",
       color: "#d23626",
       numbers: 8,
+      hasChild: true,
     },
     {
       id: "1_6",
       label: "SPICES",
       color: "#b80e3f",
       numbers: 6,
+      hasChild: true,
     },
     {
       id: "1_7",
       label: "NUTTY/COCOA",
       color: "#997b78",
       numbers: 5,
+      hasChild: true,
     },
     {
       id: "1_8",
       label: "SWEET",
       color: "#f36421",
       numbers: 8,
+      hasChild: true,
     },
     {
       id: "1_9",
       label: "FLORAL",
       color: "#ec018c",
       numbers: 4,
-    },
-  ],
-};
-
-export var fullCircle = {
-  numbers: 85,
-  data: [
-    {
-      id: "1_1",
-      label: "FRUITY",
-      color: "#ee1e23",
-      numbers: 18,
-      childrens: [
-        {
-          id: "1_1_1",
-          label: "BERRY",
-          color: "#ed2c41",
-          numbers: 4,
-          childrens: [
-            { id: "1_1_1_1", label: "BLACKBERRY", color: "#090819" },
-            { id: "1_1_1_2", label: "RASPBERRY", color: "#e32885" },
-            { id: "1_1_1_3", label: "BLUEBERRY", color: "#6569ab" },
-            { id: "1_1_1_4", label: "STRAWBERRY", color: "#ee273b" },
-          ],
-        },
-        {
-          id: "1_1_2",
-          label: "DRIED FRUIT",
-          color: "#d6444d",
-          numbers: 2,
-          childrens: [
-            { id: "1_1_2_1", label: "RAISIN", color: "#9e1d78" },
-            { id: "1_1_2_2", label: "PRUNE", color: "#84548e" },
-          ],
-        },
-        {
-          id: "1_1_3",
-          label: "OTHER FRUIT",
-          color: "#f26648",
-          numbers: 8,
-          childrens: [
-            { id: "1_1_3_1", label: "COCONUT", color: "#e38f29" },
-            { id: "1_1_3_2", label: "CHERRY", color: "#e71256" },
-            { id: "1_1_3_3", label: "POMEGRANATE", color: "#ee3c5c" },
-            { id: "1_1_3_4", label: "PINEAPPLE", color: "#f89c1c" },
-            { id: "1_1_3_5", label: "GRAPE", color: "#9ec536" },
-            { id: "1_1_3_6", label: "APPLE", color: "#69c071" },
-            { id: "1_1_3_7", label: "PEACH", color: "#f28051" },
-            { id: "1_1_3_8", label: "PEAR", color: "#b2a91e" },
-          ],
-        },
-        {
-          id: "1_1_4",
-          label: "CITRUS FRUIT",
-          color: "#f26648",
-          numbers: 4,
-          childrens: [
-            { id: "1_1_4_1", label: "GRAPEFRUIT", color: "#f05961" },
-            { id: "1_1_4_2", label: "ORANGE", color: "#f47921" },
-            { id: "1_1_4_3", label: "LEMON", color: "#f4d903" },
-            { id: "1_1_4_4", label: "LIME", color: "#8fc254" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "1_2",
-      label: "SOUR/FERMENTED",
-      color: "#f4cc00",
-      numbers: 10,
-      childrens: [
-        {
-          id: "1_2_1",
-          label: "SOUR",
-          color: "#ded727",
-          numbers: 6,
-          childrens: [
-            { id: "1_2_1_1", label: "SOUR AROMATICS", color: "#bfbc1f" },
-            { id: "1_2_1_2", label: "ACETIC ACID", color: "#9fc58a" },
-            { id: "1_2_1_3", label: "BUTYRIC ACID", color: "#d6c40b" },
-            { id: "1_2_1_4", label: "ISOVALERIC ACID", color: "#71c059" },
-            { id: "1_2_1_5", label: "CITRIC ACID", color: "#e3d511" },
-            { id: "1_2_1_6", label: "MALIC ACID", color: "#b2c327" },
-          ],
-        },
-        {
-          id: "1_2_2",
-          label: "ALCOHOL/FERMENTED",
-          color: "#b1a014",
-          numbers: 4,
-          childrens: [
-            { id: "1_2_2_1", label: "WINEY", color: "#a50a70" },
-            { id: "1_2_2_2", label: "WHISKEY", color: "#b03a53" },
-            { id: "1_2_2_3", label: "FERMENTED", color: "#d2a808" },
-            { id: "1_2_2_4", label: "OVERRIPE", color: "#7d6f29" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "1_3",
-      label: "GREEN/VEGETATIVE",
-      color: "#157f3b",
-      numbers: 10,
-      childrens: [
-        { id: "1_3_1", label: "OLIVE OIL", color: "#a0b029", numbers: 1 },
-        { id: "1_3_2", label: "RAW", color: "#6b8b38", numbers: 1 },
-        {
-          id: "1_3_3",
-          label: "GREEN/VEGETATIVE",
-          color: "#20b152",
-          numbers: 7,
-          childrens: [
-            { id: "1_3_1_1", label: "UNDER-RIPE", color: "#a9c946" },
-            { id: "1_3_1_2", label: "PEAPOD", color: "#47b44a" },
-            { id: "1_3_1_3", label: "FRESH", color: "#01ab6f" },
-            { id: "1_3_1_4", label: "DARK GREEN", color: "#00603d" },
-            { id: "1_3_1_5", label: "VEGETATIVE", color: "#1eb26a" },
-            { id: "1_3_1_6", label: "HAY-LIKE", color: "#9fa021" },
-            { id: "1_3_1_7", label: "HERB-LIKE", color: "#78c258" },
-          ],
-        },
-        { id: "1_3_4", label: "BEANY", color: "#6e9f95", numbers: 1 },
-      ],
-    },
-    {
-      id: "1_4",
-      label: "OTHER",
-      color: "#04a5d1",
-      numbers: 16,
-      childrens: [
-        {
-          id: "1_4_1",
-          label: "PAPERY/MUSTY",
-          color: "#99bacb",
-          numbers: 10,
-          childrens: [
-            { id: "1_4_1_1", label: "STALE", color: "#657c6a" },
-            { id: "1_4_1_2", label: "CARDBOARD", color: "#d9c245" },
-            { id: "1_4_1_3", label: "PAPERY", color: "#ffffff" },
-            { id: "1_4_1_4", label: "WOODY", color: "#725d26" },
-            { id: "1_4_1_5", label: "MOLDY/DAMP", color: "#a1ac74" },
-            { id: "1_4_1_6", label: "MUSTY/DUSTY", color: "#caa669" },
-            { id: "1_4_1_7", label: "MUSTY/EARTHY", color: "#948546" },
-            { id: "1_4_1_8", label: "ANIMALIC", color: "#9ea176" },
-            { id: "1_4_1_9", label: "MEATY BROTHY", color: "#cb8079" },
-            { id: "1_4_1_10", label: "PHENOLIC", color: "#e87d87" },
-          ],
-        },
-        {
-          id: "1_4_2",
-          label: "CHEMICAL",
-          color: "#5fc5db",
-          numbers: 6,
-          childrens: [
-            { id: "1_4_2_1", label: "BITTER", color: "#6ec8be" },
-            { id: "1_4_2_2", label: "SALTY", color: "#f6fbfe" },
-            { id: "1_4_2_3", label: "MEDICINAL", color: "#6bacc4" },
-            { id: "1_4_2_4", label: "PETROLEUM", color: "#00a9bf" },
-            { id: "1_4_2_5", label: "SKUNKY", color: "#5d8295" },
-            { id: "1_4_2_6", label: "RUBBER", color: "#001531" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "1_5",
-      label: "ROASTED",
-      color: "#d23626",
-      numbers: 8,
-      childrens: [
-        { id: "1_5_1", label: "PIPE TOBACCO", color: "#a39560", numbers: 1 },
-        { id: "1_5_2", label: "TOBACCO", color: "#ceb37f", numbers: 1 },
-        {
-          id: "1_5_3",
-          label: "BURNT",
-          color: "#b57f4c",
-          numbers: 4,
-          childrens: [
-            { id: "1_5_3_1", label: "ACRID", color: "#afa067" },
-            { id: "1_5_3_2", label: "ASHY", color: "#92a892" },
-            { id: "1_5_3_3", label: "SMOKY", color: "#a87e33" },
-            { id: "1_5_3_4", label: "BROWN,ROAST", color: "#835621" },
-          ],
-        },
-        {
-          id: "1_5_4",
-          label: "CEREAL",
-          color: "#eec52c",
-          numbers: 2,
-          childrens: [
-            { id: "1_5_4_1", label: "GRAIN", color: "#cea488" },
-            { id: "1_5_4_2", label: "MALT", color: "#ea9a64" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "1_6",
-      label: "SPICES",
-      color: "#b80e3f",
-      numbers: 6,
-      childrens: [
-        { id: "1_6_1", label: "PUNGENT", color: "#724763", numbers: 1 },
-        { id: "1_6_2", label: "PEPPER", color: "#de1a32", numbers: 1 },
-        {
-          id: "1_6_3",
-          label: "BROWN SPICE",
-          color: "#bd3f4b",
-          numbers: 4,
-          childrens: [
-            { id: "1_6_3_1", label: "ANISE", color: "#c89e18" },
-            { id: "1_6_3_2", label: "NUTMEG", color: "#a51518" },
-            { id: "1_6_3_3", label: "CINNAMON", color: "#e6912f" },
-            { id: "1_6_3_4", label: "CLOVE", color: "#b5786d" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "1_7",
-      label: "NUTTY/COCOA",
-      color: "#997b78",
-      numbers: 5,
-      childrens: [
-        {
-          id: "1_7_1",
-          label: "NUTTY",
-          color: "#b49187",
-          numbers: 3,
-          childrens: [
-            { id: "1_7_1_1", label: "PEANUTS", color: "#e3b409" },
-            { id: "1_7_1_2", label: "HAZENUT", color: "#935e20" },
-            { id: "1_7_1_3", label: "ALMOND", color: "#d8a89b" },
-          ],
-        },
-        {
-          id: "1_7_2",
-          label: "COCOA",
-          color: "#b37122",
-          numbers: 2,
-          childrens: [
-            { id: "1_7_2_1", label: "CHOCOLATE", color: "#6b2720" },
-            { id: "1_7_2_2", label: "DARK CHOCOLATE", color: "#49261d" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "1_8",
-      label: "SWEET",
-      color: "#f36421",
-      numbers: 8,
-      childrens: [
-        {
-          id: "1_8_1",
-          label: "BROWN SUGAR",
-          color: "#cd7c91",
-          numbers: 4,
-          childrens: [
-            { id: "1_8_1_1", label: "MOLASSES", color: "#230007" },
-            { id: "1_8_1_2", label: "MAPLE SYRUP", color: "#d75d24" },
-            { id: "1_8_1_3", label: "CARAMELIZED", color: "#e1a126" },
-            { id: "1_8_1_4", label: "HONEY", color: "#f47d2a" },
-          ],
-        },
-        { id: "1_8_2", label: "VANILLA", color: "#f6977d", numbers: 1 },
-        { id: "1_8_3", label: "VANILLIN", color: "#f27f87", numbers: 1 },
-        { id: "1_8_4", label: "OVERALL SWEET", color: "#efbbbf", numbers: 1 },
-        {
-          id: "1_8_5",
-          label: "SWEET AROMATICS",
-          color: "#cc3e6b",
-          numbers: 1,
-        },
-      ],
-    },
-    {
-      id: "1_9",
-      label: "FLORAL",
-      color: "#ec018c",
-      numbers: 4,
-      childrens: [
-        { id: "1_9_1", label: "BLACK TEA", color: "#ad647c", numbers: 1 },
-        {
-          id: "1_9_2",
-          label: "FLORAL",
-          color: "#ef4b8e",
-          numbers: 3,
-          childrens: [
-            { id: "1_9_2_1", label: "CHAMOMILE", color: "#fbaf25" },
-            { id: "1_9_2_2", label: "ROSE", color: "#e472a6" },
-            { id: "1_9_2_3", label: "JASMINE", color: "#fffde9" },
-          ],
-        },
-      ],
+      hasChild: true,
     },
   ],
 };
@@ -366,6 +79,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f26648",
       numbers: 8,
       parentId: "1_1",
+      hasChild: true,
     },
     {
       id: "1_1_2",
@@ -373,6 +87,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ed2c41",
       numbers: 4,
       parentId: "1_1",
+      hasChild: true,
     },
     {
       id: "1_1_3",
@@ -380,6 +95,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f26648",
       numbers: 4,
       parentId: "1_1",
+      hasChild: true,
     },
     {
       id: "1_1_4",
@@ -387,6 +103,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#d6444d",
       numbers: 2,
       parentId: "1_1",
+      hasChild: true,
     },
     {
       id: "1_2_1",
@@ -394,6 +111,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ded727",
       numbers: 6,
       parentId: "1_2",
+      hasChild: true,
     },
     {
       id: "1_2_2",
@@ -401,6 +119,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#b1a014",
       numbers: 4,
       parentId: "1_2",
+      hasChild: true,
     },
     {
       id: "1_3_1",
@@ -408,6 +127,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#20b152",
       numbers: 7,
       parentId: "1_3",
+      hasChild: true,
     },
     {
       id: "1_3_2",
@@ -415,6 +135,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#a0b029",
       numbers: 1,
       parentId: "1_3",
+      hasChild: false,
     },
     {
       id: "1_3_3",
@@ -422,6 +143,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#6b8b38",
       numbers: 1,
       parentId: "1_3",
+      hasChild: false,
     },
     {
       id: "1_3_4",
@@ -429,6 +151,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#6e9f95",
       numbers: 1,
       parentId: "1_3",
+      hasChild: false,
     },
     {
       id: "1_4_1",
@@ -436,6 +159,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#99bacb",
       numbers: 10,
       parentId: "1_4",
+      hasChild: true,
     },
     {
       id: "1_4_2",
@@ -443,6 +167,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#5fc5db",
       numbers: 6,
       parentId: "1_4",
+      hasChild: true,
     },
     {
       id: "1_5_1",
@@ -450,6 +175,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#b57f4c",
       numbers: 4,
       parentId: "1_5",
+      hasChild: true,
     },
     {
       id: "1_5_2",
@@ -457,6 +183,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#eec52c",
       numbers: 2,
       parentId: "1_5",
+      hasChild: true,
     },
     {
       id: "1_5_3",
@@ -464,6 +191,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#a39560",
       numbers: 1,
       parentId: "1_5",
+      hasChild: false,
     },
     {
       id: "1_5_4",
@@ -471,6 +199,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ceb37f",
       numbers: 1,
       parentId: "1_5",
+      hasChild: false,
     },
     {
       id: "1_6_1",
@@ -478,6 +207,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#bd3f4b",
       numbers: 4,
       parentId: "1_6",
+      hasChild: true,
     },
     {
       id: "1_6_2",
@@ -485,6 +215,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#724763",
       numbers: 1,
       parentId: "1_6",
+      hasChild: false,
     },
     {
       id: "1_6_3",
@@ -492,6 +223,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#de1a32",
       numbers: 1,
       parentId: "1_6",
+      hasChild: false,
     },
 
     {
@@ -500,6 +232,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#b49187",
       numbers: 3,
       parentId: "1_7",
+      hasChild: true,
     },
     {
       id: "1_7_2",
@@ -507,6 +240,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#b37122",
       numbers: 2,
       parentId: "1_7",
+      hasChild: true,
     },
     {
       id: "1_8_1",
@@ -514,6 +248,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#cd7c91",
       numbers: 4,
       parentId: "1_8",
+      hasChild: true,
     },
     {
       id: "1_8_2",
@@ -521,6 +256,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f6977d",
       numbers: 1,
       parentId: "1_8",
+      hasChild: false,
     },
     {
       id: "1_8_3",
@@ -528,6 +264,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f27f87",
       numbers: 1,
       parentId: "1_8",
+      hasChild: false,
     },
     {
       id: "1_8_4",
@@ -535,6 +272,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#efbbbf",
       numbers: 1,
       parentId: "1_8",
+      hasChild: false,
     },
     {
       id: "1_8_5",
@@ -542,6 +280,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#cc3e6b",
       numbers: 1,
       parentId: "1_8",
+      hasChild: false,
     },
     {
       id: "1_9_1",
@@ -549,6 +288,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ef4b8e",
       numbers: 3,
       parentId: "1_9",
+      hasChild: true,
     },
     {
       id: "1_9_2",
@@ -556,6 +296,7 @@ export var secondCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ad647c",
       numbers: 1,
       parentId: "1_9",
+      hasChild: false,
     },
   ],
 };
@@ -570,6 +311,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e38f29",
       parentId: "1_1_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_1_2",
@@ -577,6 +319,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e71256",
       parentId: "1_1_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_1_3",
@@ -584,6 +327,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ee3c5c",
       parentId: "1_1_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_1_4",
@@ -591,6 +335,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f89c1c",
       parentId: "1_1_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_1_5",
@@ -598,6 +343,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#9ec536",
       parentId: "1_1_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_1_6",
@@ -605,6 +351,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#69c071",
       parentId: "1_1_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_1_7",
@@ -612,6 +359,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f28051",
       parentId: "1_1_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_1_8",
@@ -619,6 +367,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#b2a91e",
       parentId: "1_1_1",
       numbers: 1,
+      hasChild: false,
     },
     // Berry
     {
@@ -627,6 +376,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#090819",
       parentId: "1_1_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_2_2",
@@ -634,6 +384,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e32885",
       parentId: "1_1_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_2_3",
@@ -641,6 +392,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#6569ab",
       parentId: "1_1_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_2_4",
@@ -648,6 +400,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ee273b",
       parentId: "1_1_2",
       numbers: 1,
+      hasChild: false,
     },
     // CITRUS FRUIT
     {
@@ -656,6 +409,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f05961",
       parentId: "1_1_3",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_3_2",
@@ -663,6 +417,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f47921",
       parentId: "1_1_3",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_3_3",
@@ -670,6 +425,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f4d903",
       parentId: "1_1_3",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_3_4",
@@ -677,6 +433,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#8fc254",
       parentId: "1_1_3",
       numbers: 1,
+      hasChild: false,
     },
     // DRIED FRUIT
     {
@@ -685,6 +442,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#9e1d78",
       parentId: "1_1_4",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_1_4_2",
@@ -692,6 +450,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#84548e",
       parentId: "1_1_4",
       numbers: 1,
+      hasChild: false,
     },
     // SOUR
     {
@@ -700,6 +459,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#bfbc1f",
       parentId: "1_2_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_2_1_2",
@@ -707,6 +467,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#9fc58a",
       parentId: "1_2_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_2_1_3",
@@ -714,6 +475,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#d6c40b",
       parentId: "1_2_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_2_1_4",
@@ -721,6 +483,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#71c059",
       parentId: "1_2_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_2_1_5",
@@ -728,6 +491,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e3d511",
       parentId: "1_2_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_2_1_6",
@@ -735,6 +499,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#b2c327",
       parentId: "1_2_1",
       numbers: 1,
+      hasChild: false,
     },
     //ALCOHOL/FERMENTED
     {
@@ -743,6 +508,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#a50a70",
       parentId: "1_2_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_2_2_2",
@@ -750,6 +516,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#b03a53",
       parentId: "1_2_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_2_2_3",
@@ -757,6 +524,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#d2a808",
       parentId: "1_2_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_2_2_4",
@@ -764,6 +532,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#7d6f29",
       parentId: "1_2_2",
       numbers: 1,
+      hasChild: false,
     },
     // GREEN/VEGETATIVE
     {
@@ -772,6 +541,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#a9c946",
       parentId: "1_3_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_3_1_2",
@@ -779,6 +549,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#47b44a",
       parentId: "1_3_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_3_1_3",
@@ -786,6 +557,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#01ab6f",
       parentId: "1_3_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_3_1_4",
@@ -793,6 +565,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#00603d",
       parentId: "1_3_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_3_1_5",
@@ -800,6 +573,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#1eb26a",
       parentId: "1_3_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_3_1_6",
@@ -807,6 +581,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#9fa021",
       parentId: "1_3_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_3_1_7",
@@ -814,10 +589,32 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#78c258",
       parentId: "1_3_1",
       numbers: 1,
+      hasChild: false,
     },
-    { id: "1_3_2_1", label: "", color: "", parentId: "1_3_2", numbers: 1 },
-    { id: "1_3_3_1", label: "", color: "", parentId: "1_3_3", numbers: 1 },
-    { id: "1_3_4_1", label: "", color: "", parentId: "1_3_4", numbers: 1 },
+    {
+      id: "1_3_2_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_3_2",
+      numbers: 1,
+      hasChild: false,
+    },
+    {
+      id: "1_3_3_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_3_3",
+      numbers: 1,
+      hasChild: false,
+    },
+    {
+      id: "1_3_4_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_3_4",
+      numbers: 1,
+      hasChild: false,
+    },
     // PAPERY/MUSTY
     {
       id: "1_4_1_1",
@@ -825,6 +622,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#657c6a",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_2",
@@ -832,6 +630,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#d9c245",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_3",
@@ -839,6 +638,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ffffff",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_4",
@@ -846,6 +646,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#725d26",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_5",
@@ -853,6 +654,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#a1ac74",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_6",
@@ -860,6 +662,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#caa669",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_7",
@@ -867,6 +670,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#948546",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_8",
@@ -874,6 +678,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#9ea176",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_9",
@@ -881,6 +686,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#cb8079",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_1_10",
@@ -888,6 +694,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e87d87",
       parentId: "1_4_1",
       numbers: 1,
+      hasChild: false,
     },
     // CHEMICAL
     {
@@ -896,6 +703,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#6ec8be",
       parentId: "1_4_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_2_2",
@@ -903,6 +711,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f6fbfe",
       parentId: "1_4_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_2_3",
@@ -910,6 +719,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#6bacc4",
       parentId: "1_4_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_2_4",
@@ -917,6 +727,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#00a9bf",
       parentId: "1_4_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_2_5",
@@ -924,6 +735,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#5d8295",
       parentId: "1_4_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_4_2_6",
@@ -931,6 +743,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#001531",
       parentId: "1_4_2",
       numbers: 1,
+      hasChild: false,
     },
     //BURNT
     {
@@ -939,6 +752,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#afa067",
       parentId: "1_5_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_5_1_2",
@@ -946,6 +760,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#92a892",
       parentId: "1_5_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_5_1_3",
@@ -953,6 +768,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#a87e33",
       parentId: "1_5_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_5_1_4",
@@ -960,6 +776,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#835621",
       parentId: "1_5_1",
       numbers: 1,
+      hasChild: false,
     },
     // CEREAL
     {
@@ -968,6 +785,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#cea488",
       parentId: "1_5_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_5_2_2",
@@ -975,10 +793,25 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#ea9a64",
       parentId: "1_5_2",
       numbers: 1,
+      hasChild: false,
     },
     //
-    { id: "1_5_3_1", label: "", color: "", parentId: "1_5_3", numbers: 1 },
-    { id: "1_5_4_1", label: "", color: "", parentId: "1_5_4", numbers: 1 },
+    {
+      id: "1_5_3_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_5_3",
+      numbers: 1,
+      hasChild: false,
+    },
+    {
+      id: "1_5_4_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_5_4",
+      numbers: 1,
+      hasChild: false,
+    },
     // BROWN SPICE
     {
       id: "1_6_1_1",
@@ -986,6 +819,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#c89e18",
       parentId: "1_6_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_6_1_2",
@@ -993,6 +827,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#a51518",
       parentId: "1_6_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_6_1_3",
@@ -1000,6 +835,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e6912f",
       parentId: "1_6_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_6_1_4",
@@ -1007,10 +843,25 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#b5786d",
       parentId: "1_6_1",
       numbers: 1,
+      hasChild: false,
     },
     //
-    { id: "1_6_2_1", label: "", color: "", parentId: "1_6_2", numbers: 1 },
-    { id: "1_6_3_1", label: "", color: "", parentId: "1_6_3", numbers: 1 },
+    {
+      id: "1_6_2_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_6_2",
+      numbers: 1,
+      hasChild: false,
+    },
+    {
+      id: "1_6_3_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_6_3",
+      numbers: 1,
+      hasChild: false,
+    },
     // NUTTY
     {
       id: "1_7_1_1",
@@ -1018,13 +869,15 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e3b409",
       parentId: "1_7_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_7_1_2",
-      label: "HAZENUT",
+      label: "HAZELNUT",
       color: "#935e20",
       parentId: "1_7_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_7_1_3",
@@ -1032,6 +885,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#d8a89b",
       parentId: "1_7_1",
       numbers: 1,
+      hasChild: false,
     },
     // COCOA
     {
@@ -1040,6 +894,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#6b2720",
       parentId: "1_7_2",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_7_2_2",
@@ -1047,6 +902,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#49261d",
       parentId: "1_7_2",
       numbers: 1,
+      hasChild: false,
     },
     //BROWN SUGAR
     {
@@ -1055,6 +911,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#230007",
       parentId: "1_8_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_8_1_2",
@@ -1062,6 +919,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#d75d24",
       parentId: "1_8_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_8_1_3",
@@ -1069,6 +927,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e1a126",
       parentId: "1_8_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_8_1_4",
@@ -1076,12 +935,41 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#f47d2a",
       parentId: "1_8_1",
       numbers: 1,
+      hasChild: false,
     },
     //
-    { id: "1_8_2_1", label: "", color: "", parentId: "1_8_2", numbers: 1 },
-    { id: "1_8_3_1", label: "", color: "", parentId: "1_8_3", numbers: 1 },
-    { id: "1_8_4_1", label: "", color: "", parentId: "1_8_4", numbers: 1 },
-    { id: "1_8_5_1", label: "", color: "", parentId: "1_8_5", numbers: 1 },
+    {
+      id: "1_8_2_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_8_2",
+      numbers: 1,
+      hasChild: false,
+    },
+    {
+      id: "1_8_3_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_8_3",
+      numbers: 1,
+      hasChild: false,
+    },
+    {
+      id: "1_8_4_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_8_4",
+      numbers: 1,
+      hasChild: false,
+    },
+    {
+      id: "1_8_5_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_8_5",
+      numbers: 1,
+      hasChild: false,
+    },
     // FLORAL
     {
       id: "1_9_1_1",
@@ -1089,6 +977,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#fbaf25",
       parentId: "1_9_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_9_1_2",
@@ -1096,6 +985,7 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#e472a6",
       parentId: "1_9_1",
       numbers: 1,
+      hasChild: false,
     },
     {
       id: "1_9_1_3",
@@ -1103,8 +993,16 @@ export var thirdCircle: { numbers: number; data: FlavorItem[] } = {
       color: "#fffde9",
       parentId: "1_9_1",
       numbers: 1,
+      hasChild: false,
     },
     //
-    { id: "1_9_2_1", label: "", color: "", parentId: "1_9_2", numbers: 1 },
+    {
+      id: "1_9_2_1",
+      label: "EMPTY",
+      color: "",
+      parentId: "1_9_2",
+      numbers: 1,
+      hasChild: false,
+    },
   ],
 };

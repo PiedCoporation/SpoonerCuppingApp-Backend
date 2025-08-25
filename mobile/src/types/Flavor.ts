@@ -4,4 +4,5 @@ export interface FlavorItem {
   color: string;
   numbers: number;
   parentId?: string;
+  hasChild: boolean;
 }
