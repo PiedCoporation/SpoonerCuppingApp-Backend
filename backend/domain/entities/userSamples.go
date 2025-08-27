@@ -2,7 +2,7 @@ package entities
 
 import (
 	"backend/constants/enum/processing"
-	"backend/constants/enum/roastingmeture"
+	"backend/constants/enum/roastingLever"
 	"backend/domain/commons"
 	"time"
 
@@ -11,17 +11,17 @@ import (
 
 type UserSample struct {
 	commons.Entity
-	Name            string                            `gorm:"not null"`
-	RoastingDate    time.Time                         `gorm:"not null"`
-	RoastLevel      roastingmeture.RoastingMetureEnum `gorm:"not null"`
-	AltitudeGrow    string                            `gorm:"not null"`
-	RoasteryName    string                            `gorm:"not null"`
-	RoasteryAddress string                            `gorm:"not null"`
-	BreedName       string                            `gorm:"not null"`
-	PreProcessing   processing.ProcessingEnum         `gorm:"not null"`
-	GrowNation      string                            `gorm:"not null"`
-	GrowAddress     string                            `gorm:"not null"`
-	Price           float64                           `gorm:"not null"`
+	Name            string                          `gorm:"not null"`
+	RoastingDate    time.Time                       `gorm:"not null"`
+	RoastLevel      roastingLever.RoastingLeverEnum `gorm:"not null"`
+	AltitudeGrow    string                          `gorm:"not null"`
+	RoasteryName    string                          `gorm:"not null"`
+	RoasteryAddress string                          `gorm:"not null"`
+	BreedName       string                          `gorm:"not null"`
+	PreProcessing   processing.ProcessingEnum       `gorm:"not null"`
+	GrowNation      string                          `gorm:"not null"`
+	GrowAddress     string                          `gorm:"not null"`
+	Price           float64                         `gorm:"not null"`
 	commons.Auditable
 
 	UserID uuid.UUID `gorm:"not null;index"`
