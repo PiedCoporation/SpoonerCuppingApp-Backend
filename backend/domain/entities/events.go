@@ -23,8 +23,11 @@ type Event struct {
 	IsPublic      bool      `gorm:"not null"`
 	commons.Auditable
 
-	UserID uuid.UUID `gorm:"not null;index"`
-	HostBy User      `gorm:"foreignKey:UserID"`
+	UserID         uuid.UUID    `gorm:"not null;index"`
+	HostBy         User         `gorm:"foreignKey:UserID"`
+	EventAddressID uuid.UUID    `gorm:"not null;index"`
+	EventAddress   EventAddress `gorm:"foreignKey:EventAddressID"`
 
-	EventUsers []EventUser `gorm:"foreignKey:EventID"`
+	EventUsers   []EventUser   `gorm:"foreignKey:EventID"`
+	EventSamples []EventSample `gorm:"foreignKey:EventID"`
 }
