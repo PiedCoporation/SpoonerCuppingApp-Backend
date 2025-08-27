@@ -228,6 +228,9 @@ function calculateRotationForSpecificGrandchild(
 }
 
 const { width: screenWidth } = Dimensions.get("window");
+// screenWidth là độ rộng thiết bị
+// scale xuống 0.8 later
+// Apply mù của mù
 const radius = screenWidth * 1.6;
 const center = radius / 2;
 const data = firstCircle.data;
@@ -520,7 +523,7 @@ export default function CuppingRegistrationOverview() {
                 Animated.timing(rotation2, {
                   toValue: targetRotation2,
                   duration: 800,
-                  useNativeDriver: false,
+                  useNativeDriver: true,
                   easing: Easing.out(Easing.quad),
                 }).start();
 
@@ -544,7 +547,7 @@ export default function CuppingRegistrationOverview() {
                     Animated.timing(rotation, {
                       toValue: targetRotation,
                       duration: 800,
-                      useNativeDriver: false,
+                      useNativeDriver: true,
                       easing: Easing.out(Easing.quad),
                     }).start();
 
@@ -610,7 +613,7 @@ export default function CuppingRegistrationOverview() {
                 Animated.timing(rotation, {
                   toValue: targetRotation,
                   duration: 800,
-                  useNativeDriver: false,
+                  useNativeDriver: true,
                   easing: Easing.out(Easing.quad),
                 }).start();
 
@@ -678,7 +681,7 @@ export default function CuppingRegistrationOverview() {
                   Animated.timing(rotation3, {
                     toValue: targetRotation3,
                     duration: 800,
-                    useNativeDriver: false,
+                    useNativeDriver: true,
                     easing: Easing.out(Easing.quad),
                   }).start();
 
@@ -744,7 +747,7 @@ export default function CuppingRegistrationOverview() {
                   Animated.timing(rotation2, {
                     toValue: targetRotation2,
                     duration: 800,
-                    useNativeDriver: false,
+                    useNativeDriver: true,
                     easing: Easing.out(Easing.quad),
                   }).start();
 
@@ -768,7 +771,7 @@ export default function CuppingRegistrationOverview() {
                     Animated.timing(rotation3, {
                       toValue: targetRotation3,
                       duration: 800,
-                      useNativeDriver: false,
+                      useNativeDriver: true,
                       easing: Easing.out(Easing.quad),
                     }).start();
 
@@ -948,6 +951,17 @@ export default function CuppingRegistrationOverview() {
       return arc;
     });
   }, [data2, total2, selectedParent, selectedChild]);
+
+  useEffect(() => {
+    return () => {
+      if (blindItemTimeoutRef.current) {
+        clearTimeout(blindItemTimeoutRef.current);
+      }
+      if (blindItemTimeoutRef3.current) {
+        clearTimeout(blindItemTimeoutRef3.current);
+      }
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
