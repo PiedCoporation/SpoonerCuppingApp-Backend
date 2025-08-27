@@ -2,6 +2,8 @@ package entities
 
 import (
 	"backend/domain/commons"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -14,6 +16,10 @@ type User struct {
 	IsVerified bool   `gorm:"default:false"`
 	commons.Auditable
 
-	Events     []Event     `gorm:"foreignKey:UserID"`
-	EventUsers []EventUser `gorm:"foreignKey:UserID"`
+	RoleID uuid.UUID `gorm:"not null;index"`
+	Role   Role      `gorm:"foreignKey:RoleID"`
+
+	Events      []Event      `gorm:"foreignKey:UserID"`
+	EventUsers  []EventUser  `gorm:"foreignKey:UserID"`
+	UserSamples []UserSample `gorm:"foreignKey:UserID"`
 }

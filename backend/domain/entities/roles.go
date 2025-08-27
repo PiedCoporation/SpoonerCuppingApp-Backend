@@ -10,5 +10,6 @@ type Role struct {
 	Description string `gorm:"null"`
 	commons.Auditable
 
+	Users          []User           `gorm:"foreignKey:RoleID"`
 	RolePermission []RolePermission `gorm:"foreignKey:RoleID"`
 }
