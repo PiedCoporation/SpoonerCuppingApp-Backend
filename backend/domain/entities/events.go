@@ -1,14 +1,14 @@
 package entities
 
 import (
-	`backend/domain/abstractions`
-	`time`
+	"backend/domain/commons"
+	"time"
 
-	`github.com/google/uuid`
+	"github.com/google/uuid"
 )
 
 type Event struct {
-	abstractions.Entity
+	commons.Entity
 	Name          string    `gorm:"not null"`
 	DateOfEvent   time.Time `gorm:"not null"`
 	StartTime     time.Time `gorm:"not null"`
@@ -21,7 +21,7 @@ type Event struct {
 	InviteUrl     string    `gorm:"null"`
 	QRImageUrl    string    `gorm:"null"`
 	IsPublic      bool      `gorm:"not null"`
-	abstractions.Auditable
+	commons.Auditable
 
 	UserID uuid.UUID `gorm:"not null;index"`
 	HostBy User      `gorm:"foreignKey:UserID"`

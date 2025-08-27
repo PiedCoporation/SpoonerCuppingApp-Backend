@@ -1,14 +1,14 @@
 package entities
 
 import (
-	"backend/domain/abstractions"
+	"backend/domain/commons"
 )
 
 type Role struct {
-	abstractions.Entity
+	commons.Entity
 	Name        string `gorm:"uniqueIndex;not null"`
 	Description string `gorm:"null"`
-	abstractions.Auditable
+	commons.Auditable
 
 	RolePermission []RolePermission `gorm:"foreignKey:RoleID"`
 }

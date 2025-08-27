@@ -1,14 +1,14 @@
 package entities
 
 import (
-	"backend/domain/abstractions"
+	"backend/domain/commons"
 
 	"github.com/google/uuid"
 )
 
 type RolePermission struct {
-	abstractions.Entity
-	abstractions.Auditable
+	commons.Entity
+	commons.Auditable
 
 	PermissionID uuid.UUID  `gorm:"not null;index"`
 	Permission   Permission `gorm:"foreignKey:PermissionID"`

@@ -1,16 +1,16 @@
 package entities
 
 import (
-	"backend/domain/abstractions"
+	"backend/domain/commons"
 
 	"github.com/google/uuid"
 )
 
 type EventUser struct {
-	abstractions.Entity
+	commons.Entity
 	IsAccepted bool `gorm:"not null"`
 	IsInvited  bool `gorm:"not null"`
-	abstractions.Auditable
+	commons.Auditable
 
 	UserID  uuid.UUID `gorm:"not null;index"`
 	User    User      `gorm:"foreignKey:UserID"`
