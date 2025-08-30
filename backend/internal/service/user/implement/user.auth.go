@@ -4,6 +4,7 @@ import (
 	"backend/config"
 	"backend/internal/constants/enum/jwtpurpose"
 	"backend/internal/constants/errorcode"
+	"backend/internal/constants/rolecache"
 	"backend/internal/domain/commons"
 	"backend/internal/domain/entities"
 	"backend/internal/repository"
@@ -68,6 +69,12 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		return err
 	}
 
+	// get user role id
+	defaultRole, ok := rolecache.Get("user")
+	if !ok {
+		return errorcode.ErrUnexpectedCreatingUser
+	}
+
 	// create user
 	now := time.Now()
 	user := &entities.User{
@@ -78,7 +85,7 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		Phone:      vo.Phone,
 		IsVerified: false,
 		Auditable:  commons.Auditable{CreatedAt: now, UpdatedAt: now},
-		RoleID:     uuid.Nil, // will get user role uuid from role repo
+		RoleID:     defaultRole.ID,
 	}
 
 	// insert user into db
@@ -98,8 +105,9 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 
 	// send verify email to activate account
 	if err := sendto.SendTemplateEmailOtp(&us.config.SMTP, []string{vo.Email},
-		"register-verify.html", map[string]any{"verify-link": verifyLink},
+		"register-verify.html", map[string]any{"verifyLink": verifyLink},
 	); err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -131,7 +139,7 @@ func (us *userAuthService) ResendEmailVerifyRegister(ctx context.Context, email 
 
 	// send verify email to activate account
 	if err := sendto.SendTemplateEmailOtp(&us.config.SMTP, []string{email},
-		"register-verify.html", map[string]any{"verify-link": verifyLink},
+		"register-verify.html", map[string]any{"verifyLink": verifyLink},
 	); err != nil {
 		return err
 	}
@@ -196,7 +204,7 @@ func (us *userAuthService) Login(ctx context.Context, email string) error {
 
 	// send verify link to login
 	if err := sendto.SendTemplateEmailOtp(&us.config.SMTP, []string{email},
-		"login-verify.html", map[string]any{"verify-link": verifyLink},
+		"login-verify.html", map[string]any{"verifyLink": verifyLink},
 	); err != nil {
 		return err
 	}

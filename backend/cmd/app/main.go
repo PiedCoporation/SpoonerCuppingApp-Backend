@@ -2,16 +2,15 @@ package main
 
 import (
 	"backend/config"
-	"fmt"
+	"backend/internal/app"
 	"log"
 )
 
 func main() {
-	config, err := config.NewConfig()
+	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// test load config
-	fmt.Println(config)
+	app.Run(cfg)
 }

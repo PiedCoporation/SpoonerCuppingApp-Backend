@@ -1,0 +1,49 @@
+package initialization
+
+import (
+	"backend/config"
+	"backend/pkg/logger"
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
+
+	"go.uber.org/zap"
+)
+
+func NewServer(httpCfg *config.HTTP, handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:         ":" + strconv.Itoa(httpCfg.Port),
+		Handler:      handler,
+		ReadTimeout:  httpCfg.ReadTimeout,
+		WriteTimeout: httpCfg.WriteTimeout,
+		IdleTimeout:  httpCfg.IdleTimeout,
+	}
+}
+
+func RunServer(server *http.Server, httpCfg *config.HTTP, logger logger.Interface) {
+	go func() {
+		fmt.Println("Listening and serving HTTP on", server.Addr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Fatal("Error ListenAndServe():", zap.Error(err))
+		}
+	}()
+
+	//  kill, Ctrl + C
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	fmt.Println("Shutting down server...")
+
+	// context to grateful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), httpCfg.ShutdownTimeout)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		logger.Fatal("Server forced to shutdown:", zap.Error(err))
+	}
+
+	fmt.Println("Server exited properly")
+}

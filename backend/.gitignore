@@ -37,3 +37,6 @@ go.work.sum
 
 # Air/TOML temp
 .air.toml
+
+# wire
+/internal/wire/**/wire_gen.go

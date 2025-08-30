@@ -130,7 +130,7 @@ func (uc *UserAuthController) VerifyLogin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "login success",
 		"data": gin.H{
 			"access_token":  accessToken,

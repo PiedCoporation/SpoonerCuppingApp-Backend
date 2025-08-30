@@ -11,7 +11,7 @@ import (
 )
 
 type UserServiceSet struct {
-	authService userService.UserAuthService
+	UserAuthService userService.UserAuthService
 }
 
 func NewUserRouter(
@@ -20,20 +20,23 @@ func NewUserRouter(
 	serviceSet *UserServiceSet,
 ) {
 	// New controller
-	uAuthCtrl := controller.NewUserAuthController(serviceSet.authService)
+	uAuthCtrl := controller.NewUserAuthController(serviceSet.UserAuthService)
 
 	// ====== Main user group ======
-	userGroup := router.Group("/user")
+	userGroup := router.Group("/users")
 
 	// ====== Public group ======
+	publicGroup := userGroup.Group("")
+	{
+		publicGroup.POST("/refresh-token", uAuthCtrl.RefreshToken)
+	}
 
 	// Register
-	publicGroup := userGroup.Group("")
 	registerGroup := publicGroup.Group("/register")
 	{
 		registerGroup.POST("/", uAuthCtrl.Register)
 		registerGroup.POST("/resend-email", uAuthCtrl.ResendEmailVerifyRegister)
-		registerGroup.POST("/verify",
+		registerGroup.GET("/verify",
 			middleware.AuthQuery([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
 			uAuthCtrl.VerifyRegister,
 		)
@@ -43,7 +46,7 @@ func NewUserRouter(
 	loginGroup := publicGroup.Group("/login")
 	{
 		loginGroup.POST("/", uAuthCtrl.Login)
-		loginGroup.POST("/verify",
+		loginGroup.GET("/verify",
 			middleware.AuthQuery([]byte(cfg.JWT.LoginTokenKey), jwtpurpose.Login),
 			uAuthCtrl.VerifyLogin,
 		)
@@ -56,6 +59,5 @@ func NewUserRouter(
 	// controller
 	{
 		privateGroup.POST("/logout", uAuthCtrl.Logout)
-		privateGroup.POST("/refresh-token", uAuthCtrl.RefreshToken)
 	}
 }
