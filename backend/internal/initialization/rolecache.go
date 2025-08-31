@@ -1,7 +1,7 @@
 package initialization
 
 import (
-	"backend/internal/constants/rolecache"
+	"backend/internal/cache/rolecache"
 	"backend/internal/service/role"
 	"backend/pkg/logger"
 	"context"

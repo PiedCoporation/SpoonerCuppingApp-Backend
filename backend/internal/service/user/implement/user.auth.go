@@ -2,9 +2,10 @@ package implement
 
 import (
 	"backend/config"
+	"backend/internal/cache/rolecache"
 	"backend/internal/constants/enum/jwtpurpose"
+	"backend/internal/constants/enum/rolename"
 	"backend/internal/constants/errorcode"
-	"backend/internal/constants/rolecache"
 	"backend/internal/domain/commons"
 	"backend/internal/domain/entities"
 	"backend/internal/repository"
@@ -70,7 +71,7 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 	}
 
 	// get user role id
-	defaultRole, ok := rolecache.Get("user")
+	defaultRole, ok := rolecache.Get(string(rolename.User))
 	if !ok {
 		return errorcode.ErrUnexpectedCreatingUser
 	}
