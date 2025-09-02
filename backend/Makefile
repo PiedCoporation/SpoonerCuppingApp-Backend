@@ -3,7 +3,7 @@ export
 
 BINARY_NAME=main
 MIGRATIONS_PATH=./migrations
-WIRE_PATH=./internal/wire
+WIRE_PATH=./internal/infrastructure/wire
 
 .PHONY: build
 build:

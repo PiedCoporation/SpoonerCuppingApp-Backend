@@ -4,9 +4,9 @@ import (
 	"backend/config"
 	"backend/internal/controller/http"
 	"backend/internal/controller/http/v1/router"
+	roleWire "backend/internal/infrastructure/wire/role"
+	userWire "backend/internal/infrastructure/wire/user"
 	"backend/internal/initialization"
-	roleWire "backend/internal/wire/role"
-	userWire "backend/internal/wire/user"
 	"backend/pkg/logger"
 )
 

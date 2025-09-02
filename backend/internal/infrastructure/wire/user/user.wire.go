@@ -4,9 +4,9 @@ package user
 
 import (
 	"backend/config"
-	"backend/internal/repository/postgres"
-	userInterface "backend/internal/service/user"
-	userImpl "backend/internal/service/user/implement"
+	"backend/internal/infrastructure/repository/postgres"
+	userInterface "backend/internal/usecase/user"
+	userImpl "backend/internal/usecase/user/implement"
 
 	"github.com/google/wire"
 	"gorm.io/gorm"

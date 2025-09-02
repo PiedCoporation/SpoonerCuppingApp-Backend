@@ -2,14 +2,14 @@ package implement
 
 import (
 	"backend/config"
-	"backend/internal/cache/rolecache"
 	"backend/internal/constants/enum/jwtpurpose"
 	"backend/internal/constants/enum/rolename"
 	"backend/internal/constants/errorcode"
 	"backend/internal/domain/commons"
 	"backend/internal/domain/entities"
-	"backend/internal/repository"
-	"backend/internal/service/user"
+	"backend/internal/infrastructure/cache/rolecache"
+	"backend/internal/usecase/repository"
+	"backend/internal/usecase/user"
 	"backend/pkg/utils/jwt"
 	"backend/pkg/utils/sendto"
 	"context"

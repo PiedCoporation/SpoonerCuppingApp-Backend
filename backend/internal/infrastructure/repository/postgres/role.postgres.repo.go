@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"backend/internal/domain/entities"
-	"backend/internal/repository"
+	"backend/internal/usecase/repository"
 	"context"
 
 	"gorm.io/gorm"

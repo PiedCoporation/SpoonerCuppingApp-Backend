@@ -3,7 +3,7 @@ package user
 import (
 	"backend/internal/constants/errorcode"
 	"backend/internal/controller/http/v1/request"
-	"backend/internal/service/user"
+	"backend/internal/usecase/user"
 	"backend/pkg/utils/validation"
 	"net/http"
 

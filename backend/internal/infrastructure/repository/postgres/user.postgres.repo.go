@@ -3,7 +3,7 @@ package postgres
 import (
 	"backend/internal/constants/errorcode"
 	"backend/internal/domain/entities"
-	"backend/internal/repository"
+	"backend/internal/usecase/repository"
 	"context"
 	"errors"
 

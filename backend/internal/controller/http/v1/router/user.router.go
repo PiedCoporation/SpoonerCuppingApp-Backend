@@ -5,7 +5,7 @@ import (
 	"backend/internal/constants/enum/jwtpurpose"
 	"backend/internal/controller/http/middleware"
 	controller "backend/internal/controller/http/v1/controller/user"
-	userService "backend/internal/service/user"
+	userService "backend/internal/usecase/user"
 
 	"github.com/gin-gonic/gin"
 )

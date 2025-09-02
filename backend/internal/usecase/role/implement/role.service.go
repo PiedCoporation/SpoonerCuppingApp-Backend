@@ -2,8 +2,8 @@ package implement
 
 import (
 	"backend/internal/domain/entities"
-	"backend/internal/repository"
-	"backend/internal/service/role"
+	"backend/internal/usecase/repository"
+	"backend/internal/usecase/role"
 	"context"
 )
 
