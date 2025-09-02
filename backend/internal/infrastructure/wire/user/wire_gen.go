@@ -9,16 +9,18 @@ package user
 import (
 	"backend/config"
 	"backend/internal/infrastructure/repository/postgres"
+	"backend/internal/infrastructure/uow"
 	"backend/internal/usecase/user"
 	"backend/internal/usecase/user/implement"
 	"gorm.io/gorm"
 )
 
-// Injectors from user.wire.go:
+// Injectors from user_wire.go:
 
 func NewUserAuthService(cfg *config.Config, db *gorm.DB) user.UserAuthService {
+	userAuthUow := uow.NewUserAuthUow(db)
 	userRepository := postgres.NewUserRepo(db)
 	refreshTokenRepository := postgres.NewRefreshTokenRepo(db)
-	userAuthService := implement.NewUserAuthService(cfg, userRepository, refreshTokenRepository)
+	userAuthService := implement.NewUserAuthService(cfg, userAuthUow, userRepository, refreshTokenRepository)
 	return userAuthService
 }

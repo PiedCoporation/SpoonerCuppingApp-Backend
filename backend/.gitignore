@@ -39,4 +39,4 @@ go.work.sum
 .air.toml
 
 # wire
-/internal/wire/**/wire_gen.go
+/internal/infrastructure/wire/**/wire_gen.go

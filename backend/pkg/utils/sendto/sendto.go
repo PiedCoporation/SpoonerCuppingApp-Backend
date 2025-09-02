@@ -43,7 +43,7 @@ func buildMessage(mail Mail) string {
 
 func getMailTemplate(nameTemplate string, dataTemplate map[string]any) (string, error) {
 	htmlTemplate := new(bytes.Buffer)
-	t := template.Must(template.New(nameTemplate).ParseFiles("templates-email/" + nameTemplate))
+	t := template.Must(template.New(nameTemplate).ParseFiles("templates/email/" + nameTemplate))
 	err := t.Execute(htmlTemplate, dataTemplate)
 	if err != nil {
 		return "", err

@@ -9,6 +9,7 @@ import (
 	"backend/internal/domain/entities"
 	"backend/internal/infrastructure/cache/rolecache"
 	"backend/internal/usecase/repository"
+	"backend/internal/usecase/uow"
 	"backend/internal/usecase/user"
 	"backend/pkg/utils/jwt"
 	"backend/pkg/utils/sendto"
@@ -22,17 +23,20 @@ import (
 
 type userAuthService struct {
 	config   *config.Config
+	uow      uow.UserAuthUow
 	userRepo repository.UserRepository
 	rtRepo   repository.RefreshTokenRepository
 }
 
 func NewUserAuthService(
 	config *config.Config,
+	uow uow.UserAuthUow,
 	userRepo repository.UserRepository,
 	rtRepo repository.RefreshTokenRepository,
 ) user.UserAuthService {
 	return &userAuthService{
 		config:   config,
+		uow:      uow,
 		userRepo: userRepo,
 		rtRepo:   rtRepo,
 	}
@@ -161,8 +165,15 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 		return "", "", errorcode.ErrAccountIsVerified
 	}
 
+	// begin transaction
+	rp, err := us.uow.Begin(ctx)
+	if err != nil {
+		return "", "", err
+	}
+
 	// exec in db
-	if err := us.userRepo.UpdateEmailVerified(ctx, user.ID, true); err != nil {
+	if err := rp.UserRepository().UpdateEmailVerified(ctx, user.ID, true); err != nil {
+		us.uow.Rollback()
 		return "", "", err
 	}
 
@@ -173,7 +184,15 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	}
 
 	// insert rt to db
-	if err := us.insertRefreshToken(ctx, userID, refreshToken); err != nil {
+	if err := insertRefreshToken(ctx, userID,
+		rp.RefreshTokenRepository(),
+		refreshToken, []byte(us.config.JWT.RefreshTokenKey)); err != nil {
+		us.uow.Rollback()
+		return "", "", err
+	}
+
+	// commit transaction
+	if err := us.uow.Commit(); err != nil {
 		return "", "", err
 	}
 
@@ -232,7 +251,8 @@ func (us *userAuthService) VerifyLogin(ctx context.Context, userID uuid.UUID) (s
 		return "", "", err
 	}
 
-	if err := us.insertRefreshToken(ctx, userID, refreshToken); err != nil {
+	if err := insertRefreshToken(ctx, userID,
+		us.rtRepo, refreshToken, []byte(us.config.JWT.RefreshTokenKey)); err != nil {
 		return "", "", err
 	}
 
@@ -291,7 +311,8 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 		return "", "", err
 	}
 
-	if err := us.insertRefreshToken(ctx, userID, newRefreshToken); err != nil {
+	if err := insertRefreshToken(ctx, userID,
+		us.rtRepo, refreshToken, []byte(us.config.JWT.RefreshTokenKey)); err != nil {
 		return "", "", err
 	}
 
@@ -306,8 +327,12 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 // helper
 
 // insertRefreshToken
-func (us *userAuthService) insertRefreshToken(ctx context.Context, userID uuid.UUID, refreshToken string) error {
-	claims, err := jwt.ValidateToken([]byte(us.config.JWT.RefreshTokenKey),
+func insertRefreshToken(
+	ctx context.Context, userID uuid.UUID,
+	rtRepo repository.RefreshTokenRepository,
+	refreshToken string, rtSecret []byte,
+) error {
+	claims, err := jwt.ValidateToken(rtSecret,
 		refreshToken, jwtpurpose.Refresh)
 	if err != nil {
 		return err
@@ -324,7 +349,7 @@ func (us *userAuthService) insertRefreshToken(ctx context.Context, userID uuid.U
 		UserID:    userID,
 	}
 
-	if err := us.rtRepo.Create(ctx, rt); err != nil {
+	if err := rtRepo.Create(ctx, rt); err != nil {
 		return err
 	}
 	return nil

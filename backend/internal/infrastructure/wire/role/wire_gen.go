@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Injectors from role.wire.go:
+// Injectors from role_wire.go:
 
 func NewRoleService(db *gorm.DB) role.RoleService {
 	roleRepository := postgres.NewRoleRepo(db)
