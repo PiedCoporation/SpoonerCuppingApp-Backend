@@ -23,12 +23,3 @@ func (rs *roleService) GetAll(ctx context.Context) ([]entities.Role, error) {
 	}
 	return roles, nil
 }
-
-// GetByName implements role.RoleService.
-func (rs *roleService) GetByName(ctx context.Context, roleName string) (*entities.Role, error) {
-	role, err := rs.roleRepo.GetByName(ctx, roleName)
-	if err != nil {
-		return nil, err
-	}
-	return role, nil
-}

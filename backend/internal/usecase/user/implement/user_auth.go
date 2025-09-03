@@ -169,7 +169,9 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	}
 
 	// exec in db
-	if err := rp.UserRepository().UpdateEmailVerified(ctx, user.ID, true); err != nil {
+	if err := rp.UserRepository().Update(ctx, userID, map[string]any{
+		"is_verified": true,
+	}); err != nil {
 		us.uow.Rollback()
 		return "", "", err
 	}
@@ -208,6 +210,10 @@ func (us *userAuthService) Login(ctx context.Context, email string) error {
 	if !user.IsVerified {
 		return errorcode.ErrAccountIsNotVerified
 	}
+	// check if user is deleted or not
+	if user.IsDeleted {
+		return errorcode.ErrAccountIsDeleted
+	}
 
 	// gene login verify jwt
 	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.LoginTokenKey),
@@ -241,6 +247,10 @@ func (us *userAuthService) VerifyLogin(ctx context.Context, userID uuid.UUID) (s
 	if !user.IsVerified {
 		return "", "", errorcode.ErrAccountIsNotVerified
 	}
+	// re-check if user is deleted or not
+	if user.IsDeleted {
+		return "", "", errorcode.ErrAccountIsDeleted
+	}
 
 	// gene ac and rt
 	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(user.ID)
@@ -271,12 +281,15 @@ func (us *userAuthService) Logout(ctx context.Context, userID uuid.UUID, refresh
 	}
 
 	// check if revoked or not
-	if _, err := us.rtRepo.GetByTokenAndUserID(ctx, refreshToken, userID); err != nil {
+	rt, err := us.rtRepo.GetByTokenAndUserID(ctx, refreshToken, userID)
+	if err != nil {
 		return errorcode.ErrInvalidToken
 	}
 
 	// revoke
-	if err = us.rtRepo.Revoke(ctx, refreshToken); err != nil {
+	if err = us.rtRepo.Update(ctx, rt.ID, map[string]any{
+		"revoked": true,
+	}); err != nil {
 		return err
 	}
 
@@ -298,7 +311,8 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 		return "", "", errorcode.ErrInvalidToken
 	}
 
-	if _, err := us.rtRepo.GetByTokenAndUserID(ctx, refreshToken, userID); err != nil {
+	oldRefreshToken, err := us.rtRepo.GetByTokenAndUserID(ctx, refreshToken, userID)
+	if err != nil {
 		return "", "", errorcode.ErrInvalidToken
 	}
 
@@ -308,13 +322,29 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 		return "", "", err
 	}
 
+	// begin transaction
+	rp, err := us.uow.Begin(ctx)
+	if err != nil {
+		return "", "", err
+	}
+
+	// insert new rt to db
 	if err := insertRefreshToken(ctx, userID,
-		us.rtRepo, refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
+		rp.RefreshTokenRepository(), newRefreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
+		us.uow.Rollback()
 		return "", "", err
 	}
 
 	// revoke old rt
-	if err := us.rtRepo.Revoke(ctx, refreshToken); err != nil {
+	if err := rp.RefreshTokenRepository().Update(ctx, oldRefreshToken.ID, map[string]any{
+		"revoked": true,
+	}); err != nil {
+		us.uow.Rollback()
+		return "", "", err
+	}
+
+	// commit
+	if err := us.uow.Commit(); err != nil {
 		return "", "", err
 	}
 

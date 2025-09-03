@@ -9,21 +9,20 @@ import (
 
 var (
 	// 400
-	ErrEmailExists          = errors.New("this email already exists")
-	ErrPhoneExists          = errors.New("this phone number already exists")
-	ErrAccountIsVerified    = errors.New("this account is already verified")
-	ErrAccountIsNotVerified = errors.New("this account is not verified")
+	ErrEmailExists       = errors.New("this email already exists")
+	ErrPhoneExists       = errors.New("this phone number already exists")
+	ErrAccountIsVerified = errors.New("this account is already verified")
 
 	// 401
 	ErrInvalidToken      = errors.New("invalid token")
 	ErrInvalidJWTPurpose = errors.New("invalid jwt purpose")
 
 	// 403
-	ErrInactiveAccount = errors.New("this account is inactive")
-	ErrDeletedAccount  = errors.New("this account is deleted")
+	ErrAccountIsNotVerified = errors.New("this account is not verified")
+	ErrAccountIsDeleted     = errors.New("this account is deleted")
 
 	// 404
-	ErrUserNotFound = errors.New("user not found")
+	ErrNotFound = errors.New("not found")
 
 	// 409
 	ErrEmailBelongsToDeletedAccount = errors.New("email belongs to deleted account")
@@ -42,16 +41,15 @@ var errorStatusMap = map[error]int{
 	ErrAccountIsVerified: http.StatusBadRequest,
 
 	// 401
-	ErrInvalidToken:         http.StatusUnauthorized,
-	ErrInvalidJWTPurpose:    http.StatusUnauthorized,
-	ErrAccountIsNotVerified: http.StatusUnauthorized,
+	ErrInvalidToken:      http.StatusUnauthorized,
+	ErrInvalidJWTPurpose: http.StatusUnauthorized,
 
 	// 403
-	ErrInactiveAccount: http.StatusForbidden,
-	ErrDeletedAccount:  http.StatusForbidden,
+	ErrAccountIsNotVerified: http.StatusForbidden,
+	ErrAccountIsDeleted:     http.StatusForbidden,
 
 	// 404
-	ErrUserNotFound: http.StatusNotFound,
+	ErrNotFound: http.StatusNotFound,
 
 	// 409
 	ErrEmailBelongsToDeletedAccount: http.StatusConflict,

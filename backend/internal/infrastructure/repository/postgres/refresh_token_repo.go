@@ -10,11 +10,13 @@ import (
 )
 
 type refreshTokenPgRepo struct {
-	db *gorm.DB
+	*genericRepository[entities.RefreshToken]
 }
 
 func NewRefreshTokenRepo(db *gorm.DB) repository.RefreshTokenRepository {
-	return &refreshTokenPgRepo{db: db}
+	return &refreshTokenPgRepo{
+		genericRepository: NewGenericRepository[entities.RefreshToken](db),
+	}
 }
 
 func (r *refreshTokenPgRepo) GetByTokenAndUserID(ctx context.Context, token string, userID uuid.UUID) (*entities.RefreshToken, error) {
@@ -28,20 +30,12 @@ func (r *refreshTokenPgRepo) GetByTokenAndUserID(ctx context.Context, token stri
 	return &refreshToken, nil
 }
 
-func (r *refreshTokenPgRepo) Create(ctx context.Context, refreshToken *entities.RefreshToken) error {
-	err := r.db.WithContext(ctx).Create(&refreshToken).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *refreshTokenPgRepo) Revoke(ctx context.Context, token string) error {
-	err := r.db.WithContext(ctx).Model(&entities.RefreshToken{}).
-		Where("token = ? AND revoked = false", token).
-		Update("revoked", true).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// func (r *refreshTokenPgRepo) Revoke(ctx context.Context, id uuid.UUID) error {
+// 	err := r.db.WithContext(ctx).Model(&entities.RefreshToken{}).
+// 		Where("id = ?", id).
+// 		Update("revoked", true).Error
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }

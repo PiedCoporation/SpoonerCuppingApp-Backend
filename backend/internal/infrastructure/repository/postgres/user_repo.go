@@ -12,32 +12,13 @@ import (
 )
 
 type userPgRepo struct {
-	db *gorm.DB
+	*genericRepository[entities.User]
 }
 
 func NewUserRepo(db *gorm.DB) repository.UserRepository {
-	return &userPgRepo{db: db}
-}
-
-// GetByID implements repository.UserRepository.
-func (ur *userPgRepo) GetByID(ctx context.Context, id uuid.UUID) (*entities.User, error) {
-	var user entities.User
-	err := ur.db.WithContext(ctx).
-		Preload("Role").
-		Where("id = ?", id).
-		First(&user).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errorcode.ErrUserNotFound
-		}
-		return nil, err
+	return &userPgRepo{
+		genericRepository: NewGenericRepository[entities.User](db),
 	}
-
-	if user.Entity.IsDeleted {
-		return nil, errorcode.ErrDeletedAccount
-	}
-
-	return &user, nil
 }
 
 // GetByEmail implements repository.UserRepository.
@@ -49,34 +30,11 @@ func (ur *userPgRepo) GetByEmail(ctx context.Context, email string) (*entities.U
 		First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errorcode.ErrUserNotFound
+			return nil, errorcode.ErrNotFound
 		}
 		return nil, err
 	}
-
-	if user.Entity.IsDeleted {
-		return nil, errorcode.ErrDeletedAccount
-	}
 	return &user, nil
-}
-
-// Create implements repository.UserRepository.
-func (ur *userPgRepo) Create(ctx context.Context, user *entities.User) error {
-	err := ur.db.WithContext(ctx).Create(user).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// UpdateEmailVerified implements repository.UserRepository.
-func (ur *userPgRepo) UpdateEmailVerified(ctx context.Context, userID uuid.UUID, isVerified bool) error {
-	if err := ur.db.WithContext(ctx).Model(&entities.User{}).
-		Where("id = ?", userID).
-		Update("is_verified", isVerified).Error; err != nil {
-		return err
-	}
-	return nil
 }
 
 // IsPhoneTaken implements repository.UserRepository.
