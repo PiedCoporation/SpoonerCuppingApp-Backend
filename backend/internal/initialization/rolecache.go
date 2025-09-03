@@ -1,18 +1,18 @@
 package initialization
 
 import (
+	"backend/global"
 	"backend/internal/infrastructure/cache/rolecache"
 	"backend/internal/usecase/role"
-	"backend/pkg/logger"
 	"context"
 
 	"go.uber.org/zap"
 )
 
-func NewRolesCache(roleService role.RoleService, logger logger.Interface) {
+func NewRolesCache(roleService role.RoleService) {
 	roles, err := roleService.GetAll(context.Background())
 	if err != nil {
-		logger.Fatal("Roles initialization failed", zap.Error(err))
+		global.Logger.Fatal("Roles initialization failed", zap.Error(err))
 	}
 
 	rolecache.NewCache(roles)

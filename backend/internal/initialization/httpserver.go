@@ -1,8 +1,7 @@
 package initialization
 
 import (
-	"backend/config"
-	"backend/pkg/logger"
+	"backend/global"
 	"context"
 	"fmt"
 	"net/http"
@@ -14,7 +13,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewServer(httpCfg *config.HTTP, handler http.Handler) *http.Server {
+func NewServer(handler http.Handler) *http.Server {
+	httpCfg := global.Config.HTTP
 	return &http.Server{
 		Addr:         ":" + strconv.Itoa(httpCfg.Port),
 		Handler:      handler,
@@ -24,11 +24,11 @@ func NewServer(httpCfg *config.HTTP, handler http.Handler) *http.Server {
 	}
 }
 
-func RunServer(server *http.Server, httpCfg *config.HTTP, logger logger.Interface) {
+func RunServer(server *http.Server) {
 	go func() {
 		fmt.Println("Listening and serving HTTP on", server.Addr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal("Error ListenAndServe():", zap.Error(err))
+			global.Logger.Fatal("Error ListenAndServe():", zap.Error(err))
 		}
 	}()
 
@@ -39,10 +39,10 @@ func RunServer(server *http.Server, httpCfg *config.HTTP, logger logger.Interfac
 	fmt.Println("Shutting down server...")
 
 	// context to grateful shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), httpCfg.ShutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), global.Config.HTTP.ShutdownTimeout)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		logger.Fatal("Server forced to shutdown:", zap.Error(err))
+		global.Logger.Fatal("Server forced to shutdown:", zap.Error(err))
 	}
 
 	fmt.Println("Server exited properly")

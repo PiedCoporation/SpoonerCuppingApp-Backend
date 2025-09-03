@@ -1,7 +1,7 @@
 package implement
 
 import (
-	"backend/config"
+	"backend/global"
 	"backend/internal/constants/enum/jwtpurpose"
 	"backend/internal/constants/enum/rolename"
 	"backend/internal/constants/errorcode"
@@ -22,20 +22,17 @@ import (
 )
 
 type userAuthService struct {
-	config   *config.Config
 	uow      uow.UserAuthUow
 	userRepo repository.UserRepository
 	rtRepo   repository.RefreshTokenRepository
 }
 
 func NewUserAuthService(
-	config *config.Config,
 	uow uow.UserAuthUow,
 	userRepo repository.UserRepository,
 	rtRepo repository.RefreshTokenRepository,
 ) user.UserAuthService {
 	return &userAuthService{
-		config:   config,
 		uow:      uow,
 		userRepo: userRepo,
 		rtRepo:   rtRepo,
@@ -99,17 +96,17 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 	}
 
 	// gene email verify jwt
-	token, err := jwt.GenerateEmailToken([]byte(us.config.JWT.RegisterTokenKey),
-		us.config.JWT.RegisterTokenExpiresIn, user.ID, jwtpurpose.Register)
+	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.RegisterTokenKey),
+		global.Config.JWT.RegisterTokenExpiresIn, user.ID, jwtpurpose.Register)
 	if err != nil {
 		return err
 	}
 
 	verifyLink := fmt.Sprintf("%s/v1/users/register/verify?token=%s",
-		us.config.HTTP.Url, token)
+		global.Config.HTTP.Url, token)
 
 	// send verify email to activate account
-	if err := sendto.SendTemplateEmailOtp(&us.config.SMTP, []string{vo.Email},
+	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{vo.Email},
 		"register-verify.html", map[string]any{"verifyLink": verifyLink},
 	); err != nil {
 		fmt.Println(err)
@@ -133,17 +130,17 @@ func (us *userAuthService) ResendEmailVerifyRegister(ctx context.Context, email 
 	}
 
 	// gene email verify jwt
-	token, err := jwt.GenerateEmailToken([]byte(us.config.JWT.RegisterTokenKey),
-		us.config.JWT.RegisterTokenExpiresIn, user.ID, jwtpurpose.Register)
+	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.RegisterTokenKey),
+		global.Config.JWT.RegisterTokenExpiresIn, user.ID, jwtpurpose.Register)
 	if err != nil {
 		return err
 	}
 
 	verifyLink := fmt.Sprintf("%s/v1/users/register/verify?token=%s",
-		us.config.HTTP.Url, token)
+		global.Config.HTTP.Url, token)
 
 	// send verify email to activate account
-	if err := sendto.SendTemplateEmailOtp(&us.config.SMTP, []string{email},
+	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
 		"register-verify.html", map[string]any{"verifyLink": verifyLink},
 	); err != nil {
 		return err
@@ -178,7 +175,7 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	}
 
 	// gene ac and rt
-	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(&us.config.JWT, user.ID)
+	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(user.ID)
 	if err != nil {
 		return "", "", err
 	}
@@ -186,7 +183,7 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	// insert rt to db
 	if err := insertRefreshToken(ctx, userID,
 		rp.RefreshTokenRepository(),
-		refreshToken, []byte(us.config.JWT.RefreshTokenKey)); err != nil {
+		refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
 		us.uow.Rollback()
 		return "", "", err
 	}
@@ -213,17 +210,17 @@ func (us *userAuthService) Login(ctx context.Context, email string) error {
 	}
 
 	// gene login verify jwt
-	token, err := jwt.GenerateEmailToken([]byte(us.config.JWT.LoginTokenKey),
-		us.config.JWT.LoginTokenExpiresIn, user.ID, jwtpurpose.Login)
+	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.LoginTokenKey),
+		global.Config.JWT.LoginTokenExpiresIn, user.ID, jwtpurpose.Login)
 	if err != nil {
 		return err
 	}
 
 	verifyLink := fmt.Sprintf("%s/v1/users/login/verify?token=%s",
-		us.config.HTTP.Url, token)
+		global.Config.HTTP.Url, token)
 
 	// send verify link to login
-	if err := sendto.SendTemplateEmailOtp(&us.config.SMTP, []string{email},
+	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
 		"login-verify.html", map[string]any{"verifyLink": verifyLink},
 	); err != nil {
 		return err
@@ -246,13 +243,13 @@ func (us *userAuthService) VerifyLogin(ctx context.Context, userID uuid.UUID) (s
 	}
 
 	// gene ac and rt
-	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(&us.config.JWT, user.ID)
+	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(user.ID)
 	if err != nil {
 		return "", "", err
 	}
 
 	if err := insertRefreshToken(ctx, userID,
-		us.rtRepo, refreshToken, []byte(us.config.JWT.RefreshTokenKey)); err != nil {
+		us.rtRepo, refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
 		return "", "", err
 	}
 
@@ -262,7 +259,7 @@ func (us *userAuthService) VerifyLogin(ctx context.Context, userID uuid.UUID) (s
 // Logout implements user.UserAuthService.
 func (us *userAuthService) Logout(ctx context.Context, userID uuid.UUID, refreshToken string) error {
 	// decode rt
-	claims, err := jwt.ValidateToken([]byte(us.config.JWT.RefreshTokenKey),
+	claims, err := jwt.ValidateToken([]byte(global.Config.JWT.RefreshTokenKey),
 		refreshToken, jwtpurpose.Refresh)
 	if err != nil {
 		return err
@@ -289,7 +286,7 @@ func (us *userAuthService) Logout(ctx context.Context, userID uuid.UUID, refresh
 // RefreshToken implements user.UserAuthService.
 func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 	// validate token
-	claims, err := jwt.ValidateToken([]byte(us.config.JWT.RefreshTokenKey),
+	claims, err := jwt.ValidateToken([]byte(global.Config.JWT.RefreshTokenKey),
 		refreshToken, jwtpurpose.Refresh)
 	if err != nil {
 		return "", "", errorcode.ErrInvalidToken
@@ -306,13 +303,13 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 	}
 
 	// gene ac and rt
-	accessToken, newRefreshToken, err := jwt.GenerateAcAndRtTokens(&us.config.JWT, userID)
+	accessToken, newRefreshToken, err := jwt.GenerateAcAndRtTokens(userID)
 	if err != nil {
 		return "", "", err
 	}
 
 	if err := insertRefreshToken(ctx, userID,
-		us.rtRepo, refreshToken, []byte(us.config.JWT.RefreshTokenKey)); err != nil {
+		us.rtRepo, refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
 		return "", "", err
 	}
 

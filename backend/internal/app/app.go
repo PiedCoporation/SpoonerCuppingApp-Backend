@@ -1,40 +1,42 @@
 package app
 
 import (
-	"backend/config"
+	"backend/global"
 	"backend/internal/controller/http"
 	"backend/internal/controller/http/v1/router"
 	roleWire "backend/internal/infrastructure/wire/role"
 	userWire "backend/internal/infrastructure/wire/user"
 	"backend/internal/initialization"
-	"backend/pkg/logger"
 )
 
-func Run(cfg *config.Config) {
+func Run() {
+	// ===== config =====
+	initialization.LoadConfig()
+
 	// ===== logger =====
-	l := logger.New(cfg.Logger)
-	l.Info("Config log successfully")
+	initialization.InitLogger()
+	global.Logger.Info("Config log successfully")
 
 	// ===== postgres =====
-	pgDb := initialization.NewPostgres(&cfg.Postgres, l)
-	l.Info("Initializing Postgres successfully")
+	pgDb := initialization.NewPostgres()
+	global.Logger.Info("Initializing Postgres successfully")
 
 	// ===== service =====
 	// user
-	userAuthSerice := userWire.NewUserAuthService(cfg, pgDb)
+	userAuthSerice := userWire.NewUserAuthService(pgDb)
 	// role
 	roleService := roleWire.NewRoleService(pgDb)
 
 	// init role cache
-	go initialization.NewRolesCache(roleService, l)
+	go initialization.NewRolesCache(roleService)
 
 	// ===== router =====
 	userServiceSet := &router.UserServiceSet{
 		UserAuthService: userAuthSerice,
 	}
-	router := http.NewRouter(cfg, userServiceSet)
+	router := http.NewRouter(userServiceSet)
 
 	// ===== server =====
-	server := initialization.NewServer(&cfg.HTTP, router)
-	initialization.RunServer(server, &cfg.HTTP, l)
+	server := initialization.NewServer(router)
+	initialization.RunServer(server)
 }

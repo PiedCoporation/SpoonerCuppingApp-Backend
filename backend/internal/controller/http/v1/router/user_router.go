@@ -1,7 +1,7 @@
 package router
 
 import (
-	"backend/config"
+	"backend/global"
 	"backend/internal/constants/enum/jwtpurpose"
 	"backend/internal/controller/http/middleware"
 	controller "backend/internal/controller/http/v1/controller/user"
@@ -16,9 +16,11 @@ type UserServiceSet struct {
 
 func NewUserRouter(
 	router *gin.RouterGroup,
-	cfg *config.Config,
 	serviceSet *UserServiceSet,
 ) {
+	// config
+	cfg := global.Config
+
 	// New controller
 	uAuthCtrl := controller.NewUserAuthController(serviceSet.UserAuthService)
 

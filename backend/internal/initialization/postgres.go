@@ -2,7 +2,7 @@ package initialization
 
 import (
 	"backend/config"
-	"backend/pkg/logger"
+	"backend/global"
 	"database/sql"
 	"fmt"
 	"time"
@@ -12,7 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewPostgres(pgCfg *config.Postgres, logger logger.Interface) *gorm.DB {
+func NewPostgres() *gorm.DB {
+	pgCfg := global.Config.Postgres
+
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Ho_Chi_Minh",
 		pgCfg.Host, pgCfg.Username, pgCfg.Password, pgCfg.Dbname, pgCfg.Port,
@@ -22,18 +24,18 @@ func NewPostgres(pgCfg *config.Postgres, logger logger.Interface) *gorm.DB {
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
-		logger.Fatal("InitPostgres initialization error", zap.Error(err))
+		global.Logger.Fatal("NewPostgres initialization error", zap.Error(err))
 	}
 
 	sqlDb, err := db.DB()
 	if err != nil {
-		logger.Fatal("Get sql.DB error", zap.Error(err))
+		global.Logger.Fatal("Get sql.DB error", zap.Error(err))
 	}
 	if err := sqlDb.Ping(); err != nil {
-		logger.Fatal("Database not reachable", zap.Error(err))
+		global.Logger.Fatal("Database not reachable", zap.Error(err))
 	}
 
-	SetPool(sqlDb, pgCfg)
+	SetPool(sqlDb, &pgCfg)
 
 	return db
 }

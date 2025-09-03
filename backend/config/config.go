@@ -2,8 +2,6 @@ package config
 
 import (
 	"time"
-
-	"github.com/caarlos0/env/v11"
 )
 
 type Config struct {
@@ -62,12 +60,4 @@ type SMTP struct {
 	Port        int    `env:"PORT"`
 	Username    string `env:"USERNAME"`
 	AppPassword string `env:"APP_PASSWORD"`
-}
-
-func NewConfig() (*Config, error) {
-	cfg := &Config{}
-	if err := env.Parse(cfg); err != nil {
-		return nil, err
-	}
-	return cfg, nil
 }

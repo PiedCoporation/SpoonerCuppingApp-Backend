@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"backend/config"
+	"backend/global"
 	"backend/internal/constants/enum/jwtpurpose"
 	"backend/internal/constants/errorcode"
 	"time"
@@ -46,7 +46,9 @@ func ValidateToken(secret []byte, tokenString string, purpose jwtpurpose.JWTPurp
 }
 
 // GenerateAcAndRtTokens creates access token and refresh token
-func GenerateAcAndRtTokens(cfg *config.JWT, userID uuid.UUID) (string, string, error) {
+func GenerateAcAndRtTokens(userID uuid.UUID) (string, string, error) {
+	cfg := global.Config.JWT
+
 	accessToken, err := createJWT([]byte(cfg.AccessTokenKey), CustomClaims{
 		Purpose: jwtpurpose.Access,
 		RegisteredClaims: jwt.RegisteredClaims{

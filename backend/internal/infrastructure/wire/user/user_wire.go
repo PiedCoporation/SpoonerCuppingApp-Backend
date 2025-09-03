@@ -3,7 +3,6 @@
 package user
 
 import (
-	"backend/config"
 	"backend/internal/infrastructure/repository/postgres"
 	"backend/internal/infrastructure/uow"
 	userInterface "backend/internal/usecase/user"
@@ -14,7 +13,6 @@ import (
 )
 
 func NewUserAuthService(
-	cfg *config.Config,
 	db *gorm.DB,
 ) userInterface.UserAuthService {
 	wire.Build(
