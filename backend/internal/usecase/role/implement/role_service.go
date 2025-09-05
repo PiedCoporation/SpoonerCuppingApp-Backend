@@ -1,0 +1,25 @@
+package implement
+
+import (
+	"backend/internal/domain/entities"
+	"backend/internal/usecase/repository"
+	"backend/internal/usecase/role"
+	"context"
+)
+
+type roleService struct {
+	roleRepo repository.RoleRepository
+}
+
+func NewRoleService(roleRepo repository.RoleRepository) role.RoleService {
+	return &roleService{roleRepo: roleRepo}
+}
+
+// GetAll implements role.RoleService.
+func (rs *roleService) GetAll(ctx context.Context) ([]entities.Role, error) {
+	roles, err := rs.roleRepo.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return roles, nil
+}
