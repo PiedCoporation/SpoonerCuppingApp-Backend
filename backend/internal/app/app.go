@@ -2,23 +2,23 @@ package app
 
 import (
 	"backend/global"
-	"backend/internal/controller/http"
-	"backend/internal/controller/http/v1/router"
-	roleWire "backend/internal/infrastructure/wire/role"
-	userWire "backend/internal/infrastructure/wire/user"
-	"backend/internal/initialization"
+	roleWire "backend/internal/infrastructures/wire/role"
+	userWire "backend/internal/infrastructures/wire/user"
+	"backend/internal/initializations"
+	"backend/internal/presentations/http"
+	"backend/internal/presentations/http/v1/router"
 )
 
 func Run() {
 	// ===== config =====
-	initialization.LoadConfig()
+	initializations.LoadConfig()
 
 	// ===== logger =====
-	initialization.InitLogger()
+	initializations.InitLogger()
 	global.Logger.Info("Config log successfully")
 
 	// ===== postgres =====
-	pgDb := initialization.NewPostgres()
+	pgDb := initializations.NewPostgres()
 	global.Logger.Info("Initializing Postgres successfully")
 
 	// ===== service =====
@@ -28,7 +28,7 @@ func Run() {
 	roleService := roleWire.NewRoleService(pgDb)
 
 	// init role cache
-	go initialization.NewRolesCache(roleService)
+	go initializations.NewRolesCache(roleService)
 
 	// ===== router =====
 	userServiceSet := &router.UserServiceSet{
@@ -37,6 +37,6 @@ func Run() {
 	router := http.NewRouter(userServiceSet)
 
 	// ===== server =====
-	server := initialization.NewServer(router)
-	initialization.RunServer(server)
+	server := initializations.NewServer(router)
+	initializations.RunServer(server)
 }
