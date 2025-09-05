@@ -1,0 +1,20 @@
+//go:build wireinject
+
+package role
+
+import (
+	"backend/internal/persistents/postgres"
+	roleImpl "backend/internal/usecases"
+	"backend/internal/usecases/abstractions"
+
+	"github.com/google/wire"
+	"gorm.io/gorm"
+)
+
+func NewRoleService(db *gorm.DB) abstractions.RoleService {
+	wire.Build(
+		postgres.NewRoleRepo,
+		roleImpl.NewRoleService,
+	)
+	return nil
+}
