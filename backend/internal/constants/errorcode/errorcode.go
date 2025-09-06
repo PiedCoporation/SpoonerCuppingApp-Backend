@@ -16,11 +16,11 @@ var (
 	// 401
 	ErrInvalidToken      = errors.New("invalid token")
 	ErrInvalidJWTPurpose = errors.New("invalid jwt purpose")
+	ErrInvalidPassword   = errors.New("invalid password")
 
 	// 403
 	ErrAccountIsNotVerified = errors.New("this account is not verified")
 	ErrAccountIsDeleted     = errors.New("this account is deleted")
-	ErrInvalidPassword      = errors.New("invalid password")
 
 	// 404
 	ErrNotFound     = errors.New("not found")
@@ -45,11 +45,11 @@ var errorStatusMap = map[error]int{
 	// 401
 	ErrInvalidToken:      http.StatusUnauthorized,
 	ErrInvalidJWTPurpose: http.StatusUnauthorized,
+	ErrInvalidPassword:   http.StatusUnauthorized,
 
 	// 403
 	ErrAccountIsNotVerified: http.StatusForbidden,
 	ErrAccountIsDeleted:     http.StatusForbidden,
-	ErrInvalidPassword:      http.StatusForbidden,
 
 	// 404
 	ErrNotFound:     http.StatusNotFound,

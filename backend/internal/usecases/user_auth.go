@@ -217,57 +217,28 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 }
 
 // Login implements user.UserAuthService.
-func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserVO) error {
+func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserVO) (string, string, error) {
 	// get user from db
 	user, err := us.userRepo.GetByEmail(ctx, vo.Email)
-	if err != nil {
-		return err
-	}
-
-	// check if user is verified or not
-	if !user.IsVerified {
-		return errorcode.ErrAccountIsNotVerified
-	}
-	// check if user is deleted or not
-	if user.IsDeleted {
-		return errorcode.ErrAccountIsDeleted
-	}
-
-	// gene login verify jwt
-	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.LoginTokenKey),
-		global.Config.JWT.LoginTokenExpiresIn, user.ID, jwtpurpose.Login)
-	if err != nil {
-		return err
-	}
-
-	verifyLink := fmt.Sprintf("%s/v1/users/login/verify?token=%s",
-		global.Config.HTTP.Url, token)
-
-	// send verify link to login
-	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{vo.Email},
-		"login-verify.html", map[string]any{"verifyLink": verifyLink},
-	); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// VerifyLogin implements user.UserAuthService.
-func (us *userAuthService) VerifyLogin(ctx context.Context, userID uuid.UUID) (string, string, error) {
-	// get user from db
-	user, err := us.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return "", "", err
 	}
 
-	// re-check if user is verified or not
+	// check if user is verified or not
 	if !user.IsVerified {
 		return "", "", errorcode.ErrAccountIsNotVerified
 	}
-	// re-check if user is deleted or not
+	// check if user is deleted or not
 	if user.IsDeleted {
 		return "", "", errorcode.ErrAccountIsDeleted
+	}
+
+	fmt.Println("From db:", user.Password)
+	fmt.Println("From input:", vo.Password)
+
+	// check password
+	if !password.ComparePasswords(user.Password, vo.Password) {
+		return "", "", errorcode.ErrInvalidPassword
 	}
 
 	// gene ac and rt
@@ -276,7 +247,7 @@ func (us *userAuthService) VerifyLogin(ctx context.Context, userID uuid.UUID) (s
 		return "", "", err
 	}
 
-	if err := insertRefreshToken(ctx, userID,
+	if err := insertRefreshToken(ctx, user.ID,
 		us.rtRepo, refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
 		return "", "", err
 	}

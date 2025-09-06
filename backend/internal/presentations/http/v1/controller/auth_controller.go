@@ -38,6 +38,7 @@ func (uc *UserAuthController) Register(c *gin.Context) {
 		LastName:  req.LastName,
 		Email:     req.Email,
 		Phone:     req.Phone,
+		Password:  req.Password,
 	}
 
 	if err := uc.auth.Register(ctx, vo); err != nil {
@@ -110,25 +111,7 @@ func (uc *UserAuthController) Login(c *gin.Context) {
 		Password: req.Password,
 	}
 
-	if err := uc.auth.Login(ctx, vo); err != nil {
-		errorcode.JSONError(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Please check your email to login account.",
-	})
-}
-
-func (uc *UserAuthController) VerifyLogin(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing userID in token"})
-		return
-	}
-
-	ctx := c.Request.Context()
-	accessToken, refreshToken, err := uc.auth.VerifyLogin(ctx, userID.(uuid.UUID))
+	accessToken, refreshToken, err := uc.auth.Login(ctx, vo)
 	if err != nil {
 		errorcode.JSONError(c, err)
 		return
