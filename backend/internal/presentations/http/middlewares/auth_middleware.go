@@ -1,7 +1,7 @@
-package middleware
+package middlewares
 
 import (
-	"backend/internal/constants/enum/jwtpurpose"
+	"backend/internal/constants/enums/jwtpurpose"
 	"backend/pkg/utils/jwt"
 	"fmt"
 	"net/http"

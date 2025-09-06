@@ -148,7 +148,7 @@ func (uc *UserAuthController) Logout(c *gin.Context) {
 		return
 	}
 
-	// get userID from middleware
+	// get userID from middlewares
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing userID in token"})
