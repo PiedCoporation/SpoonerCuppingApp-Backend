@@ -16,13 +16,14 @@ func NewPostgres() *gorm.DB {
 	pgCfg := global.Config.Postgres
 
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Ho_Chi_Minh",
+		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=UTC",
 		pgCfg.Host, pgCfg.Username, pgCfg.Password, pgCfg.Dbname, pgCfg.Port,
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})
+
 	if err != nil {
 		global.Logger.Fatal("NewPostgres initializations error", zap.Error(err))
 	}
@@ -31,6 +32,7 @@ func NewPostgres() *gorm.DB {
 	if err != nil {
 		global.Logger.Fatal("Get sql.DB error", zap.Error(err))
 	}
+	
 	if err := sqlDb.Ping(); err != nil {
 		global.Logger.Fatal("Database not reachable", zap.Error(err))
 	}
