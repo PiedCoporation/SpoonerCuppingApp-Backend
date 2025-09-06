@@ -30,12 +30,12 @@ func (r *refreshTokenPgRepo) GetByTokenAndUserID(ctx context.Context, token stri
 	return &refreshToken, nil
 }
 
-// func (r *refreshTokenPgRepo) Revoke(ctx context.Context, id uuid.UUID) error {
-// 	err := r.db.WithContext(ctx).Model(&entities.RefreshToken{}).
-// 		Where("id = ?", id).
-// 		Update("revoked", true).Error
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+func (r *refreshTokenPgRepo) RevokeAllByUserID(ctx context.Context, userID uuid.UUID) error {
+	err := r.db.WithContext(ctx).Model(&entities.RefreshToken{}).
+		Where("user_id = ? AND revoked = false", userID).
+		Update("revoked", true).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}

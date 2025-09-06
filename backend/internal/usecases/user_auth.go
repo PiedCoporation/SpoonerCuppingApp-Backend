@@ -12,8 +12,10 @@ import (
 	repoAbstractions "backend/internal/persistents/abstractions"
 	serviceAbstractions "backend/internal/usecases/abstractions"
 	"backend/pkg/utils/jwt"
+	"backend/pkg/utils/password"
 	"backend/pkg/utils/sendto"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -43,6 +45,8 @@ func NewUserAuthService(
 func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO) error {
 	g, gCtx := errgroup.WithContext(ctx)
 
+	var hashedPassword string
+
 	// check if email exists
 	g.Go(func() error {
 		exists, err := us.userRepo.IsEmailTaken(gCtx, vo.Email, uuid.Nil)
@@ -67,6 +71,16 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		return nil
 	})
 
+	// hash pass
+	g.Go(func() error {
+		hp, err := password.HashPassword(vo.Password)
+		if err != nil {
+			return err
+		}
+		hashedPassword = hp
+		return nil
+	})
+
 	if err := g.Wait(); err != nil {
 		return err
 	}
@@ -85,6 +99,7 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		LastName:   vo.LastName,
 		Email:      vo.Email,
 		Phone:      vo.Phone,
+		Password:   hashedPassword,
 		IsVerified: false,
 		Auditable:  commons.Auditable{CreatedAt: now, UpdatedAt: now},
 		RoleID:     defaultRole.ID,
@@ -154,6 +169,9 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	// get user from db
 	user, err := us.userRepo.GetByID(ctx, userID)
 	if err != nil {
+		if errors.Is(err, errorcode.ErrNotFound) {
+			err = errorcode.ErrUserNotFound
+		}
 		return "", "", err
 	}
 
@@ -167,12 +185,12 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	if err != nil {
 		return "", "", err
 	}
+	defer us.uow.Rollback()
 
 	// exec in db
 	if err := rp.UserRepository().Update(ctx, userID, map[string]any{
 		"is_verified": true,
 	}); err != nil {
-		us.uow.Rollback()
 		return "", "", err
 	}
 
@@ -186,7 +204,6 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	if err := insertRefreshToken(ctx, userID,
 		rp.RefreshTokenRepository(),
 		refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
-		us.uow.Rollback()
 		return "", "", err
 	}
 
@@ -199,57 +216,25 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 }
 
 // Login implements user.UserAuthService.
-func (us *userAuthService) Login(ctx context.Context, email string) error {
+func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserVO) (string, string, error) {
 	// get user from db
-	user, err := us.userRepo.GetByEmail(ctx, email)
-	if err != nil {
-		return err
-	}
-
-	// check if user is verified or not
-	if !user.IsVerified {
-		return errorcode.ErrAccountIsNotVerified
-	}
-	// check if user is deleted or not
-	if user.IsDeleted {
-		return errorcode.ErrAccountIsDeleted
-	}
-
-	// gene login verify jwt
-	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.LoginTokenKey),
-		global.Config.JWT.LoginTokenExpiresIn, user.ID, jwtpurpose.Login)
-	if err != nil {
-		return err
-	}
-
-	verifyLink := fmt.Sprintf("%s/v1/users/login/verify?token=%s",
-		global.Config.HTTP.Url, token)
-
-	// send verify link to login
-	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
-		"login-verify.html", map[string]any{"verifyLink": verifyLink},
-	); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// VerifyLogin implements user.UserAuthService.
-func (us *userAuthService) VerifyLogin(ctx context.Context, userID uuid.UUID) (string, string, error) {
-	// get user from db
-	user, err := us.userRepo.GetByID(ctx, userID)
+	user, err := us.userRepo.GetByEmail(ctx, vo.Email)
 	if err != nil {
 		return "", "", err
 	}
 
-	// re-check if user is verified or not
+	// check if user is verified or not
 	if !user.IsVerified {
 		return "", "", errorcode.ErrAccountIsNotVerified
 	}
-	// re-check if user is deleted or not
+	// check if user is deleted or not
 	if user.IsDeleted {
 		return "", "", errorcode.ErrAccountIsDeleted
+	}
+
+	// check password
+	if !password.ComparePasswords(user.Password, vo.Password) {
+		return "", "", errorcode.ErrInvalidPassword
 	}
 
 	// gene ac and rt
@@ -258,7 +243,7 @@ func (us *userAuthService) VerifyLogin(ctx context.Context, userID uuid.UUID) (s
 		return "", "", err
 	}
 
-	if err := insertRefreshToken(ctx, userID,
+	if err := insertRefreshToken(ctx, user.ID,
 		us.rtRepo, refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
 		return "", "", err
 	}
@@ -296,6 +281,113 @@ func (us *userAuthService) Logout(ctx context.Context, userID uuid.UUID, refresh
 	return nil
 }
 
+// ForgotPassword implements abstractions.UserAuthService.
+func (us *userAuthService) ForgotPassword(ctx context.Context, email string) error {
+	// get user from db
+	user, err := us.userRepo.GetByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	// check if user is verified or not
+	if !user.IsVerified {
+		return errorcode.ErrAccountIsNotVerified
+	}
+	// check if user is deleted or not
+	if user.IsDeleted {
+		return errorcode.ErrAccountIsDeleted
+	}
+
+	// gene email verify jwt
+	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.AccessTokenKey),
+		global.Config.JWT.AccessTokenExpiresIn, user.ID, jwtpurpose.Access)
+	if err != nil {
+		return err
+	}
+
+	verifyLink := fmt.Sprintf("%s/v1/users/change-password?token=%s",
+		global.Config.HTTP.Url, token)
+
+	// send verify email to activate account
+	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
+		"register-verify.html", map[string]any{"verifyLink": verifyLink},
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ChangePassword implements abstractions.UserAuthService.
+func (us *userAuthService) ChangePassword(ctx context.Context, vo user.ChangePasswordVO) error {
+	g, gCtx := errgroup.WithContext(ctx)
+
+	var user *entities.User
+	var hashedPassword string
+
+	// get user from db
+	g.Go(func() error {
+		us, err := us.userRepo.GetByID(gCtx, vo.UserID)
+		if err != nil {
+			if errors.Is(err, errorcode.ErrNotFound) {
+				return errorcode.ErrUserNotFound
+			}
+			return err
+		}
+		user = us
+		return nil
+	})
+
+	// hash pass
+	g.Go(func() error {
+		hp, err := password.HashPassword(vo.Password)
+		if err != nil {
+			return err
+		}
+		hashedPassword = hp
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	// re-check if user is verified or not
+	if !user.IsVerified {
+		return errorcode.ErrAccountIsNotVerified
+	}
+	// re-check if user is deleted or not
+	if user.IsDeleted {
+		return errorcode.ErrAccountIsDeleted
+	}
+
+	// begin transaction
+	rp, err := us.uow.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer us.uow.Rollback()
+
+	// update user password in db
+	if err := rp.UserRepository().Update(ctx, user.ID, map[string]any{
+		"password": hashedPassword,
+	}); err != nil {
+		return err
+	}
+
+	// revoke all old refresh token
+	if err := rp.RefreshTokenRepository().RevokeAllByUserID(ctx, user.ID); err != nil {
+		return err
+	}
+
+	// commit transaction
+	if err := us.uow.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // RefreshToken implements user.UserAuthService.
 func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 	// validate token
@@ -327,11 +419,11 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 	if err != nil {
 		return "", "", err
 	}
+	defer us.uow.Rollback()
 
 	// insert new rt to db
 	if err := insertRefreshToken(ctx, userID,
 		rp.RefreshTokenRepository(), newRefreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
-		us.uow.Rollback()
 		return "", "", err
 	}
 
@@ -339,7 +431,6 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 	if err := rp.RefreshTokenRepository().Update(ctx, oldRefreshToken.ID, map[string]any{
 		"revoked": true,
 	}); err != nil {
-		us.uow.Rollback()
 		return "", "", err
 	}
 

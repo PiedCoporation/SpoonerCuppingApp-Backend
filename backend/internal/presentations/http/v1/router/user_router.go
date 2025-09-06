@@ -31,6 +31,8 @@ func NewUserRouter(
 	publicGroup := userGroup.Group("")
 	{
 		publicGroup.POST("/refresh-token", uAuthCtrl.RefreshToken)
+		publicGroup.POST("/login", uAuthCtrl.Login)
+		publicGroup.POST("/forgot-password", uAuthCtrl.ForgotPassword)
 	}
 
 	// Register
@@ -38,19 +40,9 @@ func NewUserRouter(
 	{
 		registerGroup.POST("/", uAuthCtrl.Register)
 		registerGroup.POST("/resend-email", uAuthCtrl.ResendEmailVerifyRegister)
-		registerGroup.GET("/verify",
-			middlewares.AuthQuery([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
+		registerGroup.POST("/verify",
+			middlewares.AuthHeader([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
 			uAuthCtrl.VerifyRegister,
-		)
-	}
-
-	// Login
-	loginGroup := publicGroup.Group("/login")
-	{
-		loginGroup.POST("/", uAuthCtrl.Login)
-		loginGroup.GET("/verify",
-			middlewares.AuthQuery([]byte(cfg.JWT.LoginTokenKey), jwtpurpose.Login),
-			uAuthCtrl.VerifyLogin,
 		)
 	}
 
@@ -61,5 +53,6 @@ func NewUserRouter(
 	// presentations
 	{
 		privateGroup.POST("/logout", uAuthCtrl.Logout)
+		privateGroup.POST("/change-password", uAuthCtrl.ChangePassword)
 	}
 }

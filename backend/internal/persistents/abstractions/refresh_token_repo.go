@@ -10,5 +10,5 @@ import (
 type RefreshTokenRepository interface {
 	GenericRepository[entities.RefreshToken]
 	GetByTokenAndUserID(ctx context.Context, token string, userID uuid.UUID) (*entities.RefreshToken, error)
-	// Revoke(ctx context.Context, id uuid.UUID) error
+	RevokeAllByUserID(ctx context.Context, userID uuid.UUID) error
 }

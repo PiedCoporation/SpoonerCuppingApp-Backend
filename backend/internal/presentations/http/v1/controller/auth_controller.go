@@ -38,6 +38,7 @@ func (uc *UserAuthController) Register(c *gin.Context) {
 		LastName:  req.LastName,
 		Email:     req.Email,
 		Phone:     req.Phone,
+		Password:  req.Password,
 	}
 
 	if err := uc.auth.Register(ctx, vo); err != nil {
@@ -105,26 +106,12 @@ func (uc *UserAuthController) Login(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	email := req.Email
-	if err := uc.auth.Login(ctx, email); err != nil {
-		errorcode.JSONError(c, err)
-		return
+	vo := user.LoginUserVO{
+		Email:    req.Email,
+		Password: req.Password,
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Please check your email to login account.",
-	})
-}
-
-func (uc *UserAuthController) VerifyLogin(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing userID in token"})
-		return
-	}
-
-	ctx := c.Request.Context()
-	accessToken, refreshToken, err := uc.auth.VerifyLogin(ctx, userID.(uuid.UUID))
+	accessToken, refreshToken, err := uc.auth.Login(ctx, vo)
 	if err != nil {
 		errorcode.JSONError(c, err)
 		return
@@ -163,6 +150,59 @@ func (uc *UserAuthController) Logout(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "logout success"})
+}
+
+func (uc *UserAuthController) ForgotPassword(c *gin.Context) {
+	var req user.ForgotPasswordReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": validation.TranslateValidationError(err),
+		})
+		return
+	}
+
+	ctx := c.Request.Context()
+	email := req.Email
+
+	if err := uc.auth.ForgotPassword(ctx, email); err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Please check your email to change password.",
+	})
+}
+
+func (uc *UserAuthController) ChangePassword(c *gin.Context) {
+	var req user.ChangePasswordReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": validation.TranslateValidationError(err),
+		})
+		return
+	}
+
+	// get userID from middlewares
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing userID in token"})
+		return
+	}
+	ctx := c.Request.Context()
+	vo := user.ChangePasswordVO{
+		UserID:   userID.(uuid.UUID),
+		Password: req.Password,
+	}
+
+	if err := uc.auth.ChangePassword(ctx, vo); err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Change password success.",
+	})
 }
 
 func (uc *UserAuthController) RefreshToken(c *gin.Context) {
