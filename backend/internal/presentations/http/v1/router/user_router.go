@@ -2,8 +2,8 @@ package router
 
 import (
 	"backend/global"
-	"backend/internal/constants/enum/jwtpurpose"
-	"backend/internal/presentations/http/middleware"
+	"backend/internal/constants/enums/jwtpurpose"
+	"backend/internal/presentations/http/middlewares"
 	"backend/internal/presentations/http/v1/controller"
 	userService "backend/internal/usecases/abstractions"
 
@@ -39,7 +39,7 @@ func NewUserRouter(
 		registerGroup.POST("/", uAuthCtrl.Register)
 		registerGroup.POST("/resend-email", uAuthCtrl.ResendEmailVerifyRegister)
 		registerGroup.GET("/verify",
-			middleware.AuthQuery([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
+			middlewares.AuthQuery([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
 			uAuthCtrl.VerifyRegister,
 		)
 	}
@@ -49,15 +49,15 @@ func NewUserRouter(
 	{
 		loginGroup.POST("/", uAuthCtrl.Login)
 		loginGroup.GET("/verify",
-			middleware.AuthQuery([]byte(cfg.JWT.LoginTokenKey), jwtpurpose.Login),
+			middlewares.AuthQuery([]byte(cfg.JWT.LoginTokenKey), jwtpurpose.Login),
 			uAuthCtrl.VerifyLogin,
 		)
 	}
 
 	// ====== Private group (using access token) ======
 	privateGroup := userGroup.Group("")
-	// middleware
-	privateGroup.Use(middleware.AuthHeader([]byte(cfg.JWT.AccessTokenKey), jwtpurpose.Access))
+	// middlewares
+	privateGroup.Use(middlewares.AuthHeader([]byte(cfg.JWT.AccessTokenKey), jwtpurpose.Access))
 	// presentations
 	{
 		privateGroup.POST("/logout", uAuthCtrl.Logout)

@@ -1,8 +1,8 @@
 package entities
 
 import (
-	"backend/internal/constants/enum/processing"
-	"backend/internal/constants/enum/roastinglever"
+	"backend/internal/constants/enums/processing"
+	"backend/internal/constants/enums/roastinglever"
 	"backend/internal/domains/commons"
 	"time"
 

@@ -2,7 +2,7 @@ package jwt
 
 import (
 	"backend/global"
-	"backend/internal/constants/enum/jwtpurpose"
+	"backend/internal/constants/enums/jwtpurpose"
 	"backend/internal/constants/errorcode"
 	"time"
 
