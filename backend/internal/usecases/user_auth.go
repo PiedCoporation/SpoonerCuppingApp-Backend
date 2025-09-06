@@ -2,8 +2,8 @@ package usecases
 
 import (
 	"backend/global"
-	"backend/internal/constants/enum/jwtpurpose"
-	"backend/internal/constants/enum/rolename"
+	"backend/internal/constants/enums/jwtpurpose"
+	"backend/internal/constants/enums/rolename"
 	"backend/internal/constants/errorcode"
 	"backend/internal/contracts/user"
 	"backend/internal/domains/commons"
