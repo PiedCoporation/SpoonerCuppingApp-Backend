@@ -24,6 +24,20 @@ export type AppStackParamList = {
   Settings: undefined;
   AccountSecurity: undefined;
   CuppingStyle: undefined;
+  // Cupping screens
+  CuppingEventDetail: {
+    eventId: string;
+    eventTitle: string;
+    eventDescription: string;
+    eventDate: string;
+    participants: string;
+    status: string;
+    eventIcon: string;
+  };
+  CuppingRegistrationMinimalist: undefined;
+  CuppingRegistrationOverview: undefined;
+  // User management
+  Users: undefined;
 };
 
 export type RootStackParamList = {

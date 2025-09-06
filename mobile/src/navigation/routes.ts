@@ -15,4 +15,10 @@ export const APP_ROUTES = {
   SESSION_DETAIL: "SessionDetail" as const,
   CREATE_SESSION: "CreateSession" as const,
   SETTINGS: "Settings" as const,
+  ACCOUNT_SECURITY: "AccountSecurity" as const,
+  CUPPING_STYLE: "CuppingStyle" as const,
+  CUPPING_EVENT_DETAIL: "CuppingEventDetail" as const,
+  CUPPING_REGISTRATION_MINIMALIST: "CuppingRegistrationMinimalist" as const,
+  CUPPING_REGISTRATION_OVERVIEW: "CuppingRegistrationOverview" as const,
+  USERS: "Users" as const,
 };

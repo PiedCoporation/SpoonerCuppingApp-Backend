@@ -17,7 +17,7 @@ type LoginForm = {
 };
 
 export default function LoginScreen({ navigation }: AuthScreenProps<"Login">) {
-  const { login } = useAuth();
+  const { login, isLoading } = useAuth();
   const {
     control,
     handleSubmit,
@@ -30,14 +30,7 @@ export default function LoginScreen({ navigation }: AuthScreenProps<"Login">) {
   });
 
   const onLogin = async (data: LoginForm) => {
-    const success = await login();
-
-    // if (!success) {
-    //   Alert.alert(
-    //     "Login Failed",
-    //     "Invalid email or password. Try admin@gmail.com / 12345"
-    //   );
-    // }
+    const success = await login(data);
   };
 
   return (
@@ -126,19 +119,18 @@ export default function LoginScreen({ navigation }: AuthScreenProps<"Login">) {
 
         <TouchableOpacity
           onPress={handleSubmit(onLogin)}
-          // disabled={isLoading}
-          className={`rounded-lg py-4 mt-6 bg-amber-800`}
+          disabled={isLoading}
+          className={`rounded-lg py-4 mt-6 ${
+            isLoading ? "bg-amber-600" : "bg-amber-800"
+          }`}
         >
-          {/* {isLoading ? (
+          {isLoading ? (
             <ActivityIndicator color="white" />
           ) : (
             <Text className="text-white text-center font-semibold text-lg">
               Sign In
             </Text>
-          )} */}
-          <Text className="text-white text-center font-semibold text-lg">
-            Sign In
-          </Text>
+          )}
         </TouchableOpacity>
 
         <View className="flex-row justify-center mt-6">
