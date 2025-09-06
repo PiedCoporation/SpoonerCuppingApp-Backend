@@ -12,6 +12,7 @@ type User struct {
 	LastName   string `gorm:"null"`
 	Email      string `gorm:"uniqueIndex;not null"`
 	Phone      string `gorm:"null"`
+	Password   string `gorm:"not null"`
 	IsVerified bool   `gorm:"default:false"`
 	commons.Auditable
 
