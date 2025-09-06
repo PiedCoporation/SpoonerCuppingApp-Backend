@@ -11,7 +11,6 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Loading screen component
 const LoadingScreen = () => (
   <View style={styles.loadingContainer}>
     <ActivityIndicator size="large" color="#8B4513" />
@@ -21,7 +20,6 @@ const LoadingScreen = () => (
 export default function AppNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show loading screen while checking authentication
   if (isLoading) {
     return <LoadingScreen />;
   }

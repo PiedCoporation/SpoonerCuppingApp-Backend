@@ -14,6 +14,7 @@ export type MainTabParamList = {
   Profile: undefined;
   Friend: undefined;
   Market: undefined;
+  Event: undefined;
   Notification: undefined;
 };
 

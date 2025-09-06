@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
 import { AuthScreenProps } from "../../types/navigation";
 import { useAuth } from "../../contexts/AuthContext";
@@ -35,7 +36,11 @@ export default function LoginScreen({ navigation }: AuthScreenProps<"Login">) {
 
   return (
     <View className="flex-1 bg-white px-6 justify-center">
-      <View className="mb-8">
+      {/* App Avatar */}
+      <View className="items-center mb-8">
+        <View className="w-24 h-24 bg-amber-100 rounded-full items-center justify-center mb-6 border-4 border-amber-200">
+          <Ionicons name="cafe" size={40} color="#8B4513" />
+        </View>
         <Text className="text-4xl font-extrabold text-amber-900 text-center tracking-widest mb-1">
           SPOONER
         </Text>

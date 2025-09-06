@@ -37,52 +37,45 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 ">
-      <View className="bg-amber-800 py-10 px-5 items-center border-b border-amber-900">
-        <View className="items-center">
-          <Image
-            source={{
-              uri: "https://picsum.photos/100/100",
-            }}
-            className="w-24 h-24 rounded-full mb-4 border-4 border-amber-200"
-          />
-          <Text className="text-2xl font-semibold text-white mb-1">
-            John Doe
-          </Text>
-          <Text className="text-base text-amber-100">Coffee Enthusiast</Text>
-        </View>
+    <SafeAreaView className="flex-1 bg-gray-100">
+      {/* Minimalist Header */}
+      <View className="bg-white px-6 py-8 items-center">
+        <Image
+          source={{
+            uri: "https://picsum.photos/100/100",
+          }}
+          className="w-20 h-20 rounded-full mb-3"
+        />
+        <Text className="text-xl font-medium text-gray-900 mb-1">John Doe</Text>
+        <Text className="text-sm text-gray-500">Coffee Enthusiast</Text>
       </View>
 
-      <View className="flex-1 pt-2">
+      {/* Minimalist Menu */}
+      <View className="flex-1 px-6 pt-6">
         <TouchableOpacity
-          className="bg-white rounded-xl p-5 flex-row items-center shadow-sm"
+          className="bg-white rounded-lg p-4 mb-3 flex-row items-center"
           onPress={handleAccountSecurity}
         >
-          <View className="flex-1">
-            <Text className="text-lg font-semibold text-amber-900 mb-1">
-              Account and Security
-            </Text>
-          </View>
-          <Text className="text-2xl text-orange-600 font-light">›</Text>
+          <Text className="flex-1 text-base text-gray-900">
+            Account & Security
+          </Text>
+          <Text className="text-gray-400">›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-white rounded-xl p-5 mb-4 flex-row items-center shadow-sm"
+          className="bg-white rounded-lg p-4 mb-6 flex-row items-center"
           onPress={handleCuppingStyle}
         >
-          <View className="flex-1">
-            <Text className="text-lg font-semibold text-amber-900 mb-1">
-              Cupping Style
-            </Text>
-          </View>
-          <Text className="text-2xl text-orange-600 font-light">›</Text>
+          <Text className="flex-1 text-base text-gray-900">Cupping Style</Text>
+          <Text className="text-gray-400">›</Text>
         </TouchableOpacity>
 
+        {/* Logout Button */}
         <TouchableOpacity
-          className="bg-red-600 mx-5 rounded-xl p-4 mt-2 items-center shadow-sm"
+          className="bg-white rounded-lg p-4 mt-auto mb-8 items-center border border-gray-200"
           onPress={handleLogout}
         >
-          <Text className="text-base font-semibold text-white">Logout</Text>
+          <Text className="text-base text-red-600 font-medium">Logout</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
