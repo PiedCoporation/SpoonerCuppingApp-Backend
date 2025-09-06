@@ -105,8 +105,12 @@ func (uc *UserAuthController) Login(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	email := req.Email
-	if err := uc.auth.Login(ctx, email); err != nil {
+	vo := user.LoginUserVO{
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	if err := uc.auth.Login(ctx, vo); err != nil {
 		errorcode.JSONError(c, err)
 		return
 	}

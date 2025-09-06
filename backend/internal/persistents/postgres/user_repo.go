@@ -30,7 +30,7 @@ func (ur *userPgRepo) GetByEmail(ctx context.Context, email string) (*entities.U
 		First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errorcode.ErrNotFound
+			return nil, errorcode.ErrUserNotFound
 		}
 		return nil, err
 	}

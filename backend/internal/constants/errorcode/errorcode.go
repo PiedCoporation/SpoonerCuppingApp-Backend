@@ -20,9 +20,11 @@ var (
 	// 403
 	ErrAccountIsNotVerified = errors.New("this account is not verified")
 	ErrAccountIsDeleted     = errors.New("this account is deleted")
+	ErrInvalidPassword      = errors.New("invalid password")
 
 	// 404
-	ErrNotFound = errors.New("not found")
+	ErrNotFound     = errors.New("not found")
+	ErrUserNotFound = errors.New("user not found")
 
 	// 409
 	ErrEmailBelongsToDeletedAccount = errors.New("email belongs to deleted account")
@@ -47,9 +49,11 @@ var errorStatusMap = map[error]int{
 	// 403
 	ErrAccountIsNotVerified: http.StatusForbidden,
 	ErrAccountIsDeleted:     http.StatusForbidden,
+	ErrInvalidPassword:      http.StatusForbidden,
 
 	// 404
-	ErrNotFound: http.StatusNotFound,
+	ErrNotFound:     http.StatusNotFound,
+	ErrUserNotFound: http.StatusNotFound,
 
 	// 409
 	ErrEmailBelongsToDeletedAccount: http.StatusConflict,

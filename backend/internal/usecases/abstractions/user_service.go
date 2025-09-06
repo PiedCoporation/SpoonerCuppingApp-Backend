@@ -12,7 +12,7 @@ type (
 		Register(ctx context.Context, vo user.RegisterUserVO) error
 		ResendEmailVerifyRegister(ctx context.Context, email string) error
 		VerifyRegister(ctx context.Context, userID uuid.UUID) (string, string, error)
-		Login(ctx context.Context, email string) error
+		Login(ctx context.Context, vo user.LoginUserVO) error
 		VerifyLogin(ctx context.Context, userID uuid.UUID) (string, string, error)
 		Logout(ctx context.Context, userID uuid.UUID, refreshToken string) error
 		RefreshToken(ctx context.Context, refreshToken string) (string, string, error)

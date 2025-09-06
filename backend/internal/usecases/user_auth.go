@@ -12,8 +12,10 @@ import (
 	repoAbstractions "backend/internal/persistents/abstractions"
 	serviceAbstractions "backend/internal/usecases/abstractions"
 	"backend/pkg/utils/jwt"
+	"backend/pkg/utils/password"
 	"backend/pkg/utils/sendto"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -43,6 +45,8 @@ func NewUserAuthService(
 func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO) error {
 	g, gCtx := errgroup.WithContext(ctx)
 
+	hpChan := make(chan string, 1)
+
 	// check if email exists
 	g.Go(func() error {
 		exists, err := us.userRepo.IsEmailTaken(gCtx, vo.Email, uuid.Nil)
@@ -67,6 +71,16 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		return nil
 	})
 
+	// hash pass
+	g.Go(func() error {
+		hp, err := password.HashPassword(vo.Password)
+		if err != nil {
+			return err
+		}
+		hpChan <- hp
+		return nil
+	})
+
 	if err := g.Wait(); err != nil {
 		return err
 	}
@@ -85,6 +99,7 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		LastName:   vo.LastName,
 		Email:      vo.Email,
 		Phone:      vo.Phone,
+		Password:   <-hpChan,
 		IsVerified: false,
 		Auditable:  commons.Auditable{CreatedAt: now, UpdatedAt: now},
 		RoleID:     defaultRole.ID,
@@ -154,6 +169,9 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	// get user from db
 	user, err := us.userRepo.GetByID(ctx, userID)
 	if err != nil {
+		if errors.Is(err, errorcode.ErrNotFound) {
+			err = errorcode.ErrUserNotFound
+		}
 		return "", "", err
 	}
 
@@ -199,9 +217,9 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 }
 
 // Login implements user.UserAuthService.
-func (us *userAuthService) Login(ctx context.Context, email string) error {
+func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserVO) error {
 	// get user from db
-	user, err := us.userRepo.GetByEmail(ctx, email)
+	user, err := us.userRepo.GetByEmail(ctx, vo.Email)
 	if err != nil {
 		return err
 	}
@@ -226,7 +244,7 @@ func (us *userAuthService) Login(ctx context.Context, email string) error {
 		global.Config.HTTP.Url, token)
 
 	// send verify link to login
-	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
+	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{vo.Email},
 		"login-verify.html", map[string]any{"verifyLink": verifyLink},
 	); err != nil {
 		return err
