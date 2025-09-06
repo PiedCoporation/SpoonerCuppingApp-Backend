@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "backend/**"
 
 jobs:
   build:
@@ -56,6 +58,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Docker Images
+        working-directory: ./backend
         run: |
           docker compose build
 
@@ -110,6 +113,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Stop Coffee Cupping API
+        working-directory: ./backend
         run: |
           docker compose -f docker-compose.yml -p coffee-cupping-project stop coffee-cupping-api
           docker compose -f docker-compose.yml -p coffee-cupping-project rm -f coffee-cupping-api
@@ -118,6 +122,7 @@ jobs:
         run: docker image prune -f
 
       - name: Deploy API
+        working-directory: ./backend
         run: docker compose -f docker-compose.yml -p coffee-cupping-project up -d coffee-cupping-api --build
 
       - name: Notify Deployment Success
