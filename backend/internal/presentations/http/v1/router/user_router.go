@@ -32,6 +32,7 @@ func NewUserRouter(
 	{
 		publicGroup.POST("/refresh-token", uAuthCtrl.RefreshToken)
 		publicGroup.POST("/login", uAuthCtrl.Login)
+		publicGroup.POST("/forgot-password", uAuthCtrl.ForgotPassword)
 	}
 
 	// Register
@@ -52,5 +53,6 @@ func NewUserRouter(
 	// presentations
 	{
 		privateGroup.POST("/logout", uAuthCtrl.Logout)
+		privateGroup.POST("/change-password", uAuthCtrl.ChangePassword)
 	}
 }

@@ -25,3 +25,12 @@ type LogoutUserReq struct {
 type RefreshTokenReq struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
+
+type ForgotPasswordReq struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type ChangePasswordReq struct {
+	Password        string `json:"password" binding:"required,min=8,max=30"`
+	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
+}
