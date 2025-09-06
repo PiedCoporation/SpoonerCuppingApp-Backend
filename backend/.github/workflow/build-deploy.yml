@@ -1,0 +1,124 @@
+name: Deploy Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: [self-hosted, tan-server]
+    env:
+      # HTTP
+      HTTP_URL: ${{ secrets.HTTP_URL }}
+      HTTP_PORT: ${{ secrets.HTTP_PORT }}
+      HTTP_READ_TIMEOUT: ${{ secrets.HTTP_READ_TIMEOUT }}
+      HTTP_WRITE_TIMEOUT: ${{ secrets.HTTP_WRITE_TIMEOUT }}
+      HTTP_IDLE_TIMEOUT: ${{ secrets.HTTP_IDLE_TIMEOUT }}
+      HTTP_SHUTDOWN_TIMEOUT: ${{ secrets.HTTP_SHUTDOWN_TIMEOUT }}
+
+      # Postgres
+      POSTGRES_DB_URL: ${{ secrets.POSTGRES_DB_URL }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DBNAME: ${{ secrets.POSTGRES_DBNAME }}
+      POSTGRES_MAX_IDLE_CONNS: ${{ secrets.POSTGRES_MAX_IDLE_CONNS }}
+      POSTGRES_MAX_OPEN_CONNS: ${{ secrets.POSTGRES_MAX_OPEN_CONNS }}
+      POSTGRES_CONN_MAX_LIFETIME: ${{ secrets.POSTGRES_CONN_MAX_LIFETIME }}
+
+      # Logger
+      LOGGER_LOG_LEVEL: ${{ secrets.LOGGER_LOG_LEVEL }}
+      LOGGER_FILE_LOG_NAME: ${{ secrets.LOGGER_FILE_LOG_NAME }}
+      LOGGER_MAX_BACKUPS: ${{ secrets.LOGGER_MAX_BACKUPS }}
+      LOGGER_MAX_AGE: ${{ secrets.LOGGER_MAX_AGE }}
+      LOGGER_MAX_SIZE: ${{ secrets.LOGGER_MAX_SIZE }}
+      LOGGER_COMPRESS: ${{ secrets.LOGGER_COMPRESS }}
+
+      # JWT
+      JWT_ACCESS_TOKEN_KEY: ${{ secrets.JWT_ACCESS_TOKEN_KEY }}
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN }}
+      JWT_REFRESH_TOKEN_KEY: ${{ secrets.JWT_REFRESH_TOKEN_KEY }}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN }}
+      JWT_REGISTER_TOKEN_KEY: ${{ secrets.JWT_REGISTER_TOKEN_KEY }}
+      JWT_REGISTER_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REGISTER_TOKEN_EXPIRES_IN }}
+      JWT_LOGIN_TOKEN_KEY: ${{ secrets.JWT_LOGIN_TOKEN_KEY }}
+      JWT_LOGIN_TOKEN_EXPIRES_IN: ${{ secrets.JWT_LOGIN_TOKEN_EXPIRES_IN }}
+
+      # SMTP
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Images
+        run: |
+          docker compose build
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted, tan-server]
+    env:
+      # HTTP
+      HTTP_URL: ${{ secrets.HTTP_URL }}
+      HTTP_PORT: ${{ secrets.HTTP_PORT }}
+      HTTP_READ_TIMEOUT: ${{ secrets.HTTP_READ_TIMEOUT }}
+      HTTP_WRITE_TIMEOUT: ${{ secrets.HTTP_WRITE_TIMEOUT }}
+      HTTP_IDLE_TIMEOUT: ${{ secrets.HTTP_IDLE_TIMEOUT }}
+      HTTP_SHUTDOWN_TIMEOUT: ${{ secrets.HTTP_SHUTDOWN_TIMEOUT }}
+
+      # Postgres
+      POSTGRES_DB_URL: ${{ secrets.POSTGRES_DB_URL }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DBNAME: ${{ secrets.POSTGRES_DBNAME }}
+      POSTGRES_MAX_IDLE_CONNS: ${{ secrets.POSTGRES_MAX_IDLE_CONNS }}
+      POSTGRES_MAX_OPEN_CONNS: ${{ secrets.POSTGRES_MAX_OPEN_CONNS }}
+      POSTGRES_CONN_MAX_LIFETIME: ${{ secrets.POSTGRES_CONN_MAX_LIFETIME }}
+
+      # Logger
+      LOGGER_LOG_LEVEL: ${{ secrets.LOGGER_LOG_LEVEL }}
+      LOGGER_FILE_LOG_NAME: ${{ secrets.LOGGER_FILE_LOG_NAME }}
+      LOGGER_MAX_BACKUPS: ${{ secrets.LOGGER_MAX_BACKUPS }}
+      LOGGER_MAX_AGE: ${{ secrets.LOGGER_MAX_AGE }}
+      LOGGER_MAX_SIZE: ${{ secrets.LOGGER_MAX_SIZE }}
+      LOGGER_COMPRESS: ${{ secrets.LOGGER_COMPRESS }}
+
+      # JWT
+      JWT_ACCESS_TOKEN_KEY: ${{ secrets.JWT_ACCESS_TOKEN_KEY }}
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN }}
+      JWT_REFRESH_TOKEN_KEY: ${{ secrets.JWT_REFRESH_TOKEN_KEY }}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN }}
+      JWT_REGISTER_TOKEN_KEY: ${{ secrets.JWT_REGISTER_TOKEN_KEY }}
+      JWT_REGISTER_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REGISTER_TOKEN_EXPIRES_IN }}
+      JWT_LOGIN_TOKEN_KEY: ${{ secrets.JWT_LOGIN_TOKEN_KEY }}
+      JWT_LOGIN_TOKEN_EXPIRES_IN: ${{ secrets.JWT_LOGIN_TOKEN_EXPIRES_IN }}
+
+      # SMTP
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Stop Coffee Cupping API
+        run: |
+          docker compose -f docker-compose.yml -p coffee-cupping-project stop coffee-cupping-api
+          docker compose -f docker-compose.yml -p coffee-cupping-project rm -f coffee-cupping-api
+
+      - name: Prune Unused Docker Images
+        run: docker image prune -f
+
+      - name: Deploy API
+        run: docker compose -f docker-compose.yml -p coffee-cupping-project up -d coffee-cupping-api --build
+
+      - name: Notify Deployment Success
+        run: echo "Deployment completed successfully!"
