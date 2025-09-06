@@ -21,7 +21,7 @@ const HomeScreen: React.FC = () => {
     <ScrollView className="flex-1 bg-gray-50">
       {/* Header Section */}
       <View className="bg-amber-900 px-6 py-8 rounded-b-3xl">
-        <Text className="text-white text-2xl font-bold mb-2">
+        <Text className="text-white text-2xl mt-4 font-bold mb-2">
           Coffee Cupping Mall
         </Text>
         <Text className="text-amber-100 text-base">
