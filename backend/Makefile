@@ -19,7 +19,7 @@ test:
 
 .PHONY: wire
 wire:
-	@wire $(if $(filter-out $@,$(MAKECMDGOALS)),$(WIRE_PATH)/$(filter-out $@,$(MAKECMDGOALS)),$(WIRE_PATH)/...)
+	@$(shell go env GOPATH)/bin/wire $(if $(filter-out $@,$(MAKECMDGOALS)),$(WIRE_PATH)/$(filter-out $@,$(MAKECMDGOALS)),$(WIRE_PATH)/...)
 
 .PHONY: migrate-create
 migrate-create:

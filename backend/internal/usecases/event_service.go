@@ -1,0 +1,125 @@
+package usecases
+
+import (
+	"backend/internal/constants/errorcode"
+	"backend/internal/contracts/event"
+	"backend/internal/domains/commons"
+	"backend/internal/domains/entities"
+	persistentRepo "backend/internal/persistents/abstractions"
+	abstractions "backend/internal/usecases/abstractions"
+	"context"
+
+	"github.com/google/uuid"
+)
+
+type eventService struct {
+	eventUOW persistentRepo.EventUOW
+}
+
+func NewEventService(eventUOW persistentRepo.EventUOW) abstractions.IEventService {
+	return &eventService{
+		eventUOW: eventUOW,
+	}
+}
+
+func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) error {
+	// g, gCtx := errgroup.WithContext(ctx)
+	userID, _ := ctx.Value("userID").(uuid.UUID)
+
+	repoProvider, err := s.eventUOW.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	sampleRepo := repoProvider.SampleRepository()
+	eventRepo := repoProvider.EventRepository()
+	eventAddressRepo := repoProvider.EventAddressRepository()
+
+	if len(req.Samples) == 0 {
+		s.eventUOW.Rollback()
+		return errorcode.ErrEventSamplesRequired
+	}
+
+	if len(req.EventAddress) == 0 {
+		s.eventUOW.Rollback()
+		return errorcode.ErrEventAddressRequired
+	}
+
+	var sampleEntities []entities.UserSample
+
+	for _, sample := range req.Samples {
+		sampleEntity := entities.UserSample{
+			Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
+			Name: sample.Name,
+			RoastingDate: sample.RoastingDate,
+			RoastLevel: sample.RoastLevel,
+			AltitudeGrow: sample.AltitudeGrow,
+			RoasteryName: sample.RoasteryName,
+			RoasteryAddress: sample.RoasteryAddress,
+			BreedName: sample.BreedName,
+			PreProcessing: sample.PreProcessing,
+			GrowNation: sample.GrowNation,
+			GrowAddress: sample.GrowAddress,
+			Price: sample.Price,
+		}
+		sampleEntities = append(sampleEntities, sampleEntity)
+	}
+
+	if err := sampleRepo.CreateRange(ctx, sampleEntities); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+	
+	// Create Event
+	eventEntity := entities.Event{
+		Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
+		Name: req.Name,
+		DateOfEvent: req.DateOfEvent,
+		StartTime: req.StartTime,
+		EndTime: req.EndTime,
+		Limit: req.Limit,
+		NumberSamples: req.NumberSamples,
+		PhoneContact: req.PhoneContact,
+		EmailContact: req.EmailContact,
+		IsPublic: req.IsPublic,
+		UserID: userID,
+	}
+
+	if err := eventRepo.Create(ctx, &eventEntity); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+
+	var eventAddressesEntities []entities.EventAddress
+
+	for _, eventAddress := range req.EventAddress {
+		eventAddressEntity := entities.EventAddress{
+			Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
+			Province: eventAddress.Province,
+			District: eventAddress.District,
+			Longitude: eventAddress.Longitude,
+			Latitude: eventAddress.Latitude,
+			Ward: eventAddress.Ward,
+			Street: eventAddress.Street,
+			Phone: eventAddress.Phone,
+		}
+		eventAddressesEntities = append(eventAddressesEntities, eventAddressEntity)
+	}
+
+	if err := eventAddressRepo.CreateRange(ctx, eventAddressesEntities); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+
+	// Commit the transaction
+	if err := s.eventUOW.Commit(); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+
+	return nil
+}
+
+func (s *eventService) Delete(ctx context.Context, id uuid.UUID) error {
+	return nil
+}

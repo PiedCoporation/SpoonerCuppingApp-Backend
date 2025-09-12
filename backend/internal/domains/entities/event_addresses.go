@@ -2,6 +2,8 @@ package entities
 
 import (
 	"backend/internal/domains/commons"
+
+	"github.com/google/uuid"
 )
 
 type EventAddress struct {
@@ -13,8 +15,8 @@ type EventAddress struct {
 	Ward      string `gorm:"not null"`
 	Street    string `gorm:"not null"`
 	Phone     string `gorm:"not null"`
-	IsDefault bool
 	commons.Auditable
 
-	Events []Event `gorm:"foreignKey:EventAddressID"`
+	UserID uuid.UUID `gorm:"not null;index"`
+	User   User      `gorm:"foreignKey:UserID"`
 }
