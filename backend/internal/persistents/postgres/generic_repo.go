@@ -61,6 +61,15 @@ func (r *genericRepository[T]) Create(ctx context.Context, entity *T) error {
 	return nil
 }
 
+// CreateRange implements abstractions.GenericRepository.
+func (r *genericRepository[T]) CreateRange(ctx context.Context, entities []T) error {
+	if err := r.db.WithContext(ctx).
+		Create(&entities).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // Update implements abstractions.GenericRepository.
 func (r *genericRepository[T]) Update(ctx context.Context, id uuid.UUID, fields map[string]any) error {
 	var entity T

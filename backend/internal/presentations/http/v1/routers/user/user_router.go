@@ -1,29 +1,26 @@
-package router
+package user
 
 import (
 	"backend/global"
 	"backend/internal/constants/enums/jwtpurpose"
+	wireUser "backend/internal/infrastructures/wire/user"
 	"backend/internal/presentations/http/middlewares"
-	"backend/internal/presentations/http/v1/controller"
-	userService "backend/internal/usecases/abstractions"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-type UserServiceSet struct {
-	UserAuthService userService.UserAuthService
+type UserRouter struct {
 }
 
-func NewUserRouter(
+func (u *UserRouter) InitUserRouter(
 	router *gin.RouterGroup,
-	serviceSet *UserServiceSet,
+	db *gorm.DB,
 ) {
 	// config
 	cfg := global.Config
 
-	// New presentations
-	uAuthCtrl := controller.NewUserAuthController(serviceSet.UserAuthService)
-
+	uAuthCtrl, _ := wireUser.InitUserRouterHandler(db)
 	// ====== Main user group ======
 	userGroup := router.Group("/users")
 

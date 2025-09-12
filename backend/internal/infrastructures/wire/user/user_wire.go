@@ -4,21 +4,22 @@ package user
 
 import (
 	postgres2 "backend/internal/persistents/postgres"
+	"backend/internal/presentations/http/v1/controller"
 	userImpl "backend/internal/usecases"
-	userInterface "backend/internal/usecases/abstractions"
 
 	"github.com/google/wire"
 	"gorm.io/gorm"
 )
 
-func NewUserAuthService(
+func InitUserRouterHandler(
 	db *gorm.DB,
-) userInterface.UserAuthService {
+) (*controller.UserAuthController, error) {
 	wire.Build(
 		postgres2.NewUserAuthUow,
 		postgres2.NewUserRepo,
 		postgres2.NewRefreshTokenRepo,
 		userImpl.NewUserAuthService,
+		controller.NewUserAuthController,
 	)
-	return nil
+	return &controller.UserAuthController{}, nil
 }

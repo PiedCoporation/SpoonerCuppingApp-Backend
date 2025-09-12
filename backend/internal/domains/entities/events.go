@@ -25,9 +25,8 @@ type Event struct {
 
 	UserID         uuid.UUID    `gorm:"not null;index"`
 	HostBy         User         `gorm:"foreignKey:UserID"`
-	EventAddressID uuid.UUID    `gorm:"not null;index"`
-	EventAddress   EventAddress `gorm:"foreignKey:EventAddressID"`
-
+	
+	EventAddress   []EventAddress `gorm:"foreignKey:EventID"`
 	EventUsers   []EventUser   `gorm:"foreignKey:EventID"`
 	EventSamples []EventSample `gorm:"foreignKey:EventID"`
 }

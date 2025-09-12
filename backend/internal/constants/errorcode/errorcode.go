@@ -33,6 +33,9 @@ var (
 	// 500
 	ErrUnexpectedSigningToken = errors.New("unexpected signing token")
 	ErrUnexpectedCreatingUser = errors.New("unexpected creating user")
+
+	ErrEventSamplesRequired = errors.New("event samples are required")
+	ErrEventAddressRequired = errors.New("event address is required")
 )
 
 // Map code -> http code
@@ -62,6 +65,9 @@ var errorStatusMap = map[error]int{
 	// 500
 	ErrUnexpectedSigningToken: http.StatusInternalServerError,
 	ErrUnexpectedCreatingUser: http.StatusInternalServerError,
+
+	ErrEventSamplesRequired: http.StatusBadRequest,
+	ErrEventAddressRequired: http.StatusBadRequest,
 }
 
 // utils write error
