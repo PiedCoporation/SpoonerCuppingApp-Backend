@@ -12,7 +12,9 @@ var (
 	ErrEmailExists       = errors.New("this email already exists")
 	ErrPhoneExists       = errors.New("this phone number already exists")
 	ErrAccountIsVerified = errors.New("this account is already verified")
-
+	ErrEventIsNotStartForRegister = errors.New("this event is not start for register")
+	ErrEventIsFull = errors.New("this event is full")
+	ErrUserAlreadyRegistered = errors.New("this user is already registered for this event")
 	// 401
 	ErrInvalidToken      = errors.New("invalid token")
 	ErrInvalidJWTPurpose = errors.New("invalid jwt purpose")
@@ -25,7 +27,7 @@ var (
 	// 404
 	ErrNotFound     = errors.New("not found")
 	ErrUserNotFound = errors.New("user not found")
-
+	ErrEventNotFound = errors.New("event not found")
 	// 409
 	ErrEmailBelongsToDeletedAccount = errors.New("email belongs to deleted account")
 	ErrPhoneBelongsToDeletedAccount = errors.New("phone number belongs to deleted account")

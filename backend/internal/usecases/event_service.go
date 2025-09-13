@@ -1,28 +1,124 @@
 package usecases
 
 import (
-	eventEnum "backend/internal/constants/enums/event"
+	"backend/global"
+	"backend/internal/constants/enums/eventregisterstatus"
 	"backend/internal/constants/errorcode"
 	"backend/internal/contracts/common"
 	"backend/internal/contracts/event"
 	"backend/internal/domains/commons"
 	"backend/internal/domains/entities"
+	"backend/internal/mapper"
 	persistentRepo "backend/internal/persistents/abstractions"
 	"backend/internal/persistents/postgres"
 	abstractions "backend/internal/usecases/abstractions"
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type eventService struct {
 	eventUOW persistentRepo.EventUOW
+	eventRepo persistentRepo.IEventRepository
+	eventAddressRepo persistentRepo.IEventAddressRepository
+	eventSampleRepo persistentRepo.IEventSampleRepository
+	eventUserRepo persistentRepo.IEventUserRepository
 }
 
-func NewEventService(eventUOW persistentRepo.EventUOW) abstractions.IEventService {
+func NewEventService(eventUOW persistentRepo.EventUOW,
+	 eventRepo persistentRepo.IEventRepository,
+	 eventAddressRepo persistentRepo.IEventAddressRepository,
+	 eventSampleRepo persistentRepo.IEventSampleRepository,
+	 eventUserRepo persistentRepo.IEventUserRepository) abstractions.IEventService {
 	return &eventService{
 		eventUOW: eventUOW,
+		eventRepo: eventRepo,
+		eventAddressRepo: eventAddressRepo,
+		eventSampleRepo: eventSampleRepo,
+		eventUserRepo: eventUserRepo,
 	}
+}
+
+func (s *eventService) Register(ctx context.Context, id uuid.UUID) error {
+	userID, _ := ctx.Value("userID").(uuid.UUID)
+
+	global.Logger.Info("userID", zap.Any("userID", userID))
+
+	repoProvider, err := s.eventUOW.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	eventRepo := repoProvider.EventRepository()
+	eventUserRepo := repoProvider.EventUserRepository()
+
+	eventEntity, err := eventRepo.GetByID(ctx, id)
+	if err != nil {
+		s.eventUOW.Rollback()
+		return errorcode.ErrEventNotFound
+	}
+
+	if eventEntity.RegisterStatus == eventregisterstatus.RegisterStatusEnumPending {
+		s.eventUOW.Rollback()
+		return errorcode.ErrEventIsNotStartForRegister
+	}
+
+	if eventEntity.RegisterStatus == eventregisterstatus.RegisterStatusEnumFull {
+		s.eventUOW.Rollback()
+		return errorcode.ErrEventIsFull
+	}
+
+	if eventEntity.RegisterDate.After(time.Now()) {
+		s.eventUOW.Rollback()
+		return errorcode.ErrEventIsNotStartForRegister
+	}
+
+	if eventEntity.TotalCurrent >= eventEntity.Limit {
+		s.eventUOW.Rollback()
+		return errorcode.ErrEventIsFull
+	}
+
+	query := fmt.Sprintf("user_id = '%s' AND event_id = '%s'", userID.String(), id.String())
+
+	// Check if user is already registered for this event
+	existingEventUser, err := eventUserRepo.GetSingle(ctx, query)
+	if err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+	if existingEventUser != nil {
+		s.eventUOW.Rollback()
+		return errorcode.ErrUserAlreadyRegistered
+	}
+
+	if err := eventUserRepo.Create(ctx, &entities.EventUser{
+		Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
+		UserID: userID,
+		EventID: id,
+		IsAccepted: false,
+		IsInvited: false,
+	}); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+
+	eventEntity.TotalCurrent++
+	if err := eventRepo.Update(ctx, eventEntity.ID, map[string]any{
+		"total_current": eventEntity.TotalCurrent,
+	}); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+
+	if err := s.eventUOW.Commit(); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+
+	return nil
 }
 
 func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) error {
@@ -63,7 +159,7 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) err
 		IsPublic: req.IsPublic,
 		UserID: userID,
 		RegisterDate: req.RegisterDate,
-		RegisterStatus: eventEnum.RegisterStatusEnumPending,
+		RegisterStatus: eventregisterstatus.RegisterStatusEnumPending,
 	}
 
 	if err := eventRepo.Create(ctx, &eventEntity); err != nil {
@@ -149,15 +245,16 @@ func (s *eventService) GetAll(ctx context.Context, pageSize int, pageNumber int,
     // Build (but do not execute) the query
     q := db.WithContext(ctx).Model(&entities.Event{})
 
-    // Optional search (use ILIKE for Postgres; switch to LIKE for MySQL)
     if searchTerm != "" {
         q = q.Where("name ILIKE ?", "%"+searchTerm+"%")
     }
 
-    // Optional default ordering for stable pagination
+	q = q.Where("is_public = ?", true)
+	q = q.Where("is_deleted = ?", false)
+	
     q = q.Order("created_at DESC")
 
-	events, err := postgres.GetPaginated[entities.Event](q, ctx, pageSize, pageNumber, "EventAddress")
+	events, err := postgres.GetPaginated[entities.Event](q, ctx, pageSize, pageNumber, "EventAddress", "HostBy")
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +262,7 @@ func (s *eventService) GetAll(ctx context.Context, pageSize int, pageNumber int,
 	var eventsPageResult common.PageResult[event.Event]
 	eventsPageResult.Data = make([]event.Event, len(events.Data))
 	for i, event := range events.Data {
-		eventsPageResult.Data[i] = event.ToContract()
+		eventsPageResult.Data[i] = mapper.MapEventToContractGetAllEventResponse(&event)
 	}
 	eventsPageResult.Total = int(events.Total)
 	eventsPageResult.Page = events.Page
@@ -175,6 +272,22 @@ func (s *eventService) GetAll(ctx context.Context, pageSize int, pageNumber int,
 	return &eventsPageResult, nil
 }
 
+func (s *eventService) GetByID(ctx context.Context, id uuid.UUID) (*event.GetEventByIDResponse, error) {
+	eventRepo := s.eventRepo
+	// Preload all necessary relationships including nested UserSample
+	eventEntity, err := eventRepo.GetByID(ctx, id, "EventAddress", "HostBy", "EventSamples.UserSample")
+	if err != nil {
+		return nil, err
+	}
+	
+	// Validate that we have a valid event entity
+	if eventEntity == nil {
+		return nil, errorcode.ErrNotFound
+	}
+	
+	eventContract := mapper.MapEventToContractGetEventByIDResponse(eventEntity)
+	return &eventContract, nil
+}
 
 func (s *eventService) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil

@@ -11,8 +11,8 @@ import (
 type IEventService interface {
 	Create(ctx context.Context, req event.CreateEventReq) error
 	GetAll(ctx context.Context, pageSize int, pageNumber int, searchTerm string) (*common.PageResult[event.Event], error)
-	// GetByID(ctx context.Context, id uuid.UUID) (*entities.Event, error)
-	
+	GetByID(ctx context.Context, id uuid.UUID) (*event.GetEventByIDResponse, error)
+	Register(ctx context.Context, id uuid.UUID) error
 	// Update(ctx context.Context, id uuid.UUID, event *entities.Event) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }

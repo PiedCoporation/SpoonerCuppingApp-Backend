@@ -72,6 +72,8 @@ definitions:
         items:
           $ref: '#/definitions/event.EventAddress'
         type: array
+      host_by:
+        $ref: '#/definitions/event.HostBy'
       id:
         example: 123e4567-e89b-12d3-a456-426614174000
         type: string
@@ -95,7 +97,7 @@ definitions:
         type: string
       register_status:
         allOf:
-        - $ref: '#/definitions/internal_contracts_event.RegisterStatusEnum'
+        - $ref: '#/definitions/eventregisterstatus.RegisterStatusEnum'
         enum:
         - PENDING
         - ACCEPTED
@@ -148,6 +150,77 @@ definitions:
         example: 15
         type: integer
     type: object
+  event.EventSample:
+    properties:
+      altitude_grow:
+        example: 1000m
+        type: string
+      breed_name:
+        example: Breed Name
+        type: string
+      grow_address:
+        example: Grow Address
+        type: string
+      grow_nation:
+        example: Vietnam
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: Coffee Sample
+        type: string
+      pre_processing:
+        allOf:
+        - $ref: '#/definitions/processing.ProcessingEnum'
+        example: Washed
+      price:
+        example: "100000"
+        type: string
+      rating:
+        example: 5
+        type: integer
+      roast_level:
+        allOf:
+        - $ref: '#/definitions/roastinglever.RoastingLeverEnum'
+        example: Medium
+      roastery_address:
+        example: Roastery Address
+        type: string
+      roastery_name:
+        example: Roastery Name
+        type: string
+      roasting_date:
+        example: "2024-01-15T10:00:00Z"
+        type: string
+    type: object
+  event.GetEventByIDResponse:
+    properties:
+      event:
+        $ref: '#/definitions/event.Event'
+      samples:
+        items:
+          $ref: '#/definitions/event.EventSample'
+        type: array
+    type: object
+  event.HostBy:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      last_name:
+        example: Doe
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+    type: object
   event.NewEventAddressReq:
     properties:
       district:
@@ -190,7 +263,8 @@ definitions:
       roastingDate:
         type: string
     type: object
-  internal_contracts_event.RegisterStatusEnum:
+  eventregisterstatus.RegisterStatusEnum:
+    description: Registration status of an event
     enum:
     - PENDING
     - ACCEPTED
@@ -408,9 +482,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Event details
+          description: Event details with samples
           schema:
-            $ref: '#/definitions/event.Event'
+            $ref: '#/definitions/event.GetEventByIDResponse'
         "400":
           description: Bad request - invalid event ID
           schema:

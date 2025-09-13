@@ -1,4 +1,4 @@
-package event
+package eventregisterstatus
 
 // RegisterStatusEnum represents the registration status of an event
 // @Description Registration status of an event
