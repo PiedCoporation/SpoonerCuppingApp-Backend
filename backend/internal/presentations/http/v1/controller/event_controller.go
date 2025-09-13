@@ -61,3 +61,9 @@ func (ec *EventController) CreateEvent(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{"message": "event created"})
 }
+
+func (ec *EventController) GetEvents(c *gin.Context) {}
+
+func (ec *EventController) GetEventByID(c *gin.Context) {}
+
+func (ec *EventController) RegisterEvent(c *gin.Context) {}

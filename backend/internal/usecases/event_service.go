@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	eventEnum "backend/internal/constants/enums/event"
 	"backend/internal/constants/errorcode"
 	"backend/internal/contracts/event"
 	"backend/internal/domains/commons"
@@ -59,6 +60,8 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) err
 		EmailContact: req.EmailContact,
 		IsPublic: req.IsPublic,
 		UserID: userID,
+		RegisterDate: req.RegisterDate,
+		RegisterStatus: eventEnum.RegisterStatusEnumPending,
 	}
 
 	if err := eventRepo.Create(ctx, &eventEntity); err != nil {

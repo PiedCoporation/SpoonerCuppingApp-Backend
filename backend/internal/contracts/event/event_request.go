@@ -9,6 +9,7 @@ import (
 type CreateEventReq struct {
 	Name string
 	DateOfEvent time.Time
+	RegisterDate time.Time
 	StartTime time.Time
 	EndTime time.Time
 	Limit int

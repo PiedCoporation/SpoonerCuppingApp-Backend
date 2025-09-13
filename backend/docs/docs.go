@@ -55,6 +55,12 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/controller.MessageResponse"
+                        },
+                        "headers": {
+                            "X-Execute-Time": {
+                                "type": "string",
+                                "description": "Request execution time in milliseconds"
+                            }
                         }
                     },
                     "400": {
@@ -487,6 +493,9 @@ const docTemplate = `{
         "controller.MessageResponse": {
             "type": "object",
             "properties": {
+                "execute_time": {
+                    "type": "string"
+                },
                 "message": {
                     "type": "string"
                 }
@@ -508,6 +517,9 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/controller.TokenData"
+                },
+                "execute_time": {
+                    "type": "string"
                 },
                 "message": {
                     "type": "string"

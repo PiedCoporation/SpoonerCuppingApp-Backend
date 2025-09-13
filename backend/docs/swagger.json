@@ -51,6 +51,12 @@
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/controller.MessageResponse"
+                        },
+                        "headers": {
+                            "X-Execute-Time": {
+                                "type": "string",
+                                "description": "Request execution time in milliseconds"
+                            }
                         }
                     },
                     "400": {
@@ -483,6 +489,9 @@
         "controller.MessageResponse": {
             "type": "object",
             "properties": {
+                "execute_time": {
+                    "type": "string"
+                },
                 "message": {
                     "type": "string"
                 }
@@ -504,6 +513,9 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/controller.TokenData"
+                },
+                "execute_time": {
+                    "type": "string"
                 },
                 "message": {
                     "type": "string"
