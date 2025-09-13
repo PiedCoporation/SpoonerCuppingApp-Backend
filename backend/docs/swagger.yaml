@@ -48,6 +48,8 @@ definitions:
         type: integer
       phoneContact:
         type: string
+      registerDate:
+        type: string
       samples:
         items:
           $ref: '#/definitions/event.NewSampleReq'

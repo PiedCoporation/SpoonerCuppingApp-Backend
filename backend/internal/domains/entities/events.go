@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"backend/internal/constants/enums/event"
 	"backend/internal/domains/commons"
 	"time"
 
@@ -21,6 +22,8 @@ type Event struct {
 	InviteUrl     string    `gorm:"null"`
 	QRImageUrl    string    `gorm:"null"`
 	IsPublic      bool      `gorm:"not null"`
+	RegisterDate  time.Time `gorm:"not null"`
+	RegisterStatus event.RegisterStatusEnum `gorm:"not null"`
 	commons.Auditable
 
 	UserID         uuid.UUID    `gorm:"not null;index"`

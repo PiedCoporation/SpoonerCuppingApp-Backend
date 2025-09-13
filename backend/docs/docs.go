@@ -547,6 +547,9 @@ const docTemplate = `{
                 "phoneContact": {
                     "type": "string"
                 },
+                "registerDate": {
+                    "type": "string"
+                },
                 "samples": {
                     "type": "array",
                     "items": {
