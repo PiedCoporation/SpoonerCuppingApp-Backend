@@ -15,6 +15,10 @@ func InitEventRouterHandler(
 	db *gorm.DB,
 ) (*controller.EventController, error) {
 	wire.Build(
+		postgres.NewEventRepo,
+		postgres.NewEventAddressRepo,
+		postgres.NewEventSampleRepo,
+		postgres.NewEventUserRepo,
 		postgres.NewEventUow,
 		usecases.NewEventService,
 		controller.NewEventController,

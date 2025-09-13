@@ -1,8 +1,7 @@
 package entities
 
 import (
-	"backend/internal/constants/enums/event"
-	eventContract "backend/internal/contracts/event"
+	"backend/internal/constants/enums/eventregisterstatus"
 	"backend/internal/domains/commons"
 	"time"
 
@@ -24,7 +23,7 @@ type Event struct {
 	QRImageUrl    string    `gorm:"null"`
 	IsPublic      bool      `gorm:"not null"`
 	RegisterDate  time.Time `gorm:"not null"`
-	RegisterStatus event.RegisterStatusEnum `gorm:"not null"`
+	RegisterStatus eventregisterstatus.RegisterStatusEnum `gorm:"not null"`
 	commons.Auditable
 
 	UserID         uuid.UUID    `gorm:"not null;index"`
@@ -33,36 +32,4 @@ type Event struct {
 	EventAddress   []EventAddress `gorm:"foreignKey:EventID"`
 	EventUsers   []EventUser   `gorm:"foreignKey:EventID"`
 	EventSamples []EventSample `gorm:"foreignKey:EventID"`
-}
-
-// ToContract converts the Event entity to the contract response type
-func (e *Event) ToContract() eventContract.Event {
-	var addresses []eventContract.EventAddress
-	for _, addr := range e.EventAddress {
-		addresses = append(addresses, eventContract.EventAddress{
-			Province:  addr.Province,
-			District:  addr.District,
-			Longitude: addr.Longitude,
-			Latitude:  addr.Latitude,
-			Ward:      addr.Ward,
-			Street:    addr.Street,
-			Phone:     addr.Phone,
-		})
-	}
-
-	return eventContract.Event{
-		ID:             e.ID,
-		Name:           e.Name,
-		DateOfEvent:    e.DateOfEvent,
-		StartTime:      e.StartTime,
-		EndTime:        e.EndTime,
-		Limit:          e.Limit,
-		NumberSamples:  e.NumberSamples,
-		PhoneContact:   e.PhoneContact,
-		EmailContact:   e.EmailContact,
-		IsPublic:       e.IsPublic,
-		RegisterDate:   e.RegisterDate,
-		RegisterStatus: eventContract.RegisterStatusEnum(e.RegisterStatus),
-		EventAddress:   addresses,
-	}
 }

@@ -45,7 +45,6 @@ func (ec *EventController) CreateEvent(c *gin.Context) {
 		return
 	}
 
-	// Get userID from Gin context (set by auth middleware)
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
@@ -79,8 +78,25 @@ func (ec *EventController) CreateEvent(c *gin.Context) {
 // @Failure 500 {object} controller.ErrorResponse "Internal server error"
 // @Router /events [get]
 func (ec *EventController) GetEvents(c *gin.Context) {
-	pageSize, _ := strconv.Atoi(c.Query("page_size"))
-	pageNumber, _ := strconv.Atoi(c.Query("page_number"))
+	pageSize, err := strconv.Atoi(c.Query("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+	pageNumber, err := strconv.Atoi(c.Query("page_number"))
+	if err != nil {
+		pageNumber = 1
+	}
+
+	if pageSize < 1 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	if pageNumber < 1 {
+		pageNumber = 1
+	}
+
 	searchTerm := c.Query("search_term")
 	ctx := c.Request.Context()
 	events, err := ec.EventService.GetAll(ctx, pageSize, pageNumber, searchTerm)
@@ -100,13 +116,28 @@ func (ec *EventController) GetEvents(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path string true "Event ID" format(uuid)
-// @Success 200 {object} event.Event "Event details"
+// @Success 200 {object} event.GetEventByIDResponse "Event details with samples"
 // @Failure 400 {object} controller.ErrorResponse "Bad request - invalid event ID"
 // @Failure 401 {object} controller.ErrorResponse "Unauthorized - invalid or missing token"
 // @Failure 404 {object} controller.ErrorResponse "Event not found"
 // @Failure 500 {object} controller.ErrorResponse "Internal server error"
 // @Router /events/{id} [get]
-func (ec *EventController) GetEventByID(c *gin.Context) {}
+func (ec *EventController) GetEventByID(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+	ctx := c.Request.Context()
+
+	event, err := ec.EventService.GetByID(ctx, id)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, event)
+}
 
 // RegisterEvent godoc
 // @Summary Register for an event
@@ -122,4 +153,27 @@ func (ec *EventController) GetEventByID(c *gin.Context) {}
 // @Failure 404 {object} controller.ErrorResponse "Event not found"
 // @Failure 500 {object} controller.ErrorResponse "Internal server error"
 // @Router /events/{id}/register [post]
-func (ec *EventController) RegisterEvent(c *gin.Context) {}
+func (ec *EventController) RegisterEvent(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+	
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	ctx = context.WithValue(ctx, "userID", userID.(uuid.UUID))
+
+	err = ec.EventService.Register(ctx, id)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Registration successful"})
+}

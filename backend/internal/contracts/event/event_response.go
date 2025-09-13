@@ -3,16 +3,11 @@ package event
 import (
 	"time"
 
+	"backend/internal/constants/enums/eventregisterstatus"
+	"backend/internal/constants/enums/processing"
+	"backend/internal/constants/enums/roastinglever"
+
 	"github.com/google/uuid"
-)
-
-// RegisterStatusEnum represents the registration status of an event
-type RegisterStatusEnum string
-
-const (
-	RegisterStatusEnumPending RegisterStatusEnum = "PENDING"
-	RegisterStatusEnumAccepted RegisterStatusEnum = "ACCEPTED"
-	RegisterStatusEnumFull RegisterStatusEnum = "FULL"
 )
 
 // Event represents a cupping event
@@ -23,14 +18,25 @@ type Event struct{
 	StartTime time.Time `json:"start_time" example:"2024-01-15T10:00:00Z"`
 	EndTime time.Time `json:"end_time" example:"2024-01-15T18:00:00Z"`
 	Limit int `json:"limit" example:"50"`
+	TotalCurrent int `json:"total_current" example:"20"`
 	NumberSamples int `json:"number_samples" example:"5"`
 	PhoneContact string `json:"phone_contact" example:"+1234567890"`
 	EmailContact string `json:"email_contact" example:"contact@example.com"`
 	IsPublic bool `json:"is_public" example:"true"`
 	RegisterDate time.Time `json:"register_date" example:"2024-01-10T00:00:00Z"`
-	RegisterStatus RegisterStatusEnum `json:"register_status" example:"PENDING" enums:"PENDING,ACCEPTED,FULL"`
+	RegisterStatus eventregisterstatus.RegisterStatusEnum `json:"register_status" example:"PENDING" enums:"PENDING,ACCEPTED,FULL"`
 	EventAddress []EventAddress `json:"event_address"`
-} 
+	HostBy HostBy `json:"host_by"`
+}
+
+// HostBy represents the host of an event
+type HostBy struct {
+	ID uuid.UUID `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
+	FirstName string `json:"first_name" example:"John"`
+	LastName string `json:"last_name" example:"Doe"`
+	Email string `json:"email" example:"john.doe@example.com"`
+	Phone string `json:"phone" example:"+1234567890"`
+}
 
 // EventAddress represents the address of an event
 type EventAddress struct{
@@ -41,6 +47,27 @@ type EventAddress struct{
 	Ward string `json:"ward" example:"Ben Nghe Ward"`
 	Street string `json:"street" example:"123 Main Street"`
 	Phone string `json:"phone" example:"+1234567890"`
+}
+
+type GetEventByIDResponse struct {
+	Event Event `json:"event"`
+	Samples []EventSample `json:"samples"`
+}
+
+type EventSample struct {
+	ID uuid.UUID `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
+	Name string `json:"name" example:"Coffee Sample"`
+	Rating *int `json:"rating" example:"5"`
+	RoastingDate time.Time `json:"roasting_date" example:"2024-01-15T10:00:00Z"`
+	RoastLevel roastinglever.RoastingLeverEnum `json:"roast_level" example:"Medium"`
+	AltitudeGrow string `json:"altitude_grow" example:"1000m"`
+	RoasteryName string `json:"roastery_name" example:"Roastery Name"`
+	RoasteryAddress string `json:"roastery_address" example:"Roastery Address"`
+	BreedName string `json:"breed_name" example:"Breed Name"`
+	PreProcessing processing.ProcessingEnum `json:"pre_processing" example:"Washed"`
+	GrowNation string `json:"grow_nation" example:"Vietnam"`
+	GrowAddress string `json:"grow_address" example:"Grow Address"`
+	Price *string `json:"price" example:"100000"`
 }
 
 // EventPageResult represents a paginated response for events

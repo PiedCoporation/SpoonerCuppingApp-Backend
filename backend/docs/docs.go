@@ -177,9 +177,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Event details",
+                        "description": "Event details with samples",
                         "schema": {
-                            "$ref": "#/definitions/event.Event"
+                            "$ref": "#/definitions/event.GetEventByIDResponse"
                         }
                     },
                     "400": {
@@ -775,6 +775,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/event.EventAddress"
                     }
                 },
+                "host_by": {
+                    "$ref": "#/definitions/event.HostBy"
+                },
                 "id": {
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
@@ -811,7 +814,7 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/internal_contracts_event.RegisterStatusEnum"
+                            "$ref": "#/definitions/eventregisterstatus.RegisterStatusEnum"
                         }
                     ],
                     "example": "PENDING"
@@ -882,6 +885,110 @@ const docTemplate = `{
                 }
             }
         },
+        "event.EventSample": {
+            "type": "object",
+            "properties": {
+                "altitude_grow": {
+                    "type": "string",
+                    "example": "1000m"
+                },
+                "breed_name": {
+                    "type": "string",
+                    "example": "Breed Name"
+                },
+                "grow_address": {
+                    "type": "string",
+                    "example": "Grow Address"
+                },
+                "grow_nation": {
+                    "type": "string",
+                    "example": "Vietnam"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Coffee Sample"
+                },
+                "pre_processing": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/processing.ProcessingEnum"
+                        }
+                    ],
+                    "example": "Washed"
+                },
+                "price": {
+                    "type": "string",
+                    "example": "100000"
+                },
+                "rating": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "roast_level": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/roastinglever.RoastingLeverEnum"
+                        }
+                    ],
+                    "example": "Medium"
+                },
+                "roastery_address": {
+                    "type": "string",
+                    "example": "Roastery Address"
+                },
+                "roastery_name": {
+                    "type": "string",
+                    "example": "Roastery Name"
+                },
+                "roasting_date": {
+                    "type": "string",
+                    "example": "2024-01-15T10:00:00Z"
+                }
+            }
+        },
+        "event.GetEventByIDResponse": {
+            "type": "object",
+            "properties": {
+                "event": {
+                    "$ref": "#/definitions/event.Event"
+                },
+                "samples": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.EventSample"
+                    }
+                }
+            }
+        },
+        "event.HostBy": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                }
+            }
+        },
         "event.NewEventAddressReq": {
             "type": "object",
             "properties": {
@@ -946,7 +1053,8 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_contracts_event.RegisterStatusEnum": {
+        "eventregisterstatus.RegisterStatusEnum": {
+            "description": "Registration status of an event",
             "type": "string",
             "enum": [
                 "PENDING",

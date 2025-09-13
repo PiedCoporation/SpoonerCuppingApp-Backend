@@ -18,4 +18,5 @@ type EventRepoProvider interface {
 	SampleRepository() ISampleRepository
 	EventAddressRepository() IEventAddressRepository
 	EventSampleRepository() IEventSampleRepository
+	EventUserRepository() IEventUserRepository
 }

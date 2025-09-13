@@ -30,5 +30,7 @@ func (u *EventRouter) InitEventRouter(
 	{
 		privateGroup.POST("/", eventController.CreateEvent)
 		privateGroup.GET("/", eventController.GetEvents)
+		privateGroup.GET("/:id", eventController.GetEventByID)
+		privateGroup.POST("/:id/register", eventController.RegisterEvent)
 	}
 }

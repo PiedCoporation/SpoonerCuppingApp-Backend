@@ -52,6 +52,20 @@ func (r *genericRepository[T]) GetByID(ctx context.Context, id uuid.UUID, preloa
 	return &entity, nil
 }
 
+// GetSingle implements abstractions.GenericRepository.
+func (r *genericRepository[T]) GetSingle(ctx context.Context, query string, preloads ...string) (*T, error) {
+	var entity T
+	db := r.db.WithContext(ctx)
+	for _, p := range preloads {
+		db = db.Preload(p)
+	}
+	err := db.Where(query).First(&entity).Error
+	if err != nil {
+		return nil, err
+	}
+	return &entity, nil
+}
+
 // Create implements abstractions.GenericRepository.
 func (r *genericRepository[T]) Create(ctx context.Context, entity *T) error {
 	if err := r.db.WithContext(ctx).
