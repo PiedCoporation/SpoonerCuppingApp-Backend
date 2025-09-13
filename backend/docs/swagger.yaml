@@ -9,8 +9,6 @@ definitions:
     type: object
   controller.MessageResponse:
     properties:
-      execute_time:
-        type: string
       message:
         type: string
     type: object
@@ -25,8 +23,6 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/controller.TokenData'
-      execute_time:
-        type: string
       message:
         type: string
     type: object
@@ -51,6 +47,8 @@ definitions:
       numberSamples:
         type: integer
       phoneContact:
+        type: string
+      registerDate:
         type: string
       samples:
         items:
@@ -228,10 +226,6 @@ paths:
       responses:
         "201":
           description: Created
-          headers:
-            X-Execute-Time:
-              description: Request execution time in milliseconds
-              type: string
           schema:
             $ref: '#/definitions/controller.MessageResponse'
         "400":
