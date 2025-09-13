@@ -8,6 +8,8 @@ RUN go mod download
 
 COPY . .
 
+RUN go generate ./...
+
 RUN go build -o cupping.backend.app ./cmd/app/
 
 FROM scratch
