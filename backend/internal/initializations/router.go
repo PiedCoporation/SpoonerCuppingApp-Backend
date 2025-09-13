@@ -5,11 +5,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	docs "backend/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 
 func InitRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
+
+	// Swagger docs configuration
+	docs.SwaggerInfo.BasePath = "/v1"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	eventRouter := routers.RouterGroupApp.Event
 	userRouter := routers.RouterGroupApp.User
