@@ -8,8 +8,8 @@ import (
 
 type EventSample struct {
 	commons.Entity
-	Price  string `gorm:"not null"`
-	Rating int    `gorm:"not null"`
+	Price  *string `gorm:"null"`
+	Rating *int    `gorm:"null"`
 	commons.Auditable
 
 	UserSampleID uuid.UUID  `gorm:"not null;index"`

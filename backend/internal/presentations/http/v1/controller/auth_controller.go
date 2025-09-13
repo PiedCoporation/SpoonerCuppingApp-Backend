@@ -23,6 +23,17 @@ func NewUserAuthController(
 	}
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Description Register a user account
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user.RegisterUserReq true "Register payload"
+// @Success 200 {object} controller.MessageResponse
+// @Failure 400 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/register [post]
 func (uc *UserAuthController) Register(c *gin.Context) {
 	var req user.RegisterUserReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -51,6 +62,17 @@ func (uc *UserAuthController) Register(c *gin.Context) {
 	})
 }
 
+// ResendEmailVerifyRegister godoc
+// @Summary Resend verification email for register
+// @Description Resend email verification code for registration
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user.ResendEmailReq true "Email payload"
+// @Success 200 {object} controller.MessageResponse
+// @Failure 400 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/register/resend-email [post]
 func (uc *UserAuthController) ResendEmailVerifyRegister(c *gin.Context) {
 	var req user.ResendEmailReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -73,6 +95,17 @@ func (uc *UserAuthController) ResendEmailVerifyRegister(c *gin.Context) {
 	})
 }
 
+// VerifyRegister godoc
+// @Summary Verify registration and issue tokens
+// @Description Verify user registration using token and return access/refresh tokens
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 201 {object} controller.TokenResponse
+// @Failure 401 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/register/verify [post]
 func (uc *UserAuthController) VerifyRegister(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -96,6 +129,18 @@ func (uc *UserAuthController) VerifyRegister(c *gin.Context) {
 	})
 }
 
+// Login godoc
+// @Summary Login
+// @Description Login and obtain access/refresh tokens
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user.LoginUserReq true "Login payload"
+// @Success 200 {object} controller.TokenResponse
+// @Failure 400 {object} controller.ErrorResponse
+// @Failure 401 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/login [post]
 func (uc *UserAuthController) Login(c *gin.Context) {
 	var req user.LoginUserReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -126,6 +171,19 @@ func (uc *UserAuthController) Login(c *gin.Context) {
 	})
 }
 
+// Logout godoc
+// @Summary Logout
+// @Description Revoke refresh token and logout
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param body body user.LogoutUserReq true "Logout payload"
+// @Success 200 {object} controller.MessageResponse
+// @Failure 400 {object} controller.ErrorResponse
+// @Failure 401 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/logout [post]
 func (uc *UserAuthController) Logout(c *gin.Context) {
 	var req user.LogoutUserReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -152,6 +210,17 @@ func (uc *UserAuthController) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "logout success"})
 }
 
+// ForgotPassword godoc
+// @Summary Send forgot password email
+// @Description Send email to reset password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user.ForgotPasswordReq true "Email payload"
+// @Success 200 {object} controller.MessageResponse
+// @Failure 400 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/forgot-password [post]
 func (uc *UserAuthController) ForgotPassword(c *gin.Context) {
 	var req user.ForgotPasswordReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -174,6 +243,19 @@ func (uc *UserAuthController) ForgotPassword(c *gin.Context) {
 	})
 }
 
+// ChangePassword godoc
+// @Summary Change password
+// @Description Change password for the authenticated user
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param body body user.ChangePasswordReq true "Change password payload"
+// @Success 200 {object} controller.MessageResponse
+// @Failure 400 {object} controller.ErrorResponse
+// @Failure 401 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/change-password [post]
 func (uc *UserAuthController) ChangePassword(c *gin.Context) {
 	var req user.ChangePasswordReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -205,6 +287,18 @@ func (uc *UserAuthController) ChangePassword(c *gin.Context) {
 	})
 }
 
+// RefreshToken godoc
+// @Summary Refresh token
+// @Description Exchange refresh token for new tokens
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user.RefreshTokenReq true "Refresh token payload"
+// @Success 200 {object} controller.TokenResponse
+// @Failure 400 {object} controller.ErrorResponse
+// @Failure 401 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/refresh-token [post]
 func (uc *UserAuthController) RefreshToken(c *gin.Context) {
 	var req user.RefreshTokenReq
 	if err := c.ShouldBindJSON(&req); err != nil {

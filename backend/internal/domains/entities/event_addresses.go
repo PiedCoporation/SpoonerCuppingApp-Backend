@@ -17,6 +17,6 @@ type EventAddress struct {
 	Phone     string `gorm:"not null"`
 	commons.Auditable
 
-	UserID uuid.UUID `gorm:"not null;index"`
-	User   User      `gorm:"foreignKey:UserID"`
+	EventID uuid.UUID `gorm:"not null;index"`
+	Event   Event     `gorm:"foreignKey:EventID"`
 }

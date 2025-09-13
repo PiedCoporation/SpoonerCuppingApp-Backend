@@ -32,3 +32,11 @@ migrate-up:
 .PHONY: migrate-down
 migrate-down:
 	@migrate -path $(MIGRATIONS_PATH) -database "$(POSTGRES_DB_URL)" down $(filter-out $@,$(MAKECMDGOALS))
+
+.PHONY: db-drop
+db-drop:
+	@migrate -path $(MIGRATIONS_PATH) -database "$(POSTGRES_DB_URL)" drop -f
+
+.PHONY: swagger
+swagger:
+	@$(shell go env GOPATH)/bin/swag init -g cmd/app/main.go -o ./docs

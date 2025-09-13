@@ -34,6 +34,7 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) err
 	sampleRepo := repoProvider.SampleRepository()
 	eventRepo := repoProvider.EventRepository()
 	eventAddressRepo := repoProvider.EventAddressRepository()
+	eventSampleRepo := repoProvider.EventSampleRepository()
 
 	if len(req.Samples) == 0 {
 		s.eventUOW.Rollback()
@@ -45,31 +46,6 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) err
 		return errorcode.ErrEventAddressRequired
 	}
 
-	var sampleEntities []entities.UserSample
-
-	for _, sample := range req.Samples {
-		sampleEntity := entities.UserSample{
-			Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
-			Name: sample.Name,
-			RoastingDate: sample.RoastingDate,
-			RoastLevel: sample.RoastLevel,
-			AltitudeGrow: sample.AltitudeGrow,
-			RoasteryName: sample.RoasteryName,
-			RoasteryAddress: sample.RoasteryAddress,
-			BreedName: sample.BreedName,
-			PreProcessing: sample.PreProcessing,
-			GrowNation: sample.GrowNation,
-			GrowAddress: sample.GrowAddress,
-			Price: sample.Price,
-		}
-		sampleEntities = append(sampleEntities, sampleEntity)
-	}
-
-	if err := sampleRepo.CreateRange(ctx, sampleEntities); err != nil {
-		s.eventUOW.Rollback()
-		return err
-	}
-	
 	// Create Event
 	eventEntity := entities.Event{
 		Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
@@ -90,6 +66,47 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) err
 		return err
 	}
 
+	var sampleEntities []entities.UserSample
+	var eventSampleEntities []entities.EventSample
+
+	for _, sample := range req.Samples {
+		sampleEntity := entities.UserSample{
+			Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
+			Name: sample.Name,
+			RoastingDate: sample.RoastingDate,
+			RoastLevel: sample.RoastLevel,
+			AltitudeGrow: sample.AltitudeGrow,
+			RoasteryName: sample.RoasteryName,
+			RoasteryAddress: sample.RoasteryAddress,
+			BreedName: sample.BreedName,
+			PreProcessing: sample.PreProcessing,
+			GrowNation: sample.GrowNation,
+			GrowAddress: sample.GrowAddress,
+			Price: sample.Price,
+			UserID: userID,
+		}
+		sampleEntities = append(sampleEntities, sampleEntity)
+
+		eventSampleEntity := entities.EventSample{
+			Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
+			Price: nil,
+			Rating: nil,
+			UserSampleID: sampleEntity.ID,
+			EventID: eventEntity.ID,
+		}
+		eventSampleEntities = append(eventSampleEntities, eventSampleEntity)
+	}
+
+	if err := sampleRepo.CreateRange(ctx, sampleEntities); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+
+	if err := eventSampleRepo.CreateRange(ctx, eventSampleEntities); err != nil {
+		s.eventUOW.Rollback()
+		return err
+	}
+
 	var eventAddressesEntities []entities.EventAddress
 
 	for _, eventAddress := range req.EventAddress {
@@ -102,6 +119,7 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) err
 			Ward: eventAddress.Ward,
 			Street: eventAddress.Street,
 			Phone: eventAddress.Phone,
+			EventID: eventEntity.ID,
 		}
 		eventAddressesEntities = append(eventAddressesEntities, eventAddressEntity)
 	}

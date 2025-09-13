@@ -16,7 +16,6 @@ type CreateEventReq struct {
 	PhoneContact string
 	EmailContact string
 	IsPublic bool
-	EventAddressID []string // can be empty
 	Samples []NewSampleReq
 	EventAddress []NewEventAddressReq
 }

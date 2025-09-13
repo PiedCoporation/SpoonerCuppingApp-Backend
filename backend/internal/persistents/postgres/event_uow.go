@@ -46,6 +46,7 @@ type eventRepoProvider struct {
 	eventRepo abstractions.IEventRepository
 	sampleRepo abstractions.ISampleRepository
 	eventAddressRepo abstractions.IEventAddressRepository
+	eventSampleRepo abstractions.IEventSampleRepository
 }
 
 func (r *eventRepoProvider) EventRepository() abstractions.IEventRepository {
@@ -67,4 +68,11 @@ func (r *eventRepoProvider) EventAddressRepository() abstractions.IEventAddressR
 		r.eventAddressRepo = NewEventAddressRepo(r.tx)
 	}
 	return r.eventAddressRepo
+}
+
+func (r *eventRepoProvider) EventSampleRepository() abstractions.IEventSampleRepository {
+	if r.eventSampleRepo == nil {
+		r.eventSampleRepo = NewEventSampleRepo(r.tx)
+	}
+	return r.eventSampleRepo
 }
