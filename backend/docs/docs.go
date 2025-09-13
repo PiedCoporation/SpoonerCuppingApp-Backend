@@ -22,6 +22,75 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/events": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a paginated list of events with optional search functionality",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get paginated events",
+                "parameters": [
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of events per page (default: 10, max: 100)",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (default: 1)",
+                        "name": "page_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term to filter events by name",
+                        "name": "search_term",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of events",
+                        "schema": {
+                            "$ref": "#/definitions/event.EventPageResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing token",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -71,6 +140,130 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific event by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get event by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event details",
+                        "schema": {
+                            "$ref": "#/definitions/event.Event"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid event ID",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing token",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Event not found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{id}/register": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register the current user for a specific event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Register for an event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Registration successful",
+                        "schema": {
+                            "$ref": "#/definitions/controller.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid event ID or already registered",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing token",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Event not found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/controller.ErrorResponse"
                         }
@@ -561,6 +754,134 @@ const docTemplate = `{
                 }
             }
         },
+        "event.Event": {
+            "type": "object",
+            "properties": {
+                "date_of_event": {
+                    "type": "string",
+                    "example": "2024-01-15T10:00:00Z"
+                },
+                "email_contact": {
+                    "type": "string",
+                    "example": "contact@example.com"
+                },
+                "end_time": {
+                    "type": "string",
+                    "example": "2024-01-15T18:00:00Z"
+                },
+                "event_address": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.EventAddress"
+                    }
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "is_public": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Coffee Cupping Event"
+                },
+                "number_samples": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "phone_contact": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "register_date": {
+                    "type": "string",
+                    "example": "2024-01-10T00:00:00Z"
+                },
+                "register_status": {
+                    "enum": [
+                        "PENDING",
+                        "ACCEPTED",
+                        "FULL"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/internal_contracts_event.RegisterStatusEnum"
+                        }
+                    ],
+                    "example": "PENDING"
+                },
+                "start_time": {
+                    "type": "string",
+                    "example": "2024-01-15T10:00:00Z"
+                }
+            }
+        },
+        "event.EventAddress": {
+            "type": "object",
+            "properties": {
+                "district": {
+                    "type": "string",
+                    "example": "District 1"
+                },
+                "latitude": {
+                    "type": "string",
+                    "example": "10.8231"
+                },
+                "longitude": {
+                    "type": "string",
+                    "example": "106.6297"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "province": {
+                    "type": "string",
+                    "example": "Ho Chi Minh"
+                },
+                "street": {
+                    "type": "string",
+                    "example": "123 Main Street"
+                },
+                "ward": {
+                    "type": "string",
+                    "example": "Ben Nghe Ward"
+                }
+            }
+        },
+        "event.EventPageResult": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.Event"
+                    }
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "page_size": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 150
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "example": 15
+                }
+            }
+        },
         "event.NewEventAddressReq": {
             "type": "object",
             "properties": {
@@ -624,6 +945,19 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "internal_contracts_event.RegisterStatusEnum": {
+            "type": "string",
+            "enum": [
+                "PENDING",
+                "ACCEPTED",
+                "FULL"
+            ],
+            "x-enum-varnames": [
+                "RegisterStatusEnumPending",
+                "RegisterStatusEnumAccepted",
+                "RegisterStatusEnumFull"
+            ]
         },
         "processing.ProcessingEnum": {
             "type": "string",

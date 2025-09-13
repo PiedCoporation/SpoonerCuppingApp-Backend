@@ -57,6 +57,97 @@ definitions:
       startTime:
         type: string
     type: object
+  event.Event:
+    properties:
+      date_of_event:
+        example: "2024-01-15T10:00:00Z"
+        type: string
+      email_contact:
+        example: contact@example.com
+        type: string
+      end_time:
+        example: "2024-01-15T18:00:00Z"
+        type: string
+      event_address:
+        items:
+          $ref: '#/definitions/event.EventAddress'
+        type: array
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      is_public:
+        example: true
+        type: boolean
+      limit:
+        example: 50
+        type: integer
+      name:
+        example: Coffee Cupping Event
+        type: string
+      number_samples:
+        example: 5
+        type: integer
+      phone_contact:
+        example: "+1234567890"
+        type: string
+      register_date:
+        example: "2024-01-10T00:00:00Z"
+        type: string
+      register_status:
+        allOf:
+        - $ref: '#/definitions/internal_contracts_event.RegisterStatusEnum'
+        enum:
+        - PENDING
+        - ACCEPTED
+        - FULL
+        example: PENDING
+      start_time:
+        example: "2024-01-15T10:00:00Z"
+        type: string
+    type: object
+  event.EventAddress:
+    properties:
+      district:
+        example: District 1
+        type: string
+      latitude:
+        example: "10.8231"
+        type: string
+      longitude:
+        example: "106.6297"
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+      province:
+        example: Ho Chi Minh
+        type: string
+      street:
+        example: 123 Main Street
+        type: string
+      ward:
+        example: Ben Nghe Ward
+        type: string
+    type: object
+  event.EventPageResult:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/event.Event'
+        type: array
+      page:
+        example: 1
+        type: integer
+      page_size:
+        example: 10
+        type: integer
+      total:
+        example: 150
+        type: integer
+      total_pages:
+        example: 15
+        type: integer
+    type: object
   event.NewEventAddressReq:
     properties:
       district:
@@ -99,6 +190,16 @@ definitions:
       roastingDate:
         type: string
     type: object
+  internal_contracts_event.RegisterStatusEnum:
+    enum:
+    - PENDING
+    - ACCEPTED
+    - FULL
+    type: string
+    x-enum-varnames:
+    - RegisterStatusEnumPending
+    - RegisterStatusEnumAccepted
+    - RegisterStatusEnumFull
   processing.ProcessingEnum:
     enum:
     - NATURAL
@@ -210,6 +311,52 @@ info:
   version: "1.0"
 paths:
   /events:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of events with optional search functionality
+      parameters:
+      - default: 10
+        description: 'Number of events per page (default: 10, max: 100)'
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      - default: 1
+        description: 'Page number (default: 1)'
+        in: query
+        minimum: 1
+        name: page_number
+        type: integer
+      - description: Search term to filter events by name
+        in: query
+        name: search_term
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of events
+          schema:
+            $ref: '#/definitions/event.EventPageResult'
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid or missing token
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get paginated events
+      tags:
+      - events
     post:
       consumes:
       - application/json
@@ -243,6 +390,86 @@ paths:
       security:
       - BearerAuth: []
       summary: Create an event
+      tags:
+      - events
+  /events/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific event by its ID
+      parameters:
+      - description: Event ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Event details
+          schema:
+            $ref: '#/definitions/event.Event'
+        "400":
+          description: Bad request - invalid event ID
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid or missing token
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Event not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get event by ID
+      tags:
+      - events
+  /events/{id}/register:
+    post:
+      consumes:
+      - application/json
+      description: Register the current user for a specific event
+      parameters:
+      - description: Event ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Registration successful
+          schema:
+            $ref: '#/definitions/controller.MessageResponse'
+        "400":
+          description: Bad request - invalid event ID or already registered
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid or missing token
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Event not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Register for an event
       tags:
       - events
   /users/change-password:

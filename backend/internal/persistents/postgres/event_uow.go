@@ -41,6 +41,10 @@ func (u *eventUow) Rollback() error {
 	return u.tx.Rollback().Error
 }
 
+func (u *eventUow) GetDB() *gorm.DB {
+	return u.db
+}
+
 type eventRepoProvider struct {
 	tx *gorm.DB
 	eventRepo abstractions.IEventRepository
@@ -48,6 +52,8 @@ type eventRepoProvider struct {
 	eventAddressRepo abstractions.IEventAddressRepository
 	eventSampleRepo abstractions.IEventSampleRepository
 }
+
+
 
 func (r *eventRepoProvider) EventRepository() abstractions.IEventRepository {
 	if r.eventRepo == nil {
