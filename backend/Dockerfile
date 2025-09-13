@@ -10,9 +10,7 @@ COPY . .
 
 RUN which wire || echo "wire not found"
 RUN go install github.com/google/wire/cmd/wire@latest
-RUN go generate ./...
-RUN ls -la internal/infrastructures/wire/*/
-RUN find internal/infrastructures/wire -name "*.go" -type f
+RUN find . -name "*_wire.go" -exec dirname {} \; | sort -u | xargs -I {} $(go env GOPATH)/bin/wire {} 
 
 RUN go build -o cupping.backend.app ./cmd/app/
 
