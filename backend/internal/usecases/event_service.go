@@ -3,10 +3,12 @@ package usecases
 import (
 	eventEnum "backend/internal/constants/enums/event"
 	"backend/internal/constants/errorcode"
+	"backend/internal/contracts/common"
 	"backend/internal/contracts/event"
 	"backend/internal/domains/commons"
 	"backend/internal/domains/entities"
 	persistentRepo "backend/internal/persistents/abstractions"
+	"backend/internal/persistents/postgres"
 	abstractions "backend/internal/usecases/abstractions"
 	"context"
 
@@ -140,6 +142,39 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) err
 
 	return nil
 }
+
+func (s *eventService) GetAll(ctx context.Context, pageSize int, pageNumber int, searchTerm string) (*common.PageResult[event.Event], error) {
+	db := s.eventUOW.GetDB()
+
+    // Build (but do not execute) the query
+    q := db.WithContext(ctx).Model(&entities.Event{})
+
+    // Optional search (use ILIKE for Postgres; switch to LIKE for MySQL)
+    if searchTerm != "" {
+        q = q.Where("name ILIKE ?", "%"+searchTerm+"%")
+    }
+
+    // Optional default ordering for stable pagination
+    q = q.Order("created_at DESC")
+
+	events, err := postgres.GetPaginated[entities.Event](q, ctx, pageSize, pageNumber, "EventAddress")
+	if err != nil {
+		return nil, err
+	}
+
+	var eventsPageResult common.PageResult[event.Event]
+	eventsPageResult.Data = make([]event.Event, len(events.Data))
+	for i, event := range events.Data {
+		eventsPageResult.Data[i] = event.ToContract()
+	}
+	eventsPageResult.Total = int(events.Total)
+	eventsPageResult.Page = events.Page
+	eventsPageResult.PageSize = events.PageSize
+	eventsPageResult.TotalPages = int(events.TotalPages)
+
+	return &eventsPageResult, nil
+}
+
 
 func (s *eventService) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil

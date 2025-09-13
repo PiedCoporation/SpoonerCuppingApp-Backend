@@ -29,5 +29,6 @@ func (u *EventRouter) InitEventRouter(
 	privateGroup.Use(middlewares.AuthHeader([]byte(cfg.JWT.AccessTokenKey), jwtpurpose.Access))
 	{
 		privateGroup.POST("/", eventController.CreateEvent)
+		privateGroup.GET("/", eventController.GetEvents)
 	}
 }

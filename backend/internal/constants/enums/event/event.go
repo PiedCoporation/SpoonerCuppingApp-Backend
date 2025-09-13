@@ -1,5 +1,7 @@
 package event
 
+// RegisterStatusEnum represents the registration status of an event
+// @Description Registration status of an event
 type RegisterStatusEnum string
 
 const (

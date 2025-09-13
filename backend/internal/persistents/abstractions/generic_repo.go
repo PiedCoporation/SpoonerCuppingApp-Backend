@@ -6,6 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// PaginationParams represents pagination parameters
+type PaginationParams struct {
+	Page     int `json:"page" validate:"min=1"`
+	PageSize int `json:"page_size" validate:"min=1,max=100"`
+}
+
+// PaginatedResponse represents a paginated response
+
 type GenericRepository[T any] interface {
 	GetAll(ctx context.Context, preloads ...string) ([]T, error)
 	GetByID(ctx context.Context, id uuid.UUID, preloads ...string) (*T, error)
