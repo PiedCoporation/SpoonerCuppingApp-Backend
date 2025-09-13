@@ -1,5 +1,7 @@
 //go:build wireinject
 
+//go:generate wire
+
 package user
 
 import (
