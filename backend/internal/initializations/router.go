@@ -16,6 +16,14 @@ import (
 func InitRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 
+	// Health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "healthy",
+			"service": "coffee-cupping-backend",
+		})
+	})
+
 	// Swagger docs configuration
 	docs.SwaggerInfo.BasePath = "/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
