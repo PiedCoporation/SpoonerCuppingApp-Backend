@@ -2,6 +2,7 @@
 # This file extends the base docker-compose.yml for production
 services:
   coffee-cupping-postgres:
+    container_name: coffee-cupping-postgres-prod
     environment:
       POSTGRES_DB: ${POSTGRES_DBNAME}
       POSTGRES_USER: ${POSTGRES_USERNAME}
@@ -21,6 +22,7 @@ services:
           memory: 512M
 
   coffee-cupping-api:
+    container_name: coffee-cupping-api-prod
     environment:
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}

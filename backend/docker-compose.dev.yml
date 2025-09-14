@@ -2,6 +2,7 @@
 # This file extends the base docker-compose.yml for development
 services:
   coffee-cupping-postgres:
+    container_name: coffee-cupping-postgres-dev
     environment:
       POSTGRES_DB: ${POSTGRES_DBNAME}
       POSTGRES_USER: ${POSTGRES_USERNAME}
@@ -12,6 +13,7 @@ services:
       - postgres-dev-data:/var/lib/postgresql/data
 
   coffee-cupping-api:
+    container_name: coffee-cupping-api-dev
     environment:
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}

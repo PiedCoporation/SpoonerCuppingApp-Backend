@@ -103,17 +103,17 @@ jobs:
         run: |
           echo "Performing health check..."
           # Check if container is running
-          if docker ps --filter "name=coffee-cupping-api" --filter "status=running" | grep -q coffee-cupping-api; then
+          if docker ps --filter "name=coffee-cupping-api-prod" --filter "status=running" | grep -q coffee-cupping-api-prod; then
             echo "✅ Production API container is running"
           else
             echo "❌ Production API container is not running"
-            docker ps -a --filter "name=coffee-cupping-api"
+            docker ps -a --filter "name=coffee-cupping-api-prod"
             exit 1
           fi
 
           # Check container logs for any obvious errors
           echo "Checking container logs..."
-          docker logs coffee-cupping-api --tail 20
+          docker logs coffee-cupping-api-prod --tail 20
 
       - name: Notify Deployment Success
         run: |
