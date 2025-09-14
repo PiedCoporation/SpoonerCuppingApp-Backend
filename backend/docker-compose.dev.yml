@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "${POSTGRES_PORT}:5433"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres-dev-data:/var/lib/postgresql/data
 
@@ -57,7 +57,7 @@ services:
       LOGGER_MAX_SIZE: ${LOGGER_MAX_SIZE}
       LOGGER_COMPRESS: ${LOGGER_COMPRESS}
     ports:
-      - "${HTTP_PORT}:8081"
+      - "${HTTP_PORT}:8080"
     volumes:
       - ./logs:/app/logs
 
