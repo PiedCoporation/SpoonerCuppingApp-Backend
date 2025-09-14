@@ -34,4 +34,7 @@ func Run() {
 	// ===== server =====
 	server := initializations.NewServer(router)
 	initializations.RunServer(server)
+
+	// ===== cleanup =====
+	// initializations.Cleanup()
 }

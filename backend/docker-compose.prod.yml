@@ -2,6 +2,7 @@
 # This file extends the base docker-compose.yml for production
 services:
   coffee-cupping-postgres:
+    container_name: coffee-cupping-postgres-prod
     environment:
       POSTGRES_DB: ${POSTGRES_DBNAME}
       POSTGRES_USER: ${POSTGRES_USERNAME}
@@ -21,12 +22,27 @@ services:
           memory: 512M
 
   coffee-cupping-api:
+    container_name: coffee-cupping-api-prod
     environment:
+      # HTTP Configuration
+      HTTP_URL: ${HTTP_URL}
+      HTTP_PORT: ${HTTP_PORT}
+      HTTP_READ_TIMEOUT: ${HTTP_READ_TIMEOUT}
+      HTTP_WRITE_TIMEOUT: ${HTTP_WRITE_TIMEOUT}
+      HTTP_IDLE_TIMEOUT: ${HTTP_IDLE_TIMEOUT}
+      HTTP_SHUTDOWN_TIMEOUT: ${HTTP_SHUTDOWN_TIMEOUT}
+
+      # PostgreSQL Configuration
+      POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB_URL: ${POSTGRES_DB_URL}
-      HTTP_PORT: ${HTTP_PORT}
+      POSTGRES_DB_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@coffee-cupping-postgres-prod:${POSTGRES_PORT}/${POSTGRES_DBNAME}?sslmode=disable
+      POSTGRES_MAX_IDLE_CONNS: ${POSTGRES_MAX_IDLE_CONNS}
+      POSTGRES_MAX_OPEN_CONNS: ${POSTGRES_MAX_OPEN_CONNS}
+      POSTGRES_CONN_MAX_LIFETIME: ${POSTGRES_CONN_MAX_LIFETIME}
+
+      # JWT Configuration
       JWT_ACCESS_TOKEN_KEY: ${JWT_ACCESS_TOKEN_KEY}
       JWT_ACCESS_TOKEN_EXPIRES_IN: ${JWT_ACCESS_TOKEN_EXPIRES_IN}
       JWT_REFRESH_TOKEN_KEY: ${JWT_REFRESH_TOKEN_KEY}
@@ -35,11 +51,20 @@ services:
       JWT_REGISTER_TOKEN_EXPIRES_IN: ${JWT_REGISTER_TOKEN_EXPIRES_IN}
       JWT_LOGIN_TOKEN_KEY: ${JWT_LOGIN_TOKEN_KEY}
       JWT_LOGIN_TOKEN_EXPIRES_IN: ${JWT_LOGIN_TOKEN_EXPIRES_IN}
+
+      # SMTP Configuration
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
       SMTP_USERNAME: ${SMTP_USERNAME}
       SMTP_APP_PASSWORD: ${SMTP_APP_PASSWORD}
+
+      # Logger Configuration
       LOGGER_LOG_LEVEL: ${LOGGER_LOG_LEVEL}
+      LOGGER_FILE_LOG_NAME: ${LOGGER_FILE_LOG_NAME}
+      LOGGER_MAX_BACKUPS: ${LOGGER_MAX_BACKUPS}
+      LOGGER_MAX_AGE: ${LOGGER_MAX_AGE}
+      LOGGER_MAX_SIZE: ${LOGGER_MAX_SIZE}
+      LOGGER_COMPRESS: ${LOGGER_COMPRESS}
     ports:
       - "${HTTP_PORT}:8080"
     restart: always
