@@ -34,7 +34,7 @@ services:
 
       # PostgreSQL Configuration
       POSTGRES_HOST: coffee-cupping-postgres-prod
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_PORT: 5432
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
