@@ -33,6 +33,7 @@ services:
       HTTP_SHUTDOWN_TIMEOUT: ${HTTP_SHUTDOWN_TIMEOUT}
 
       # PostgreSQL Configuration
+      POSTGRES_HOST: coffee-cupping-postgres-prod
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}
