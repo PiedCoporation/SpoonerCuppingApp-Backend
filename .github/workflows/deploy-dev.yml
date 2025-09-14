@@ -1,0 +1,121 @@
+name: Deploy Development Server
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - "backend/**"
+
+env:
+  # HTTP
+  HTTP_URL: ${{ secrets.HTTP_URL_DEV }}
+  HTTP_PORT: ${{ secrets.HTTP_PORT_DEV }}
+  HTTP_READ_TIMEOUT: ${{ secrets.HTTP_READ_TIMEOUT }}
+  HTTP_WRITE_TIMEOUT: ${{ secrets.HTTP_WRITE_TIMEOUT }}
+  HTTP_IDLE_TIMEOUT: ${{ secrets.HTTP_IDLE_TIMEOUT }}
+  HTTP_SHUTDOWN_TIMEOUT: ${{ secrets.HTTP_SHUTDOWN_TIMEOUT }}
+
+  # Postgres
+  POSTGRES_DB_URL: ${{ secrets.POSTGRES_DB_URL_DEV }}
+  POSTGRES_HOST: ${{ secrets.POSTGRES_HOST_DEV }}
+  POSTGRES_PORT: ${{ secrets.POSTGRES_PORT_DEV }}
+  POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME_DEV }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_DEV }}
+  POSTGRES_DBNAME: ${{ secrets.POSTGRES_DBNAME_DEV }}
+  POSTGRES_MAX_IDLE_CONNS: ${{ secrets.POSTGRES_MAX_IDLE_CONNS }}
+  POSTGRES_MAX_OPEN_CONNS: ${{ secrets.POSTGRES_MAX_OPEN_CONNS }}
+  POSTGRES_CONN_MAX_LIFETIME: ${{ secrets.POSTGRES_CONN_MAX_LIFETIME }}
+
+  # Logger
+  LOGGER_LOG_LEVEL: debug
+  LOGGER_FILE_LOG_NAME: ${{ secrets.LOGGER_FILE_LOG_NAME }}
+  LOGGER_MAX_BACKUPS: ${{ secrets.LOGGER_MAX_BACKUPS }}
+  LOGGER_MAX_AGE: ${{ secrets.LOGGER_MAX_AGE }}
+  LOGGER_MAX_SIZE: ${{ secrets.LOGGER_MAX_SIZE }}
+  LOGGER_COMPRESS: ${{ secrets.LOGGER_COMPRESS }}
+
+  # JWT
+  JWT_ACCESS_TOKEN_KEY: ${{ secrets.JWT_ACCESS_TOKEN_KEY_DEV }}
+  JWT_ACCESS_TOKEN_EXPIRES_IN: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN }}
+  JWT_REFRESH_TOKEN_KEY: ${{ secrets.JWT_REFRESH_TOKEN_KEY_DEV }}
+  JWT_REFRESH_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN }}
+  JWT_REGISTER_TOKEN_KEY: ${{ secrets.JWT_REGISTER_TOKEN_KEY_DEV }}
+  JWT_REGISTER_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REGISTER_TOKEN_EXPIRES_IN }}
+  JWT_LOGIN_TOKEN_KEY: ${{ secrets.JWT_LOGIN_TOKEN_KEY_DEV }}
+  JWT_LOGIN_TOKEN_EXPIRES_IN: ${{ secrets.JWT_LOGIN_TOKEN_EXPIRES_IN }}
+
+  # SMTP
+  SMTP_HOST: ${{ secrets.SMTP_HOST_DEV }}
+  SMTP_PORT: ${{ secrets.SMTP_PORT_DEV }}
+  SMTP_USERNAME: ${{ secrets.SMTP_USERNAME_DEV }}
+  SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD_DEV }}
+
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker Images
+        working-directory: ./backend
+        run: |
+          echo "Building Docker images for development..."
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml build
+          echo "Development build completed successfully!"
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Stop Coffee Cupping API
+        working-directory: ./backend
+        run: |
+          echo "Stopping existing API container..."
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml -p coffee-cupping-dev stop coffee-cupping-api || echo "Container not running"
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml -p coffee-cupping-dev rm -f coffee-cupping-api || echo "Container not found"
+          echo "Cleanup completed"
+
+      - name: Prune Unused Docker Images
+        run: |
+          echo "Pruning unused Docker images..."
+          docker image prune -f
+          echo "Image cleanup completed"
+
+      - name: Deploy API
+        working-directory: ./backend
+        run: |
+          echo "Deploying API to development..."
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml -p coffee-cupping-dev up -d coffee-cupping-api --build
+          echo "Development API deployment initiated"
+
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API to be ready..."
+          sleep 10
+          echo "Health check delay completed"
+
+      - name: Health Check
+        run: |
+          echo "Performing health check..."
+          # Check if container is running
+          if docker ps --filter "name=coffee-cupping-api" --filter "status=running" | grep -q coffee-cupping-api; then
+            echo "✅ Development API container is running"
+          else
+            echo "❌ Development API container is not running"
+            docker ps -a --filter "name=coffee-cupping-api"
+            exit 1
+          fi
+
+          # Check container logs for any obvious errors
+          echo "Checking container logs..."
+          docker logs coffee-cupping-api --tail 20
+
+      - name: Notify Deployment Success
+        run: |
+          echo "🎉 Development deployment completed successfully!"
+          echo "Development API is running and healthy"

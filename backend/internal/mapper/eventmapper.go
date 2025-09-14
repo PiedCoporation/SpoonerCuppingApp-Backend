@@ -6,7 +6,6 @@ import (
 	"backend/internal/domains/entities"
 )
 
-// MapEventToContract maps the event entity to the contract response type
 func MapEventToContractGetAllEventResponse(e *entities.Event) eventContract.Event {
 	var addresses []eventContract.EventAddress
 	for _, addr := range e.EventAddress {
@@ -46,7 +45,6 @@ func MapEventToContractGetAllEventResponse(e *entities.Event) eventContract.Even
 	}
 }
 
-// MapEventToContract maps the event entity to the contract response type
 func MapEventToContractGetEventByIDResponse(e *entities.Event) eventContract.GetEventByIDResponse {
 	var addresses []eventContract.EventAddress
 	for _, addr := range e.EventAddress {
