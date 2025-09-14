@@ -13,7 +13,10 @@ RUN make wire
 
 RUN go build -o cupping.backend.app ./cmd/app/
 
-FROM scratch AS application
+FROM alpine:latest AS application
+
+# Install curl for health checks
+RUN apk --no-cache add curl
 
 COPY --from=builder /app/cupping.backend.app .
 
