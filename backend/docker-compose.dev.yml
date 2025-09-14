@@ -24,11 +24,12 @@ services:
       HTTP_SHUTDOWN_TIMEOUT: ${HTTP_SHUTDOWN_TIMEOUT}
 
       # PostgreSQL Configuration
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_HOST: coffee-cupping-postgres-dev
+      POSTGRES_PORT: 5432
       POSTGRES_DBNAME: ${POSTGRES_DBNAME}
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@coffee-cupping-postgres-dev:${POSTGRES_PORT}/${POSTGRES_DBNAME}?sslmode=disable
+      POSTGRES_DB_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@coffee-cupping-postgres-dev:5432/${POSTGRES_DBNAME}?sslmode=disable
       POSTGRES_MAX_IDLE_CONNS: ${POSTGRES_MAX_IDLE_CONNS}
       POSTGRES_MAX_OPEN_CONNS: ${POSTGRES_MAX_OPEN_CONNS}
       POSTGRES_CONN_MAX_LIFETIME: ${POSTGRES_CONN_MAX_LIFETIME}
@@ -57,7 +58,7 @@ services:
       LOGGER_MAX_SIZE: ${LOGGER_MAX_SIZE}
       LOGGER_COMPRESS: ${LOGGER_COMPRESS}
     ports:
-      - "${HTTP_PORT}:8081"
+      - "${HTTP_PORT}:8080"
     volumes:
       - ./logs:/app/logs
 
