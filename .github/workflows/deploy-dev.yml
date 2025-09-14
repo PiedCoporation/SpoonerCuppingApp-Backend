@@ -8,6 +8,7 @@ on:
       - "backend/**"
 
 env:
+  # HTTP
   HTTP_URL: ${{ secrets.HTTP_URL_DEV }}
   HTTP_PORT: ${{ secrets.HTTP_PORT_DEV }}
   HTTP_READ_TIMEOUT: ${{ secrets.HTTP_READ_TIMEOUT }}
