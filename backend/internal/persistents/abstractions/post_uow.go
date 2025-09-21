@@ -15,4 +15,8 @@ type PostUow interface {
 
 type PostRepoProvider interface {
 	PostRepository() IPostRepository
+	PostImageRepository() IPostImageRepository
+	PostLikeRepository() IPostLikeRepository
+	CommentRepository() ICommentRepository
+	EventRepository() IEventRepository
 }

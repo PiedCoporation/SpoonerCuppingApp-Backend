@@ -8,7 +8,7 @@ import (
 
 type PostImage struct {
 	commons.Entity
-	URL string `gorm:"not null"`
+	URL string `gorm:"column:url;not null;uniqueIndex"`
 	commons.Auditable
 
 	PostID uuid.UUID `gorm:"not null;index"`

@@ -17,6 +17,7 @@ var (
 	ErrUserAlreadyRegistered      = errors.New("this user is already registered for this event")
 	ErrEventSamplesRequired       = errors.New("event samples are required")
 	ErrEventAddressRequired       = errors.New("event address is required")
+	ErrNotSupportSoftDelete       = errors.New("entity does not support soft delete")
 
 	// 401
 	ErrInvalidToken      = errors.New("invalid token")
@@ -26,11 +27,13 @@ var (
 	// 403
 	ErrAccountIsNotVerified = errors.New("this account is not verified")
 	ErrAccountIsDeleted     = errors.New("this account is deleted")
+	ErrNotPostOwner         = errors.New("not the post owner")
 
 	// 404
 	ErrNotFound      = errors.New("not found")
 	ErrUserNotFound  = errors.New("user not found")
 	ErrEventNotFound = errors.New("event not found")
+	ErrPostNotFound  = errors.New("post not found")
 
 	// 409
 	ErrEmailBelongsToDeletedAccount = errors.New("email belongs to deleted account")
@@ -52,6 +55,7 @@ var errorStatusMap = map[error]int{
 	ErrUserAlreadyRegistered:      http.StatusBadRequest,
 	ErrEventSamplesRequired:       http.StatusBadRequest,
 	ErrEventAddressRequired:       http.StatusBadRequest,
+	ErrNotSupportSoftDelete:       http.StatusBadRequest,
 
 	// 401
 	ErrInvalidToken:      http.StatusUnauthorized,
@@ -61,11 +65,13 @@ var errorStatusMap = map[error]int{
 	// 403
 	ErrAccountIsNotVerified: http.StatusForbidden,
 	ErrAccountIsDeleted:     http.StatusForbidden,
+	ErrNotPostOwner:         http.StatusForbidden,
 
 	// 404
 	ErrNotFound:      http.StatusNotFound,
 	ErrUserNotFound:  http.StatusNotFound,
 	ErrEventNotFound: http.StatusNotFound,
+	ErrPostNotFound:  http.StatusNotFound,
 
 	// 409
 	ErrEmailBelongsToDeletedAccount: http.StatusConflict,

@@ -21,5 +21,6 @@ type GenericRepository[T any] interface {
 	Create(ctx context.Context, entity *T) error
 	CreateRange(ctx context.Context, entities []T) error
 	Update(ctx context.Context, id uuid.UUID, fields map[string]any) error
+	SoftDelete(ctx context.Context, id uuid.UUID) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }

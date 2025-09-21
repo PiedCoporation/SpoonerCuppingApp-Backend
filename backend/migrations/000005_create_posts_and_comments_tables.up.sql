@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS post_images (
 	is_deleted boolean NOT NULL DEFAULT false,
 	created_at timestamptz NOT NULL DEFAULT now(),
 	updated_at timestamptz NOT NULL DEFAULT now(),
-    post_id uuid NOT NULL REFERENCES posts(id) ON DELETE CASCADE
+    post_id uuid NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    UNIQUE(url)
 );
 CREATE INDEX IF NOT EXISTS idx_post_images_post_id ON post_images(post_id);
 

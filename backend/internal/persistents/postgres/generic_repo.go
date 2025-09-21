@@ -28,7 +28,7 @@ func (r *genericRepository[T]) GetAll(ctx context.Context, preloads ...string) (
 	for _, p := range preloads {
 		db = db.Preload(p)
 	}
-	if err := db.Find(&entities).Error; err != nil {
+	if err := db.Where("is_deleted = ?", false).Find(&entities).Error; err != nil {
 		return nil, err
 	}
 	return entities, nil
@@ -41,7 +41,7 @@ func (r *genericRepository[T]) GetByID(ctx context.Context, id uuid.UUID, preloa
 	for _, p := range preloads {
 		db = db.Preload(p)
 	}
-	err := db.Where("id = ?", id).First(&entity).Error
+	err := db.Where("id = ? AND is_deleted = ?", id, false).First(&entity).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errorcode.ErrNotFound
@@ -93,6 +93,19 @@ func (r *genericRepository[T]) Update(ctx context.Context, id uuid.UUID, fields 
 		Updates(fields).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+// SoftDelete implements abstractions.GenericRepository.
+func (r *genericRepository[T]) SoftDelete(ctx context.Context, id uuid.UUID) error {
+	var entity T
+	if err := r.db.WithContext(ctx).
+		Model(&entity).
+		Where("id = ?", id).
+		Update("is_deleted", true).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 
