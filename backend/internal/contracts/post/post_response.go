@@ -26,7 +26,7 @@ type PostViewRes struct {
 
 type GetPostByIdResponse struct {
 	PostViewRes
-	ParentComments []comment.CommentViewRes `json:"parent_comments"`
+	RootComments []comment.CommentViewRes `json:"root_comments"`
 }
 
 // PostPageResult represents a paginated response for posts

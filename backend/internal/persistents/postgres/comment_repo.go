@@ -20,13 +20,19 @@ func NewCommentRepo(db *gorm.DB) abstractions.ICommentRepository {
 }
 
 // GetDirectChildren implements abstractions.ICommentRepository.
-func (r *commentPgRepo) GetDirectChildren(ctx context.Context, parentID uuid.UUID) ([]entities.Comment, error) {
-	return r.FindByQuery(ctx, "parent_id = ?", []any{parentID}, "User")
+func (r *commentPgRepo) GetDirectChildren(
+	ctx context.Context,
+	parentID uuid.UUID, orderByCreatedAtDesc bool,
+) ([]entities.Comment, error) {
+	return r.FindByQuery(ctx, "parent_id = ?", []any{parentID}, orderByCreatedAtDesc, "User")
 }
 
 // GetRootComments implements abstractions.ICommentRepository.
-func (r *commentPgRepo) GetRootComments(ctx context.Context, postID uuid.UUID) ([]entities.Comment, error) {
-	return r.FindByQuery(ctx, "parent_id IS NULL AND post_id = ?", []any{postID}, "User")
+func (r *commentPgRepo) GetRootComments(
+	ctx context.Context,
+	postID uuid.UUID, orderByCreatedAtDesc bool,
+) ([]entities.Comment, error) {
+	return r.FindByQuery(ctx, "parent_id IS NULL AND post_id = ?", []any{postID}, orderByCreatedAtDesc, "User")
 }
 
 // DeleteByPostID implements abstractions.ICommentRepository.

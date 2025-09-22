@@ -22,6 +22,7 @@ func InitPostRouterHandler(
 		postgres.NewCommentRepo,
 		postgres.NewPostUow,
 		usecases.NewPostService,
+		usecases.NewCommentService,
 		controller.NewPostController,
 	)
 	return &controller.PostController{}, nil

@@ -13,14 +13,17 @@ import (
 )
 
 type PostController struct {
-	postService abstractions.IPostService
+	postService    abstractions.IPostService
+	commentService abstractions.ICommentService
 }
 
 func NewPostController(
 	postService abstractions.IPostService,
+	commentService abstractions.ICommentService,
 ) *PostController {
 	return &PostController{
-		postService: postService,
+		postService:    postService,
+		commentService: commentService,
 	}
 }
 
@@ -134,6 +137,24 @@ func (pc *PostController) GetPostByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, posts)
+}
+
+func (pc *PostController) GetDirectChildrenComments(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+	comments, err := pc.commentService.GetDirectChildren(ctx, id, true)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, comments)
 }
 
 // UpdatePost godoc

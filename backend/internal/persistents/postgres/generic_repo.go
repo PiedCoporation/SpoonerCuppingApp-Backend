@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type genericRepository[T any] struct {
@@ -69,7 +70,8 @@ func (r *genericRepository[T]) GetSingle(ctx context.Context, query string, prel
 // FindByQuery implements abstractions.GenericRepository.
 func (r *genericRepository[T]) FindByQuery(
 	ctx context.Context,
-	query string, args []any, preloads ...string,
+	query string, args []any, orderByCreatedAtDesc bool,
+	preloads ...string,
 ) ([]T, error) {
 	var entities []T
 	db := r.db.WithContext(ctx)
@@ -80,6 +82,7 @@ func (r *genericRepository[T]) FindByQuery(
 	if err := db.
 		Where("is_deleted = ?", false).
 		Where(query, args...).
+		Order(clause.OrderByColumn{Column: clause.Column{Name: "created_at"}, Desc: orderByCreatedAtDesc}).
 		Find(&entities).Error; err != nil {
 		return nil, err
 	}

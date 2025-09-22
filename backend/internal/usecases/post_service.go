@@ -171,24 +171,19 @@ func (s *postService) GetByID(ctx context.Context, id uuid.UUID) (*post.GetPostB
 	}
 
 	// get comment at first level
-	var parentComments []entities.Comment
-	err = db.WithContext(ctx).Model(&entities.Comment{}).
-		Where("post_id = ? AND parent_id IS NULL", id).
-		Preload("User").
-		Order("created_at DESC").
-		Find(&parentComments).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	rootComments, err := s.commentRepo.GetRootComments(ctx, id, true)
+	if err != nil {
 		return nil, err
 	}
 
-	commentResponses := make([]comment.CommentViewRes, len(parentComments))
-	for i, c := range parentComments {
+	commentResponses := make([]comment.CommentViewRes, len(rootComments))
+	for i, c := range rootComments {
 		commentResponses[i] = *mapper.MapCommentToContractCommentResponse(&c)
 	}
 
 	return &post.GetPostByIdResponse{
-		PostViewRes:    *mapper.MapPostToContractPostResponse(&postWithCounts),
-		ParentComments: commentResponses,
+		PostViewRes:  *mapper.MapPostToContractPostResponse(&postWithCounts),
+		RootComments: commentResponses,
 	}, nil
 }
 

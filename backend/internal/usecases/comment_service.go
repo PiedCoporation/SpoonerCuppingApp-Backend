@@ -65,8 +65,10 @@ func (s *commentService) Create(ctx context.Context, userID uuid.UUID, req comme
 }
 
 // GetDirectChildren implements abstractions.ICommentService.
-func (s *commentService) GetDirectChildren(ctx context.Context, parentID uuid.UUID) ([]comment.CommentViewRes, error) {
-	comments, err := s.commentRepo.GetDirectChildren(ctx, parentID)
+func (s *commentService) GetDirectChildren(
+	ctx context.Context, parentID uuid.UUID, orderByCreatedAtDesc bool,
+) ([]comment.CommentViewRes, error) {
+	comments, err := s.commentRepo.GetDirectChildren(ctx, parentID, orderByCreatedAtDesc)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +82,10 @@ func (s *commentService) GetDirectChildren(ctx context.Context, parentID uuid.UU
 }
 
 // GetRootCommentsByPostID implements abstractions.ICommentService.
-func (s *commentService) GetRootCommentsByPostID(ctx context.Context, postID uuid.UUID) ([]comment.CommentViewRes, error) {
-	comments, err := s.commentRepo.GetRootComments(ctx, postID)
+func (s *commentService) GetRootCommentsByPostID(
+	ctx context.Context, postID uuid.UUID, orderByCreatedAtDesc bool,
+) ([]comment.CommentViewRes, error) {
+	comments, err := s.commentRepo.GetRootComments(ctx, postID, orderByCreatedAtDesc)
 	if err != nil {
 		return nil, err
 	}
