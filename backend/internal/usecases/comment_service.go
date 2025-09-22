@@ -68,6 +68,14 @@ func (s *commentService) Create(ctx context.Context, userID uuid.UUID, req comme
 func (s *commentService) GetDirectChildren(
 	ctx context.Context, parentID uuid.UUID, orderByCreatedAtDesc bool,
 ) ([]comment.CommentViewRes, error) {
+	// check parent exists
+	if _, err := s.commentRepo.GetByID(ctx, parentID); err != nil {
+		if errors.Is(err, errorcode.ErrNotFound) {
+			return nil, errorcode.ErrCommentNotFound
+		}
+		return nil, err
+	}
+
 	comments, err := s.commentRepo.GetDirectChildren(ctx, parentID, orderByCreatedAtDesc)
 	if err != nil {
 		return nil, err
@@ -85,6 +93,14 @@ func (s *commentService) GetDirectChildren(
 func (s *commentService) GetRootCommentsByPostID(
 	ctx context.Context, postID uuid.UUID, orderByCreatedAtDesc bool,
 ) ([]comment.CommentViewRes, error) {
+	// check parent exists
+	if _, err := s.postRepo.GetByID(ctx, postID); err != nil {
+		if errors.Is(err, errorcode.ErrNotFound) {
+			return nil, errorcode.ErrPostNotFound
+		}
+		return nil, err
+	}
+
 	comments, err := s.commentRepo.GetRootComments(ctx, postID, orderByCreatedAtDesc)
 	if err != nil {
 		return nil, err

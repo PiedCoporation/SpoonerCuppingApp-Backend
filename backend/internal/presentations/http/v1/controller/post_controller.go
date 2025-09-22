@@ -125,7 +125,7 @@ func (pc *PostController) GetPostByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		errorcode.JSONError(c, err)
+		errorcode.JSONError(c, errorcode.ErrInvalidParams)
 		return
 	}
 
@@ -139,16 +139,35 @@ func (pc *PostController) GetPostByID(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
-func (pc *PostController) GetDirectChildrenComments(c *gin.Context) {
+// GetRootComments godoc
+// @Summary Get root comments in post
+// @Description Retrieve a list of root comment by post id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param id path string true "Post ID" format(uuid)
+// @Param order_by_desc query boolean false "Order by desc"
+// @Success 200 {array} comment.CommentViewRes "Root comments"
+// @Failure 400 {object} controller.ErrorResponse "Bad request - invalid parameters"
+// @Failure 404 {object} controller.ErrorResponse "Post not found"
+// @Failure 500 {object} controller.ErrorResponse "Internal server error"
+// @Router /posts/{id}/comments [get]
+func (pc *PostController) GetRootComments(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		errorcode.JSONError(c, err)
+		errorcode.JSONError(c, errorcode.ErrInvalidParams)
 		return
 	}
 
+	orderByDescStr := c.DefaultQuery("order_by_desc", "true")
+	orderByDesc, err := strconv.ParseBool(orderByDescStr)
+	if err != nil {
+		orderByDesc = true
+	}
+
 	ctx := c.Request.Context()
-	comments, err := pc.commentService.GetDirectChildren(ctx, id, true)
+	comments, err := pc.commentService.GetRootCommentsByPostID(ctx, id, orderByDesc)
 	if err != nil {
 		errorcode.JSONError(c, err)
 		return
@@ -177,7 +196,7 @@ func (pc *PostController) UpdatePost(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		errorcode.JSONError(c, err)
+		errorcode.JSONError(c, errorcode.ErrInvalidParams)
 		return
 	}
 
@@ -223,7 +242,7 @@ func (pc *PostController) DeletePost(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		errorcode.JSONError(c, err)
+		errorcode.JSONError(c, errorcode.ErrInvalidParams)
 		return
 	}
 

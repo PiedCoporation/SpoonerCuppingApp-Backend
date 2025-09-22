@@ -30,12 +30,14 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	eventRouter := routers.RouterGroupApp.Event
 	userRouter := routers.RouterGroupApp.User
 	postRouter := routers.RouterGroupApp.Post
+	commentRouter := routers.RouterGroupApp.Comment
 
 	MainGroup := r.Group("/v1")
 	{
 		eventRouter.InitEventRouter(MainGroup, db)
 		userRouter.InitUserRouter(MainGroup, db)
 		postRouter.InitPostRouter(MainGroup, db)
+		commentRouter.InitCommentRouter(MainGroup, db)
 	}
 
 	return r

@@ -101,6 +101,10 @@ func (r *genericRepository[T]) Create(ctx context.Context, entity *T) error {
 
 // CreateRange implements abstractions.GenericRepository.
 func (r *genericRepository[T]) CreateRange(ctx context.Context, entities []T) error {
+	if len(entities) == 0 {
+		return nil
+	}
+
 	if err := r.db.WithContext(ctx).
 		Create(&entities).Error; err != nil {
 		return err

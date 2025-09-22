@@ -9,6 +9,7 @@ import (
 
 var (
 	// 400
+	ErrInvalidParams              = errors.New("invalid params")
 	ErrEmailExists                = errors.New("this email already exists")
 	ErrPhoneExists                = errors.New("this phone number already exists")
 	ErrAccountIsVerified          = errors.New("this account is already verified")
@@ -49,6 +50,7 @@ var (
 // Map code -> http code
 var errorStatusMap = map[error]int{
 	// 400
+	ErrInvalidParams:              http.StatusBadRequest,
 	ErrEmailExists:                http.StatusBadRequest,
 	ErrPhoneExists:                http.StatusBadRequest,
 	ErrAccountIsVerified:          http.StatusBadRequest,

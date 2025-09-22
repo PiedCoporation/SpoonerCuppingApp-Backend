@@ -12,7 +12,7 @@ import (
 
 type PostRouter struct{}
 
-func (u *PostRouter) InitPostRouter(
+func (r *PostRouter) InitPostRouter(
 	router *gin.RouterGroup,
 	db *gorm.DB,
 ) {
@@ -27,6 +27,7 @@ func (u *PostRouter) InitPostRouter(
 	{
 		publicGroup.GET("/", postController.GetPosts)
 		publicGroup.GET("/:id", postController.GetPostByID)
+		publicGroup.GET("/:id/comments", postController.GetRootComments)
 	}
 
 	// ====== Private group (using access token) ======

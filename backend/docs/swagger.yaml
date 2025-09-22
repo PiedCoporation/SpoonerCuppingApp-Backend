@@ -2,6 +2,45 @@ basePath: /v1
 consumes:
 - application/json
 definitions:
+  comment.CommentViewRes:
+    properties:
+      content:
+        example: Lorem ipsum dolor sit
+        type: string
+      created_at:
+        example: "2024-01-15T10:00:00Z"
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      parent_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      updated_at:
+        example: "2024-01-15T10:00:00Z"
+        type: string
+      user:
+        $ref: '#/definitions/user.UserViewRes'
+    type: object
+  comment.CreateCommentReq:
+    properties:
+      comment:
+        type: string
+      parent_id:
+        type: string
+      post_id:
+        type: string
+    required:
+    - comment
+    - post_id
+    type: object
+  comment.UpdateCommentReq:
+    properties:
+      comment:
+        type: string
+    required:
+    - comment
+    type: object
   controller.ErrorResponse:
     properties:
       error:
@@ -278,26 +317,6 @@ definitions:
     - RegisterStatusEnumPending
     - RegisterStatusEnumAccepted
     - RegisterStatusEnumFull
-  post.CommentViewRes:
-    properties:
-      content:
-        example: Lorem ipsum dolor sit
-        type: string
-      created_at:
-        example: "2024-01-15T10:00:00Z"
-        type: string
-      id:
-        example: 123e4567-e89b-12d3-a456-426614174000
-        type: string
-      parent_id:
-        example: 123e4567-e89b-12d3-a456-426614174000
-        type: string
-      updated_at:
-        example: "2024-01-15T10:00:00Z"
-        type: string
-      user:
-        $ref: '#/definitions/user.UserViewRes'
-    type: object
   post.CreatePostReq:
     properties:
       content:
@@ -340,9 +359,9 @@ definitions:
       like_count:
         example: 15
         type: integer
-      parent_comments:
+      root_comments:
         items:
-          $ref: '#/definitions/post.CommentViewRes'
+          $ref: '#/definitions/comment.CommentViewRes'
         type: array
       title:
         example: My title
@@ -548,6 +567,175 @@ info:
   title: Coffee Cupping API
   version: "1.0"
 paths:
+  /comments:
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment with post id and optional parent id
+      parameters:
+      - description: Comment payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/comment.CreateCommentReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controller.MessageResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new comment
+      tags:
+      - comments
+  /comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete comment by id
+      parameters:
+      - description: Comment ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.MessageResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete an existing comment
+      tags:
+      - comments
+    put:
+      consumes:
+      - application/json
+      description: Update a comment's content
+      parameters:
+      - description: Comment ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/comment.UpdateCommentReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.MessageResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an existing comment
+      tags:
+      - comments
+  /comments/{id}/children:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of direct children by comment id
+      parameters:
+      - description: Comment ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order by desc
+        in: query
+        name: order_by_desc
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Direct children
+          schema:
+            items:
+              $ref: '#/definitions/comment.CommentViewRes'
+            type: array
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Comment not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Get direct children in comment
+      tags:
+      - comments
   /events:
     get:
       consumes:
@@ -910,6 +1098,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Update an existing post
+      tags:
+      - posts
+  /posts/{id}/comments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of root comment by post id
+      parameters:
+      - description: Post ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order by desc
+        in: query
+        name: order_by_desc
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Root comments
+          schema:
+            items:
+              $ref: '#/definitions/comment.CommentViewRes'
+            type: array
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Get root comments in post
       tags:
       - posts
   /users/change-password:
