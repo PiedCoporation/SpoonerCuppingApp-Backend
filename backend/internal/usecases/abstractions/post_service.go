@@ -10,8 +10,8 @@ import (
 
 type IPostService interface {
 	Create(ctx context.Context, userID uuid.UUID, req post.CreatePostReq) error
-	GetAll(ctx context.Context, pageSize int, pageNumber int, searchTerm string) (*common.PageResult[post.PostResponse], error)
+	GetAll(ctx context.Context, pageSize int, pageNumber int, searchTerm string) (*common.PageResult[post.PostViewRes], error)
 	GetByID(ctx context.Context, id uuid.UUID) (*post.GetPostByIdResponse, error)
-	Update(ctx context.Context, userID uuid.UUID, id uuid.UUID, req post.UpdatePostReq) error
-	Delete(ctx context.Context, userID uuid.UUID, id uuid.UUID) error
+	Update(ctx context.Context, userID, postID uuid.UUID, req post.UpdatePostReq) error
+	Delete(ctx context.Context, userID, postID uuid.UUID) error
 }

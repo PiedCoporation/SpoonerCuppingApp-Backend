@@ -28,12 +28,14 @@ var (
 	ErrAccountIsNotVerified = errors.New("this account is not verified")
 	ErrAccountIsDeleted     = errors.New("this account is deleted")
 	ErrNotPostOwner         = errors.New("not the post owner")
+	ErrNotCommentOwner      = errors.New("not the comment owner")
 
 	// 404
-	ErrNotFound      = errors.New("not found")
-	ErrUserNotFound  = errors.New("user not found")
-	ErrEventNotFound = errors.New("event not found")
-	ErrPostNotFound  = errors.New("post not found")
+	ErrNotFound        = errors.New("not found")
+	ErrUserNotFound    = errors.New("user not found")
+	ErrEventNotFound   = errors.New("event not found")
+	ErrPostNotFound    = errors.New("post not found")
+	ErrCommentNotFound = errors.New("comment not found")
 
 	// 409
 	ErrEmailBelongsToDeletedAccount = errors.New("email belongs to deleted account")
@@ -66,12 +68,14 @@ var errorStatusMap = map[error]int{
 	ErrAccountIsNotVerified: http.StatusForbidden,
 	ErrAccountIsDeleted:     http.StatusForbidden,
 	ErrNotPostOwner:         http.StatusForbidden,
+	ErrNotCommentOwner:      http.StatusForbidden,
 
 	// 404
-	ErrNotFound:      http.StatusNotFound,
-	ErrUserNotFound:  http.StatusNotFound,
-	ErrEventNotFound: http.StatusNotFound,
-	ErrPostNotFound:  http.StatusNotFound,
+	ErrNotFound:        http.StatusNotFound,
+	ErrUserNotFound:    http.StatusNotFound,
+	ErrEventNotFound:   http.StatusNotFound,
+	ErrPostNotFound:    http.StatusNotFound,
+	ErrCommentNotFound: http.StatusNotFound,
 
 	// 409
 	ErrEmailBelongsToDeletedAccount: http.StatusConflict,

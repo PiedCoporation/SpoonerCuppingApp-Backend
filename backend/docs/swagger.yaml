@@ -278,7 +278,7 @@ definitions:
     - RegisterStatusEnumPending
     - RegisterStatusEnumAccepted
     - RegisterStatusEnumFull
-  post.CommentResponse:
+  post.CommentViewRes:
     properties:
       content:
         example: Lorem ipsum dolor sit
@@ -296,7 +296,7 @@ definitions:
         example: "2024-01-15T10:00:00Z"
         type: string
       user:
-        $ref: '#/definitions/user.UserReponse'
+        $ref: '#/definitions/user.UserViewRes'
     type: object
   post.CreatePostReq:
     properties:
@@ -342,7 +342,7 @@ definitions:
         type: integer
       parent_comments:
         items:
-          $ref: '#/definitions/post.CommentResponse'
+          $ref: '#/definitions/post.CommentViewRes'
         type: array
       title:
         example: My title
@@ -351,13 +351,13 @@ definitions:
         example: "2024-01-15T10:00:00Z"
         type: string
       user:
-        $ref: '#/definitions/user.UserReponse'
+        $ref: '#/definitions/user.UserViewRes'
     type: object
   post.PostPageResult:
     properties:
       data:
         items:
-          $ref: '#/definitions/post.PostResponse'
+          $ref: '#/definitions/post.PostViewRes'
         type: array
       page:
         example: 1
@@ -372,7 +372,7 @@ definitions:
         example: 15
         type: integer
     type: object
-  post.PostResponse:
+  post.PostViewRes:
     properties:
       comment_count:
         example: 4
@@ -405,7 +405,7 @@ definitions:
         example: "2024-01-15T10:00:00Z"
         type: string
       user:
-        $ref: '#/definitions/user.UserReponse'
+        $ref: '#/definitions/user.UserViewRes'
     type: object
   post.UpdatePostReq:
     properties:
@@ -524,7 +524,7 @@ definitions:
     required:
     - email
     type: object
-  user.UserReponse:
+  user.UserViewRes:
     properties:
       email:
         example: john.doe@example.com

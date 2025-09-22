@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"backend/internal/constants/errorcode"
+	"backend/internal/contracts/comment"
 	"backend/internal/contracts/common"
 	"backend/internal/contracts/post"
 	"backend/internal/domains/commons"
@@ -58,7 +59,7 @@ func (s *postService) Create(ctx context.Context, userID uuid.UUID, req post.Cre
 	if req.EventID != nil {
 		if _, err := eventRepo.GetByID(ctx, *req.EventID); err != nil {
 			if errors.Is(err, errorcode.ErrNotFound) {
-				err = errorcode.ErrEventNotFound
+				return errorcode.ErrEventNotFound
 			}
 			return err
 		}
@@ -103,7 +104,7 @@ func (s *postService) Create(ctx context.Context, userID uuid.UUID, req post.Cre
 
 // GetAll implements abstractions.IPostService.
 func (s *postService) GetAll(ctx context.Context, pageSize int, pageNumber int, searchTerm string,
-) (*common.PageResult[post.PostResponse], error) {
+) (*common.PageResult[post.PostViewRes], error) {
 	if pageNumber < 1 {
 		pageNumber = 1
 	}
@@ -137,14 +138,14 @@ func (s *postService) GetAll(ctx context.Context, pageSize int, pageNumber int, 
 		return nil, err
 	}
 
-	responses := make([]post.PostResponse, len(postWithCounts))
+	responses := make([]post.PostViewRes, len(postWithCounts))
 	for i, p := range postWithCounts {
 		responses[i] = *mapper.MapPostToContractPostResponse(&p)
 	}
 
 	totalPages := int(math.Ceil(float64(total) / float64(pageSize)))
 
-	return &common.PageResult[post.PostResponse]{
+	return &common.PageResult[post.PostViewRes]{
 		Data:       responses,
 		Total:      int(total),
 		Page:       pageNumber,
@@ -164,7 +165,7 @@ func (s *postService) GetByID(ctx context.Context, id uuid.UUID) (*post.GetPostB
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			err = errorcode.ErrPostNotFound
+			return nil, errorcode.ErrPostNotFound
 		}
 		return nil, err
 	}
@@ -180,19 +181,19 @@ func (s *postService) GetByID(ctx context.Context, id uuid.UUID) (*post.GetPostB
 		return nil, err
 	}
 
-	commentResponses := make([]post.CommentResponse, len(parentComments))
+	commentResponses := make([]comment.CommentViewRes, len(parentComments))
 	for i, c := range parentComments {
 		commentResponses[i] = *mapper.MapCommentToContractCommentResponse(&c)
 	}
 
 	return &post.GetPostByIdResponse{
-		PostResponse:   *mapper.MapPostToContractPostResponse(&postWithCounts),
+		PostViewRes:    *mapper.MapPostToContractPostResponse(&postWithCounts),
 		ParentComments: commentResponses,
 	}, nil
 }
 
 // Update implements abstractions.IPostService.
-func (s *postService) Update(ctx context.Context, userID uuid.UUID, id uuid.UUID, req post.UpdatePostReq) error {
+func (s *postService) Update(ctx context.Context, userID, postID uuid.UUID, req post.UpdatePostReq) error {
 	repoProvider, err := s.postUow.Begin(ctx)
 	if err != nil {
 		return err
@@ -204,15 +205,9 @@ func (s *postService) Update(ctx context.Context, userID uuid.UUID, id uuid.UUID
 	eventRepo := repoProvider.EventRepository()
 
 	// get post from db
-	postEntity, err := postRepo.GetByID(ctx, id)
+	postEntity, err := s.getOwnedPost(ctx, userID, userID)
 	if err != nil {
-		if errors.Is(err, errorcode.ErrNotFound) {
-			err = errorcode.ErrPostNotFound
-		}
 		return err
-	}
-	if postEntity.UserID != userID {
-		return errorcode.ErrNotPostOwner
 	}
 
 	if req.Title != nil {
@@ -224,7 +219,7 @@ func (s *postService) Update(ctx context.Context, userID uuid.UUID, id uuid.UUID
 	if req.EventID != nil {
 		if _, err := eventRepo.GetByID(ctx, *req.EventID); err != nil {
 			if errors.Is(err, errorcode.ErrNotFound) {
-				err = errorcode.ErrEventNotFound
+				return errorcode.ErrEventNotFound
 			}
 			return err
 		}
@@ -277,7 +272,7 @@ func (s *postService) Update(ctx context.Context, userID uuid.UUID, id uuid.UUID
 }
 
 // Delete implements abstractions.IPostService.
-func (s *postService) Delete(ctx context.Context, userID uuid.UUID, id uuid.UUID) error {
+func (s *postService) Delete(ctx context.Context, userID, postID uuid.UUID) error {
 	repoProvider, err := s.postUow.Begin(ctx)
 	if err != nil {
 		return err
@@ -290,32 +285,25 @@ func (s *postService) Delete(ctx context.Context, userID uuid.UUID, id uuid.UUID
 	commentRepo := repoProvider.CommentRepository()
 
 	// get post from db
-	postEntity, err := postRepo.GetByID(ctx, id)
-	if err != nil {
-		if errors.Is(err, errorcode.ErrNotFound) {
-			err = errorcode.ErrPostNotFound
-		}
+	if _, err := s.getOwnedPost(ctx, userID, userID); err != nil {
 		return err
-	}
-	if postEntity.UserID != userID {
-		return errorcode.ErrNotPostOwner
 	}
 
 	// delete post
-	if err := postRepo.SoftDelete(ctx, id); err != nil {
+	if err := postRepo.SoftDelete(ctx, postID); err != nil {
 		return err
 	}
 
 	// delete post image
-	if err := postImageRepo.DeleteByPostID(ctx, id); err != nil {
+	if err := postImageRepo.DeleteByPostID(ctx, postID); err != nil {
 		return err
 	}
 	// delete post like
-	if err := postLikeRepo.DeleteByPostID(ctx, id); err != nil {
+	if err := postLikeRepo.DeleteByPostID(ctx, postID); err != nil {
 		return err
 	}
 	// delete comment
-	if err := commentRepo.DeleteByPostID(ctx, id); err != nil {
+	if err := commentRepo.DeleteByPostID(ctx, postID); err != nil {
 		return err
 	}
 
@@ -341,4 +329,18 @@ func (s *postService) getPostWithCountsQuery(ctx context.Context, db *gorm.DB) *
 		Preload("User").Preload("Images")
 
 	return q
+}
+
+func (s *postService) getOwnedPost(ctx context.Context, userID, postID uuid.UUID) (*entities.Post, error) {
+	postEntity, err := s.postRepo.GetByID(ctx, postID)
+	if err != nil {
+		if errors.Is(err, errorcode.ErrNotFound) {
+			return nil, errorcode.ErrPostNotFound
+		}
+		return nil, err
+	}
+	if postEntity.UserID != userID {
+		return nil, errorcode.ErrNotPostOwner
+	}
+	return postEntity, nil
 }

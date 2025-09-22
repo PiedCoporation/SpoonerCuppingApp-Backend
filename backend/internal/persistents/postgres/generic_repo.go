@@ -66,6 +66,27 @@ func (r *genericRepository[T]) GetSingle(ctx context.Context, query string, prel
 	return &entity, nil
 }
 
+// FindByQuery implements abstractions.GenericRepository.
+func (r *genericRepository[T]) FindByQuery(
+	ctx context.Context,
+	query string, args []any, preloads ...string,
+) ([]T, error) {
+	var entities []T
+	db := r.db.WithContext(ctx)
+	for _, p := range preloads {
+		db = db.Preload(p)
+	}
+
+	if err := db.
+		Where("is_deleted = ?", false).
+		Where(query, args...).
+		Find(&entities).Error; err != nil {
+		return nil, err
+	}
+
+	return entities, nil
+}
+
 // Create implements abstractions.GenericRepository.
 func (r *genericRepository[T]) Create(ctx context.Context, entity *T) error {
 	if err := r.db.WithContext(ctx).

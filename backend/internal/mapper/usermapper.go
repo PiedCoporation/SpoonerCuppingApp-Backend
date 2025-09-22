@@ -5,8 +5,8 @@ import (
 	"backend/internal/domains/entities"
 )
 
-func MapUserToContractUserResponse(u *entities.User) *userContract.UserReponse {
-	return &userContract.UserReponse{
+func MapUserToContractUserResponse(u *entities.User) *userContract.UserViewRes {
+	return &userContract.UserViewRes{
 		ID:        u.ID,
 		FirstName: u.FirstName,
 		LastName:  u.LastName,

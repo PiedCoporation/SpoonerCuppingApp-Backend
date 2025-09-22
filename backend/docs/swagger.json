@@ -1375,7 +1375,7 @@
                 "RegisterStatusEnumFull"
             ]
         },
-        "post.CommentResponse": {
+        "post.CommentViewRes": {
             "type": "object",
             "properties": {
                 "content": {
@@ -1399,7 +1399,7 @@
                     "example": "2024-01-15T10:00:00Z"
                 },
                 "user": {
-                    "$ref": "#/definitions/user.UserReponse"
+                    "$ref": "#/definitions/user.UserViewRes"
                 }
             }
         },
@@ -1466,7 +1466,7 @@
                 "parent_comments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/post.CommentResponse"
+                        "$ref": "#/definitions/post.CommentViewRes"
                     }
                 },
                 "title": {
@@ -1478,7 +1478,7 @@
                     "example": "2024-01-15T10:00:00Z"
                 },
                 "user": {
-                    "$ref": "#/definitions/user.UserReponse"
+                    "$ref": "#/definitions/user.UserViewRes"
                 }
             }
         },
@@ -1488,7 +1488,7 @@
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/post.PostResponse"
+                        "$ref": "#/definitions/post.PostViewRes"
                     }
                 },
                 "page": {
@@ -1509,7 +1509,7 @@
                 }
             }
         },
-        "post.PostResponse": {
+        "post.PostViewRes": {
             "type": "object",
             "properties": {
                 "comment_count": {
@@ -1554,7 +1554,7 @@
                     "example": "2024-01-15T10:00:00Z"
                 },
                 "user": {
-                    "$ref": "#/definitions/user.UserReponse"
+                    "$ref": "#/definitions/user.UserViewRes"
                 }
             }
         },
@@ -1723,7 +1723,7 @@
                 }
             }
         },
-        "user.UserReponse": {
+        "user.UserViewRes": {
             "type": "object",
             "properties": {
                 "email": {

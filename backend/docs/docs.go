@@ -1379,7 +1379,7 @@ const docTemplate = `{
                 "RegisterStatusEnumFull"
             ]
         },
-        "post.CommentResponse": {
+        "post.CommentViewRes": {
             "type": "object",
             "properties": {
                 "content": {
@@ -1403,7 +1403,7 @@ const docTemplate = `{
                     "example": "2024-01-15T10:00:00Z"
                 },
                 "user": {
-                    "$ref": "#/definitions/user.UserReponse"
+                    "$ref": "#/definitions/user.UserViewRes"
                 }
             }
         },
@@ -1470,7 +1470,7 @@ const docTemplate = `{
                 "parent_comments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/post.CommentResponse"
+                        "$ref": "#/definitions/post.CommentViewRes"
                     }
                 },
                 "title": {
@@ -1482,7 +1482,7 @@ const docTemplate = `{
                     "example": "2024-01-15T10:00:00Z"
                 },
                 "user": {
-                    "$ref": "#/definitions/user.UserReponse"
+                    "$ref": "#/definitions/user.UserViewRes"
                 }
             }
         },
@@ -1492,7 +1492,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/post.PostResponse"
+                        "$ref": "#/definitions/post.PostViewRes"
                     }
                 },
                 "page": {
@@ -1513,7 +1513,7 @@ const docTemplate = `{
                 }
             }
         },
-        "post.PostResponse": {
+        "post.PostViewRes": {
             "type": "object",
             "properties": {
                 "comment_count": {
@@ -1558,7 +1558,7 @@ const docTemplate = `{
                     "example": "2024-01-15T10:00:00Z"
                 },
                 "user": {
-                    "$ref": "#/definitions/user.UserReponse"
+                    "$ref": "#/definitions/user.UserViewRes"
                 }
             }
         },
@@ -1727,7 +1727,7 @@ const docTemplate = `{
                 }
             }
         },
-        "user.UserReponse": {
+        "user.UserViewRes": {
             "type": "object",
             "properties": {
                 "email": {
