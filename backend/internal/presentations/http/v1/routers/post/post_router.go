@@ -27,11 +27,14 @@ func (r *PostRouter) InitPostRouter(
 	{
 		publicGroup.GET("/", postController.GetPosts)
 		publicGroup.GET("/:id", postController.GetPostByID)
+		publicGroup.GET("/:id/likes", postController.GetPostLikes)
 	}
 
 	// ====== Private group (using access token) ======
 	privateGroup := postGroup.Group("")
+	// middlewares
 	privateGroup.Use(middlewares.AuthHeader([]byte(cfg.JWT.AccessTokenKey), jwtpurpose.Access))
+	// presentations
 	{
 		privateGroup.POST("/", postController.CreatePost)
 		privateGroup.PATCH("/:id", postController.UpdatePost)

@@ -116,8 +116,13 @@ func (s *postCommentService) GetRootCommentsByPostID(
 
 // Update implements abstractions.ICommentService.
 func (s *postCommentService) Update(ctx context.Context, userID, commentID uuid.UUID, req post.UpdatePostCommentReq) error {
-	if _, err := s.getOwnedComment(ctx, userID, commentID); err != nil {
+	commentEntity, err := s.getOwnedComment(ctx, userID, commentID)
+	if err != nil {
 		return err
+	}
+
+	if commentEntity.Content == req.Content {
+		return nil
 	}
 
 	if err := s.postCommentRepo.Update(ctx, commentID, map[string]any{

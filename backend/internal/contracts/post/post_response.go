@@ -37,6 +37,11 @@ type PostCommentViewRes struct {
 	User      user.UserViewRes `json:"user"`
 }
 
+type PostLikeRes struct {
+	ID   uuid.UUID        `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
+	User user.UserViewRes `json:"user"`
+}
+
 type TogglePostLikeRes struct {
 	ID    uuid.UUID `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
 	Liked bool      `json:"liked" example:"true"`

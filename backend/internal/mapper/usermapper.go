@@ -10,7 +10,5 @@ func MapUserToContractUserResponse(u *entities.User) *userContract.UserViewRes {
 		ID:        u.ID,
 		FirstName: u.FirstName,
 		LastName:  u.LastName,
-		Email:     u.Email,
-		Phone:     u.Phone,
 	}
 }

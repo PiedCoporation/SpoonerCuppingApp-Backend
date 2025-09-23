@@ -22,7 +22,7 @@ func NewGenericRepository[T any](
 	}
 }
 
-// GetAll implements abstractions.GenericRepository.
+// GetAll implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) GetAll(ctx context.Context, preloads ...string) ([]T, error) {
 	var entities []T
 	db := r.db.WithContext(ctx)
@@ -35,7 +35,7 @@ func (r *genericRepository[T]) GetAll(ctx context.Context, preloads ...string) (
 	return entities, nil
 }
 
-// GetByID implements abstractions.GenericRepository.
+// GetByID implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) GetByID(ctx context.Context, id uuid.UUID, preloads ...string) (*T, error) {
 	var entity T
 	db := r.db.WithContext(ctx)
@@ -53,7 +53,7 @@ func (r *genericRepository[T]) GetByID(ctx context.Context, id uuid.UUID, preloa
 	return &entity, nil
 }
 
-// GetSingle implements abstractions.GenericRepository.
+// GetSingle implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) GetSingle(ctx context.Context, query string, preloads ...string) (*T, error) {
 	var entity T
 	db := r.db.WithContext(ctx)
@@ -67,7 +67,7 @@ func (r *genericRepository[T]) GetSingle(ctx context.Context, query string, prel
 	return &entity, nil
 }
 
-// FindByQuery implements abstractions.GenericRepository.
+// FindByQuery implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) FindByQuery(
 	ctx context.Context,
 	query string, args []any, orderByCreatedAtDesc bool,
@@ -90,7 +90,7 @@ func (r *genericRepository[T]) FindByQuery(
 	return entities, nil
 }
 
-// Create implements abstractions.GenericRepository.
+// Create implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) Create(ctx context.Context, entity *T) error {
 	if err := r.db.WithContext(ctx).
 		Create(entity).Error; err != nil {
@@ -99,7 +99,7 @@ func (r *genericRepository[T]) Create(ctx context.Context, entity *T) error {
 	return nil
 }
 
-// CreateRange implements abstractions.GenericRepository.
+// CreateRange implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) CreateRange(ctx context.Context, entities []T) error {
 	if len(entities) == 0 {
 		return nil
@@ -112,7 +112,7 @@ func (r *genericRepository[T]) CreateRange(ctx context.Context, entities []T) er
 	return nil
 }
 
-// Update implements abstractions.GenericRepository.
+// Update implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) Update(ctx context.Context, id uuid.UUID, fields map[string]any) error {
 	var entity T
 	if err := r.db.WithContext(ctx).
@@ -124,7 +124,7 @@ func (r *genericRepository[T]) Update(ctx context.Context, id uuid.UUID, fields 
 	return nil
 }
 
-// SoftDelete implements abstractions.GenericRepository.
+// SoftDelete implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) SoftDelete(ctx context.Context, id uuid.UUID) error {
 	var entity T
 	if err := r.db.WithContext(ctx).
@@ -137,7 +137,7 @@ func (r *genericRepository[T]) SoftDelete(ctx context.Context, id uuid.UUID) err
 	return nil
 }
 
-// Delete implements abstractions.GenericRepository.
+// Delete implements abstractions.IGenericRepository.
 func (r *genericRepository[T]) Delete(ctx context.Context, id uuid.UUID) error {
 	var entity T
 	if err := r.db.WithContext(ctx).

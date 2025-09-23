@@ -25,8 +25,8 @@ func NewPostCommentController(
 }
 
 // CreateComment godoc
-// @Summary Create a new postcomment
-// @Description Create a new postcomment with post id and optional parent id
+// @Summary Create a new comment
+// @Description Create a new comment with post id and optional parent id
 // @Tags comments
 // @Accept json
 // @Produce json
@@ -75,7 +75,7 @@ func (cc *PostCommentController) CreateComment(c *gin.Context) {
 
 // GetRootComments godoc
 // @Summary Get root comments in post
-// @Description Retrieve a list of root postcomment by post id
+// @Description Retrieve a list of root comments by post id
 // @Tags comments
 // @Accept json
 // @Produce json
@@ -111,8 +111,8 @@ func (cc *PostCommentController) GetRootComments(c *gin.Context) {
 }
 
 // GetDirectChildren godoc
-// @Summary Get direct children in postcomment
-// @Description Retrieve a list of direct children by postcomment id
+// @Summary Get direct children in comment
+// @Description Retrieve a list of direct children by comment id
 // @Tags comments
 // @Accept json
 // @Produce json
@@ -148,8 +148,8 @@ func (cc *PostCommentController) GetDirectChildren(c *gin.Context) {
 }
 
 // UpdateComment godoc
-// @Summary Update an existing postcomment
-// @Description Update a postcomment's content
+// @Summary Update an existing comment
+// @Description Update a comment's content
 // @Tags comments
 // @Accept json
 // @Produce json
@@ -194,8 +194,8 @@ func (cc *PostCommentController) UpdateComment(c *gin.Context) {
 }
 
 // DeletePost godoc
-// @Summary Delete an existing postcomment
-// @Description Soft delete postcomment by id
+// @Summary Delete an existing comment
+// @Description Soft delete comment by id
 // @Tags comments
 // @Accept json
 // @Produce json

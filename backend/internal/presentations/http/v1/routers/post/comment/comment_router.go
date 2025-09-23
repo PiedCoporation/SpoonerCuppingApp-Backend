@@ -32,7 +32,9 @@ func (r *PostCommentRouter) InitPostCommentRouter(
 
 	// ====== Private group (using access token) ======
 	privateGroup := commentGroup.Group("")
+	// middlewares
 	privateGroup.Use(middlewares.AuthHeader([]byte(cfg.JWT.AccessTokenKey), jwtpurpose.Access))
+	// presentations
 	{
 		privateGroup.POST("/", commentController.CreateComment)
 		privateGroup.PUT("/:commentId", commentController.UpdateComment)

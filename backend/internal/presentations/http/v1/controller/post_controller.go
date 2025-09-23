@@ -13,14 +13,17 @@ import (
 )
 
 type PostController struct {
-	postService abstractions.IPostService
+	postService     abstractions.IPostService
+	postLikeService abstractions.IPostLikeService
 }
 
 func NewPostController(
 	postService abstractions.IPostService,
+	postLikeService abstractions.IPostLikeService,
 ) *PostController {
 	return &PostController{
-		postService: postService,
+		postService:     postService,
+		postLikeService: postLikeService,
 	}
 }
 
@@ -187,6 +190,36 @@ func (pc *PostController) UpdatePost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "post updated"})
 }
 
+// GetPostLikes godoc
+// @Summary Get like list in post
+// @Description Retrieve a list of like by post id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param id path string true "Post ID" format(uuid)
+// @Success 200 {array} post.PostLikeRes "Like list"
+// @Failure 400 {object} controller.ErrorResponse "Bad request - invalid parameters"
+// @Failure 404 {object} controller.ErrorResponse "Post not found"
+// @Failure 500 {object} controller.ErrorResponse "Internal server error"
+// @Router /posts/{id}/likes [get]
+func (pc *PostController) GetPostLikes(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		errorcode.JSONError(c, errorcode.ErrInvalidParams)
+		return
+	}
+
+	ctx := c.Request.Context()
+	postLikes, err := pc.postLikeService.GetPostLikeByPostID(ctx, id)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, postLikes)
+}
+
 // TogglePostLike godoc
 // @Summary Toggle like in a post
 // @Description If post like exists, toggle like for a post by update is_deleted. Else, it will create a new post like.
@@ -217,7 +250,7 @@ func (pc *PostController) TogglePostLike(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	likeRes, err := pc.postService.TogglePostLike(ctx, userID.(uuid.UUID), id)
+	likeRes, err := pc.postLikeService.TogglePostLike(ctx, userID.(uuid.UUID), id)
 	if err != nil {
 		errorcode.JSONError(c, err)
 		return

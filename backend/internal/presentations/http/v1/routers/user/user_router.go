@@ -20,7 +20,8 @@ func (u *UserRouter) InitUserRouter(
 	// config
 	cfg := global.Config
 
-	uAuthCtrl, _ := wireUser.InitUserRouterHandler(db)
+	uCtrl, _ := wireUser.InitUserRouterHandler(db)
+	uAuthCtrl, _ := wireUser.InitUserAuthRouterHandler(db)
 	// ====== Main user group ======
 	userGroup := router.Group("/users")
 
@@ -51,5 +52,12 @@ func (u *UserRouter) InitUserRouter(
 	{
 		privateGroup.POST("/logout", uAuthCtrl.Logout)
 		privateGroup.POST("/change-password", uAuthCtrl.ChangePassword)
+	}
+
+	// Setting group
+	settingGroup := privateGroup.Group("/settings")
+	{
+		settingGroup.GET("/", uCtrl.GetUserSetting)
+		settingGroup.PATCH("/", uCtrl.UpdateUserSetting)
 	}
 }

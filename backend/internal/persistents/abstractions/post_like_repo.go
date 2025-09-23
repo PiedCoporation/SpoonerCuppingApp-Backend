@@ -8,6 +8,6 @@ import (
 )
 
 type IPostLikeRepository interface {
-	GenericRepository[entities.PostLike]
+	IGenericRepository[entities.PostLike]
 	DeleteByPostID(ctx context.Context, postID uuid.UUID) error
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type IPostImageRepository interface {
-	GenericRepository[entities.PostImage]
+	IGenericRepository[entities.PostImage]
 	GetAllByPostID(ctx context.Context, postID uuid.UUID, preloads ...string) ([]entities.PostImage, error)
 	DeleteByPostID(ctx context.Context, postID uuid.UUID) error
 	DeleteByUrls(ctx context.Context, imageUrls []string) error

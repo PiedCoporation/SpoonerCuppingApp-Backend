@@ -12,7 +12,6 @@ import (
 	"backend/pkg/utils/arrayutils"
 	"context"
 	"errors"
-	"fmt"
 	"math"
 
 	"github.com/google/uuid"
@@ -205,27 +204,28 @@ func (s *postService) Update(ctx context.Context, userID, postID uuid.UUID, req 
 		return err
 	}
 
-	if req.Title != nil {
-		postEntity.Title = *req.Title
+	fieldMap := make(map[string]any)
+
+	if req.Title != nil && *req.Title != postEntity.Title {
+		fieldMap["title"] = *req.Title
 	}
-	if req.Content != nil {
-		postEntity.Content = *req.Content
+
+	if req.Content != nil && *req.Content != postEntity.Content {
+		fieldMap["content"] = *req.Content
 	}
-	if req.EventID != nil {
+
+	if req.EventID != nil && (postEntity.EventID == nil || *req.EventID != *postEntity.EventID) {
+		// check event exists
 		if _, err := eventRepo.GetByID(ctx, *req.EventID); err != nil {
 			if errors.Is(err, errorcode.ErrNotFound) {
 				return errorcode.ErrEventNotFound
 			}
 			return err
 		}
-		postEntity.EventID = req.EventID
+		fieldMap["event_id"] = *req.EventID
 	}
 
-	if err := postRepo.Update(ctx, postEntity.ID, map[string]any{
-		"title":    postEntity.Title,
-		"content":  postEntity.Content,
-		"event_id": postEntity.EventID,
-	}); err != nil {
+	if err := postRepo.Update(ctx, postEntity.ID, fieldMap); err != nil {
 		return err
 	}
 
@@ -264,52 +264,6 @@ func (s *postService) Update(ctx context.Context, userID, postID uuid.UUID, req 
 	}
 
 	return s.postUow.Commit()
-}
-
-// TogglePostLike implements abstractions.IPostService.
-func (s *postService) TogglePostLike(ctx context.Context, userID uuid.UUID, postID uuid.UUID) (*post.TogglePostLikeRes, error) {
-	// check post exists
-	_, err := s.postRepo.GetByID(ctx, postID)
-	if err != nil {
-		if errors.Is(err, errorcode.ErrNotFound) {
-			return nil, errorcode.ErrPostNotFound
-		}
-		return nil, err
-	}
-
-	query := fmt.Sprintf("user_id = '%s' AND post_id = '%s'", userID.String(), postID.String())
-	likeEntity, err := s.postLikeRepo.GetSingle(ctx, query)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, err
-	}
-
-	// create new if not exists
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		newLikeEntity := &entities.PostLike{
-			Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
-			PostID: postID,
-			UserID: userID,
-		}
-		if err := s.postLikeRepo.Create(ctx, newLikeEntity); err != nil {
-			return nil, err
-		}
-		return &post.TogglePostLikeRes{
-			ID:    newLikeEntity.ID,
-			Liked: !newLikeEntity.IsDeleted,
-		}, nil
-	}
-
-	// update is_deleted if exists
-	if err := s.postLikeRepo.Update(ctx, likeEntity.ID, map[string]any{
-		"is_deleted": !likeEntity.IsDeleted,
-	}); err != nil {
-		return nil, err
-	}
-
-	return &post.TogglePostLikeRes{
-		ID:    likeEntity.ID,
-		Liked: likeEntity.IsDeleted,
-	}, nil
 }
 
 // Delete implements abstractions.IPostService.

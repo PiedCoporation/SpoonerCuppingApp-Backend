@@ -580,7 +580,7 @@ const docTemplate = `{
         },
         "/posts/{id}/comments": {
             "get": {
-                "description": "Retrieve a list of root postcomment by post id",
+                "description": "Retrieve a list of root comments by post id",
                 "consumes": [
                     "application/json"
                 ],
@@ -643,7 +643,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new postcomment with post id and optional parent id",
+                "description": "Create a new comment with post id and optional parent id",
                 "consumes": [
                     "application/json"
                 ],
@@ -653,7 +653,7 @@ const docTemplate = `{
                 "tags": [
                     "comments"
                 ],
-                "summary": "Create a new postcomment",
+                "summary": "Create a new comment",
                 "parameters": [
                     {
                         "type": "string",
@@ -708,7 +708,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update a postcomment's content",
+                "description": "Update a comment's content",
                 "consumes": [
                     "application/json"
                 ],
@@ -718,7 +718,7 @@ const docTemplate = `{
                 "tags": [
                     "comments"
                 ],
-                "summary": "Update an existing postcomment",
+                "summary": "Update an existing comment",
                 "parameters": [
                     {
                         "type": "string",
@@ -783,7 +783,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft delete postcomment by id",
+                "description": "Soft delete comment by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -793,7 +793,7 @@ const docTemplate = `{
                 "tags": [
                     "comments"
                 ],
-                "summary": "Delete an existing postcomment",
+                "summary": "Delete an existing comment",
                 "parameters": [
                     {
                         "type": "string",
@@ -846,7 +846,7 @@ const docTemplate = `{
         },
         "/posts/{id}/comments/{commentId}/children": {
             "get": {
-                "description": "Retrieve a list of direct children by postcomment id",
+                "description": "Retrieve a list of direct children by comment id",
                 "consumes": [
                     "application/json"
                 ],
@@ -856,7 +856,7 @@ const docTemplate = `{
                 "tags": [
                     "comments"
                 ],
-                "summary": "Get direct children in postcomment",
+                "summary": "Get direct children in comment",
                 "parameters": [
                     {
                         "type": "string",
@@ -905,6 +905,58 @@ const docTemplate = `{
             }
         },
         "/posts/{id}/likes": {
+            "get": {
+                "description": "Retrieve a list of like by post id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Get like list in post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Like list",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/post.PostLikeRes"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -1367,9 +1419,139 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/settings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a user setting by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user setting",
+                "responses": {
+                    "200": {
+                        "description": "User setting",
+                        "schema": {
+                            "$ref": "#/definitions/user.UserSettingRes"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update setting's circleStyle",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update an existing user setting",
+                "parameters": [
+                    {
+                        "description": "Update payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.UpdateUserSettingReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "circlestyle.CircleStyleEnum": {
+            "type": "string",
+            "enum": [
+                "DEFAULT",
+                "SECOND"
+            ],
+            "x-enum-varnames": [
+                "Default",
+                "Second"
+            ]
+        },
         "controller.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -1905,6 +2087,18 @@ const docTemplate = `{
                 }
             }
         },
+        "post.PostLikeRes": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "user": {
+                    "$ref": "#/definitions/user.UserViewRes"
+                }
+            }
+        },
         "post.PostPageResult": {
             "type": "object",
             "properties": {
@@ -2170,13 +2364,38 @@ const docTemplate = `{
                 }
             }
         },
+        "user.UpdateUserSettingReq": {
+            "type": "object",
+            "properties": {
+                "circle_style": {
+                    "$ref": "#/definitions/circlestyle.CircleStyleEnum"
+                }
+            }
+        },
+        "user.UserSettingRes": {
+            "type": "object",
+            "properties": {
+                "circle_style": {
+                    "enum": [
+                        "DEFAULT",
+                        "SECOND"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/circlestyle.CircleStyleEnum"
+                        }
+                    ],
+                    "example": "DEFAULT"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
         "user.UserViewRes": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@example.com"
-                },
                 "first_name": {
                     "type": "string",
                     "example": "John"
@@ -2188,10 +2407,6 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string",
                     "example": "Doe"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+1234567890"
                 }
             }
         }

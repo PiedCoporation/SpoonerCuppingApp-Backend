@@ -12,11 +12,11 @@ import (
 )
 
 type UserAuthController struct {
-	auth abstractions.UserAuthService
+	auth abstractions.IUserAuthService
 }
 
 func NewUserAuthController(
-	auth abstractions.UserAuthService,
+	auth abstractions.IUserAuthService,
 ) *UserAuthController {
 	return &UserAuthController{
 		auth: auth,

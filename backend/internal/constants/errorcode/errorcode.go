@@ -10,6 +10,7 @@ import (
 var (
 	// 400
 	ErrInvalidParams              = errors.New("invalid params")
+	ErrInvalidCircleStyle         = errors.New("invalid circle style")
 	ErrEmailExists                = errors.New("this email already exists")
 	ErrPhoneExists                = errors.New("this phone number already exists")
 	ErrAccountIsVerified          = errors.New("this account is already verified")
@@ -51,6 +52,7 @@ var (
 var errorStatusMap = map[error]int{
 	// 400
 	ErrInvalidParams:              http.StatusBadRequest,
+	ErrInvalidCircleStyle:         http.StatusBadRequest,
 	ErrEmailExists:                http.StatusBadRequest,
 	ErrPhoneExists:                http.StatusBadRequest,
 	ErrAccountIsVerified:          http.StatusBadRequest,

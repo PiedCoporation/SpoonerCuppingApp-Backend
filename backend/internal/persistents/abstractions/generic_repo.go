@@ -14,7 +14,7 @@ type PaginationParams struct {
 
 // PaginatedResponse represents a paginated response
 
-type GenericRepository[T any] interface {
+type IGenericRepository[T any] interface {
 	GetAll(ctx context.Context, preloads ...string) ([]T, error)
 	GetByID(ctx context.Context, id uuid.UUID, preloads ...string) (*T, error)
 	GetSingle(ctx context.Context, query string, preloads ...string) (*T, error)
