@@ -19,11 +19,22 @@ func InitPostRouterHandler(
 		postgres.NewPostRepo,
 		postgres.NewPostImageRepo,
 		postgres.NewPostLikeRepo,
-		postgres.NewCommentRepo,
+		postgres.NewPostCommentRepo,
 		postgres.NewPostUow,
 		usecases.NewPostService,
-		usecases.NewCommentService,
 		controller.NewPostController,
 	)
 	return &controller.PostController{}, nil
+}
+
+func InitPostCommentRouterHandler(
+	db *gorm.DB,
+) (*controller.PostCommentController, error) {
+	wire.Build(
+		postgres.NewPostCommentRepo,
+		postgres.NewPostRepo,
+		usecases.NewPostCommentService,
+		controller.NewPostCommentController,
+	)
+	return &controller.PostCommentController{}, nil
 }

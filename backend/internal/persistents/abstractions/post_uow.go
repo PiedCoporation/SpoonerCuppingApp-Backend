@@ -17,6 +17,6 @@ type PostRepoProvider interface {
 	PostRepository() IPostRepository
 	PostImageRepository() IPostImageRepository
 	PostLikeRepository() IPostLikeRepository
-	CommentRepository() ICommentRepository
+	PostCommentRepository() IPostCommentRepository
 	EventRepository() IEventRepository
 }

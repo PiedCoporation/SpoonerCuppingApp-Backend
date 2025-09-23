@@ -27,7 +27,6 @@ func (r *PostRouter) InitPostRouter(
 	{
 		publicGroup.GET("/", postController.GetPosts)
 		publicGroup.GET("/:id", postController.GetPostByID)
-		publicGroup.GET("/:id/comments", postController.GetRootComments)
 	}
 
 	// ====== Private group (using access token) ======
@@ -37,5 +36,10 @@ func (r *PostRouter) InitPostRouter(
 		privateGroup.POST("/", postController.CreatePost)
 		privateGroup.PATCH("/:id", postController.UpdatePost)
 		privateGroup.DELETE("/:id", postController.DeletePost)
+		privateGroup.PUT("/:id/likes", postController.TogglePostLike)
 	}
+
+	// ====== Comment group ======
+	postCommentRouter := PostRouterGroup.Comment
+	postCommentRouter.InitPostCommentRouter(postGroup, db)
 }

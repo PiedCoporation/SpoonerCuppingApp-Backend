@@ -12,7 +12,7 @@ type PostWithCounts struct {
 	CommentCount int64 `gorm:"->"`
 }
 
-func MapPostToContractPostResponse(p *PostWithCounts) *postContract.PostViewRes {
+func MapPostToContractViewResponse(p *PostWithCounts) *postContract.PostViewRes {
 	imageUrls := make([]string, len(p.Images))
 	for j, img := range p.Images {
 		imageUrls[j] = img.URL
@@ -29,5 +29,16 @@ func MapPostToContractPostResponse(p *PostWithCounts) *postContract.PostViewRes 
 		ImageURLs:    imageUrls,
 		LikeCount:    p.LikeCount,
 		CommentCount: p.CommentCount,
+	}
+}
+
+func MapPostCommentToContractViewResponse(c *entities.PostComment) *postContract.PostCommentViewRes {
+	return &postContract.PostCommentViewRes{
+		ID:        c.ID,
+		Content:   c.Content,
+		CreatedAt: c.CreatedAt,
+		UpdatedAt: c.UpdatedAt,
+		ParentID:  c.ParentID,
+		User:      *MapUserToContractUserResponse(&c.User),
 	}
 }

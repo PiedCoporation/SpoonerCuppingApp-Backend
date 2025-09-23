@@ -13,17 +13,14 @@ import (
 )
 
 type PostController struct {
-	postService    abstractions.IPostService
-	commentService abstractions.ICommentService
+	postService abstractions.IPostService
 }
 
 func NewPostController(
 	postService abstractions.IPostService,
-	commentService abstractions.ICommentService,
 ) *PostController {
 	return &PostController{
-		postService:    postService,
-		commentService: commentService,
+		postService: postService,
 	}
 }
 
@@ -35,7 +32,7 @@ func NewPostController(
 // @Produce json
 // @Security BearerAuth
 // @Param body body post.CreatePostReq true "Post payload"
-// @Success 201 {object} controller.MessageResponse
+// @Success 201 {object} controller.IdMessageResponse
 // @Failure 400 {object} controller.ErrorResponse "Bad request"
 // @Failure 401 {object} controller.ErrorResponse "Unauthorized"
 // @Failure 500 {object} controller.ErrorResponse "Internal server error"
@@ -56,12 +53,16 @@ func (pc *PostController) CreatePost(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	if err := pc.postService.Create(ctx, userID.(uuid.UUID), req); err != nil {
+	id, err := pc.postService.Create(ctx, userID.(uuid.UUID), req)
+	if err != nil {
 		errorcode.JSONError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "post created"})
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "post created",
+		"id":      id,
+	})
 }
 
 // GetPosts godoc
@@ -116,7 +117,7 @@ func (pc *PostController) GetPosts(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Post ID" format(uuid)
-// @Success 200 {object} post.GetPostByIdResponse "Post details"
+// @Success 200 {object} post.GetPostByIdRes "Post details"
 // @Failure 400 {object} controller.ErrorResponse "Bad request - invalid parameters"
 // @Failure 404 {object} controller.ErrorResponse "Post not found"
 // @Failure 500 {object} controller.ErrorResponse "Internal server error"
@@ -137,43 +138,6 @@ func (pc *PostController) GetPostByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, posts)
-}
-
-// GetRootComments godoc
-// @Summary Get root comments in post
-// @Description Retrieve a list of root comment by post id
-// @Tags posts
-// @Accept json
-// @Produce json
-// @Param id path string true "Post ID" format(uuid)
-// @Param order_by_desc query boolean false "Order by desc"
-// @Success 200 {array} comment.CommentViewRes "Root comments"
-// @Failure 400 {object} controller.ErrorResponse "Bad request - invalid parameters"
-// @Failure 404 {object} controller.ErrorResponse "Post not found"
-// @Failure 500 {object} controller.ErrorResponse "Internal server error"
-// @Router /posts/{id}/comments [get]
-func (pc *PostController) GetRootComments(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		errorcode.JSONError(c, errorcode.ErrInvalidParams)
-		return
-	}
-
-	orderByDescStr := c.DefaultQuery("order_by_desc", "true")
-	orderByDesc, err := strconv.ParseBool(orderByDescStr)
-	if err != nil {
-		orderByDesc = true
-	}
-
-	ctx := c.Request.Context()
-	comments, err := pc.commentService.GetRootCommentsByPostID(ctx, id, orderByDesc)
-	if err != nil {
-		errorcode.JSONError(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, comments)
 }
 
 // UpdatePost godoc
@@ -221,6 +185,45 @@ func (pc *PostController) UpdatePost(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "post updated"})
+}
+
+// TogglePostLike godoc
+// @Summary Toggle like in a post
+// @Description If post like exists, toggle like for a post by update is_deleted. Else, it will create a new post like.
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Post ID" format(uuid)
+// @Success 200 {object} post.TogglePostLikeRes
+// @Failure 400 {object} controller.ErrorResponse "Bad request"
+// @Failure 401 {object} controller.ErrorResponse "Unauthorized"
+// @Failure 403 {object} controller.ErrorResponse "Forbidden"
+// @Failure 404 {object} controller.ErrorResponse "Not found"
+// @Failure 500 {object} controller.ErrorResponse "Internal server error"
+// @Router /posts/{id}/likes [put]
+func (pc *PostController) TogglePostLike(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		errorcode.JSONError(c, errorcode.ErrInvalidParams)
+		return
+	}
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	likeRes, err := pc.postService.TogglePostLike(ctx, userID.(uuid.UUID), id)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, likeRes)
 }
 
 // DeletePost godoc

@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"backend/internal/constants/errorcode"
-	"backend/internal/contracts/comment"
 	"backend/internal/contracts/common"
 	"backend/internal/contracts/post"
 	"backend/internal/domains/commons"
@@ -13,6 +12,7 @@ import (
 	"backend/pkg/utils/arrayutils"
 	"context"
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/google/uuid"
@@ -24,7 +24,7 @@ type postService struct {
 	postRepo      persistentRepo.IPostRepository
 	postImageRepo persistentRepo.IPostImageRepository
 	postLikeRepo  persistentRepo.IPostLikeRepository
-	commentRepo   persistentRepo.ICommentRepository
+	postCmtRepo   persistentRepo.IPostCommentRepository
 }
 
 func NewPostService(
@@ -32,22 +32,22 @@ func NewPostService(
 	postRepo persistentRepo.IPostRepository,
 	postImageRepo persistentRepo.IPostImageRepository,
 	postLikeRepo persistentRepo.IPostLikeRepository,
-	commentRepo persistentRepo.ICommentRepository,
+	postCmtRepo persistentRepo.IPostCommentRepository,
 ) serviceAbstractions.IPostService {
 	return &postService{
 		postUow:       postUow,
 		postRepo:      postRepo,
 		postImageRepo: postImageRepo,
 		postLikeRepo:  postLikeRepo,
-		commentRepo:   commentRepo,
+		postCmtRepo:   postCmtRepo,
 	}
 }
 
 // Create implements abstractions.IPostService.
-func (s *postService) Create(ctx context.Context, userID uuid.UUID, req post.CreatePostReq) error {
+func (s *postService) Create(ctx context.Context, userID uuid.UUID, req post.CreatePostReq) (uuid.UUID, error) {
 	repoProvider, err := s.postUow.Begin(ctx)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	defer s.postUow.Rollback()
 
@@ -59,9 +59,9 @@ func (s *postService) Create(ctx context.Context, userID uuid.UUID, req post.Cre
 	if req.EventID != nil {
 		if _, err := eventRepo.GetByID(ctx, *req.EventID); err != nil {
 			if errors.Is(err, errorcode.ErrNotFound) {
-				return errorcode.ErrEventNotFound
+				return uuid.Nil, errorcode.ErrEventNotFound
 			}
-			return err
+			return uuid.Nil, err
 		}
 	}
 
@@ -76,7 +76,7 @@ func (s *postService) Create(ctx context.Context, userID uuid.UUID, req post.Cre
 
 	// insert post to db
 	if err := postRepo.Create(ctx, &postEntity); err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
 	// make images slice
@@ -91,15 +91,15 @@ func (s *postService) Create(ctx context.Context, userID uuid.UUID, req post.Cre
 
 	// insert into db
 	if err := postImageRepo.CreateRange(ctx, images); err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
 	// commit the transaction
 	if err := s.postUow.Commit(); err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
-	return nil
+	return postEntity.ID, nil
 }
 
 // GetAll implements abstractions.IPostService.
@@ -140,7 +140,7 @@ func (s *postService) GetAll(ctx context.Context, pageSize int, pageNumber int, 
 
 	responses := make([]post.PostViewRes, len(postWithCounts))
 	for i, p := range postWithCounts {
-		responses[i] = *mapper.MapPostToContractPostResponse(&p)
+		responses[i] = *mapper.MapPostToContractViewResponse(&p)
 	}
 
 	totalPages := int(math.Ceil(float64(total) / float64(pageSize)))
@@ -155,7 +155,7 @@ func (s *postService) GetAll(ctx context.Context, pageSize int, pageNumber int, 
 }
 
 // GetByID implements abstractions.IPostService.
-func (s *postService) GetByID(ctx context.Context, id uuid.UUID) (*post.GetPostByIdResponse, error) {
+func (s *postService) GetByID(ctx context.Context, id uuid.UUID) (*post.GetPostByIdRes, error) {
 	db := s.postUow.GetDB()
 
 	var postWithCounts mapper.PostWithCounts
@@ -170,19 +170,19 @@ func (s *postService) GetByID(ctx context.Context, id uuid.UUID) (*post.GetPostB
 		return nil, err
 	}
 
-	// get comment at first level
-	rootComments, err := s.commentRepo.GetRootComments(ctx, id, true)
+	// get postcomment at first level
+	rootComments, err := s.postCmtRepo.GetRootComments(ctx, id, true)
 	if err != nil {
 		return nil, err
 	}
 
-	commentResponses := make([]comment.CommentViewRes, len(rootComments))
+	commentResponses := make([]post.PostCommentViewRes, len(rootComments))
 	for i, c := range rootComments {
-		commentResponses[i] = *mapper.MapCommentToContractCommentResponse(&c)
+		commentResponses[i] = *mapper.MapPostCommentToContractViewResponse(&c)
 	}
 
-	return &post.GetPostByIdResponse{
-		PostViewRes:  *mapper.MapPostToContractPostResponse(&postWithCounts),
+	return &post.GetPostByIdRes{
+		PostViewRes:  *mapper.MapPostToContractViewResponse(&postWithCounts),
 		RootComments: commentResponses,
 	}, nil
 }
@@ -266,6 +266,52 @@ func (s *postService) Update(ctx context.Context, userID, postID uuid.UUID, req 
 	return s.postUow.Commit()
 }
 
+// TogglePostLike implements abstractions.IPostService.
+func (s *postService) TogglePostLike(ctx context.Context, userID uuid.UUID, postID uuid.UUID) (*post.TogglePostLikeRes, error) {
+	// check post exists
+	_, err := s.postRepo.GetByID(ctx, postID)
+	if err != nil {
+		if errors.Is(err, errorcode.ErrNotFound) {
+			return nil, errorcode.ErrPostNotFound
+		}
+		return nil, err
+	}
+
+	query := fmt.Sprintf("user_id = '%s' AND post_id = '%s'", userID.String(), postID.String())
+	likeEntity, err := s.postLikeRepo.GetSingle(ctx, query)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	// create new if not exists
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		newLikeEntity := &entities.PostLike{
+			Entity: commons.Entity{ID: uuid.New(), IsDeleted: false},
+			PostID: postID,
+			UserID: userID,
+		}
+		if err := s.postLikeRepo.Create(ctx, newLikeEntity); err != nil {
+			return nil, err
+		}
+		return &post.TogglePostLikeRes{
+			ID:    newLikeEntity.ID,
+			Liked: !newLikeEntity.IsDeleted,
+		}, nil
+	}
+
+	// update is_deleted if exists
+	if err := s.postLikeRepo.Update(ctx, likeEntity.ID, map[string]any{
+		"is_deleted": !likeEntity.IsDeleted,
+	}); err != nil {
+		return nil, err
+	}
+
+	return &post.TogglePostLikeRes{
+		ID:    likeEntity.ID,
+		Liked: likeEntity.IsDeleted,
+	}, nil
+}
+
 // Delete implements abstractions.IPostService.
 func (s *postService) Delete(ctx context.Context, userID, postID uuid.UUID) error {
 	repoProvider, err := s.postUow.Begin(ctx)
@@ -277,7 +323,7 @@ func (s *postService) Delete(ctx context.Context, userID, postID uuid.UUID) erro
 	postRepo := repoProvider.PostRepository()
 	postImageRepo := repoProvider.PostImageRepository()
 	postLikeRepo := repoProvider.PostLikeRepository()
-	commentRepo := repoProvider.CommentRepository()
+	postCmtRepo := repoProvider.PostCommentRepository()
 
 	// get post from db
 	if _, err := s.getOwnedPost(ctx, userID, userID); err != nil {
@@ -297,8 +343,8 @@ func (s *postService) Delete(ctx context.Context, userID, postID uuid.UUID) erro
 	if err := postLikeRepo.DeleteByPostID(ctx, postID); err != nil {
 		return err
 	}
-	// delete comment
-	if err := commentRepo.DeleteByPostID(ctx, postID); err != nil {
+	// delete postcomment
+	if err := postCmtRepo.DeleteByPostID(ctx, postID); err != nil {
 		return err
 	}
 
@@ -310,9 +356,11 @@ func (s *postService) getPostWithCountsQuery(ctx context.Context, db *gorm.DB) *
 	// subquery for count likes and comments
 	likeCount := db.Model(&entities.PostLike{}).
 		Select("post_id, COUNT(*) as count").
+		Where("is_deleted = ?", false).
 		Group("post_id")
-	commentCount := db.Model(&entities.Comment{}).
+	commentCount := db.Model(&entities.PostComment{}).
 		Select("post_id, COUNT(*) as count").
+		Where("is_deleted = ?", false).
 		Group("post_id")
 
 	q := db.WithContext(ctx).Model(&entities.Post{}).

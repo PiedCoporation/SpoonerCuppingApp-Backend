@@ -45,12 +45,12 @@ func (u *postUow) GetDB() *gorm.DB {
 }
 
 type postRepoProvider struct {
-	tx            *gorm.DB
-	postRepo      abstractions.IPostRepository
-	postImageRepo abstractions.IPostImageRepository
-	postLikeRepo  abstractions.IPostLikeRepository
-	commentRepo   abstractions.ICommentRepository
-	eventRepo     abstractions.IEventRepository
+	tx              *gorm.DB
+	postRepo        abstractions.IPostRepository
+	postImageRepo   abstractions.IPostImageRepository
+	postLikeRepo    abstractions.IPostLikeRepository
+	postCommentRepo abstractions.IPostCommentRepository
+	eventRepo       abstractions.IEventRepository
 }
 
 func (r *postRepoProvider) PostRepository() abstractions.IPostRepository {
@@ -74,11 +74,11 @@ func (r *postRepoProvider) PostLikeRepository() abstractions.IPostLikeRepository
 	return r.postLikeRepo
 }
 
-func (r *postRepoProvider) CommentRepository() abstractions.ICommentRepository {
-	if r.commentRepo == nil {
-		r.commentRepo = NewCommentRepo(r.tx)
+func (r *postRepoProvider) PostCommentRepository() abstractions.IPostCommentRepository {
+	if r.postCommentRepo == nil {
+		r.postCommentRepo = NewPostCommentRepo(r.tx)
 	}
-	return r.commentRepo
+	return r.postCommentRepo
 }
 
 // EventRepository implements abstractions.PostRepoProvider.

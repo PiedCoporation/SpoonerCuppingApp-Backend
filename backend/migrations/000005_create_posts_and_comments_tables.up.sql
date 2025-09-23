@@ -37,17 +37,17 @@ CREATE TABLE IF NOT EXISTS post_likes (
 CREATE INDEX IF NOT EXISTS idx_post_likes_post_id ON post_likes(post_id);
 CREATE INDEX IF NOT EXISTS idx_post_likes_user_id ON post_likes(user_id);
 
--- Comment
-CREATE TABLE IF NOT EXISTS comments (
+-- post_comments
+CREATE TABLE IF NOT EXISTS post_comments (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     content text NOT NULL,
 	is_deleted boolean NOT NULL DEFAULT false,
 	created_at timestamptz NOT NULL DEFAULT now(),
 	updated_at timestamptz NOT NULL DEFAULT now(),
     post_id uuid NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    parent_id uuid NULL REFERENCES comments(id) ON DELETE CASCADE,
+    parent_id uuid NULL REFERENCES post_comments(id) ON DELETE CASCADE,
     user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
-CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
-CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments(user_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_post_id ON post_comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_parent_id ON post_comments(parent_id);
+CREATE INDEX IF NOT EXISTS idx_post_comments_user_id ON post_comments(user_id);

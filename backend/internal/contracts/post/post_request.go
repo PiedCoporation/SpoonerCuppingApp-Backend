@@ -15,3 +15,12 @@ type UpdatePostReq struct {
 	EventID   *uuid.UUID `json:"event_id"`
 	ImageUrls *[]string  `json:"image_urls"`
 }
+
+type CreatePostCommentReq struct {
+	Content  string     `json:"content" binding:"required"`
+	ParentID *uuid.UUID `json:"parent_id"`
+}
+
+type UpdatePostCommentReq struct {
+	Content string `json:"content" binding:"required"`
+}

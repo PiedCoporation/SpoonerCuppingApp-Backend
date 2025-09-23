@@ -2,7 +2,7 @@ package usecases
 
 import (
 	"backend/internal/constants/errorcode"
-	"backend/internal/contracts/comment"
+	"backend/internal/contracts/post"
 	"backend/internal/domains/commons"
 	"backend/internal/domains/entities"
 	"backend/internal/mapper"
@@ -14,85 +14,85 @@ import (
 	"github.com/google/uuid"
 )
 
-type commentService struct {
-	commentRepo persistentRepo.ICommentRepository
-	postRepo    persistentRepo.IPostRepository
+type postCommentService struct {
+	postCommentRepo persistentRepo.IPostCommentRepository
+	postRepo        persistentRepo.IPostRepository
 }
 
-func NewCommentService(
-	commentRepo persistentRepo.ICommentRepository,
+func NewPostCommentService(
+	postCommentRepo persistentRepo.IPostCommentRepository,
 	postRepo persistentRepo.IPostRepository,
-) serviceAbstractions.ICommentService {
-	return &commentService{
-		commentRepo: commentRepo,
-		postRepo:    postRepo,
+) serviceAbstractions.IPostCommentService {
+	return &postCommentService{
+		postCommentRepo: postCommentRepo,
+		postRepo:        postRepo,
 	}
 }
 
 // Create implements abstractions.ICommentService.
-func (s *commentService) Create(ctx context.Context, userID uuid.UUID, req comment.CreateCommentReq) error {
+func (s *postCommentService) Create(ctx context.Context, userID, postID uuid.UUID, req post.CreatePostCommentReq) (uuid.UUID, error) {
 	// get post
-	if _, err := s.postRepo.GetByID(ctx, req.PostID); err != nil {
+	if _, err := s.postRepo.GetByID(ctx, postID); err != nil {
 		if errors.Is(err, errorcode.ErrNotFound) {
-			return errorcode.ErrPostNotFound
+			return uuid.Nil, errorcode.ErrPostNotFound
 		}
-		return err
+		return uuid.Nil, err
 	}
 
 	// check parent ID
 	if req.ParentID != nil {
-		if _, err := s.commentRepo.GetByID(ctx, *req.ParentID); err != nil {
+		if _, err := s.postCommentRepo.GetByID(ctx, *req.ParentID); err != nil {
 			if errors.Is(err, errorcode.ErrNotFound) {
-				return errorcode.ErrCommentNotFound
+				return uuid.Nil, errorcode.ErrCommentNotFound
 			}
-			return err
+			return uuid.Nil, err
 		}
 	}
 
-	commentEntity := entities.Comment{
+	commentEntity := entities.PostComment{
 		Entity:   commons.Entity{ID: uuid.New(), IsDeleted: false},
 		Content:  req.Content,
-		PostID:   req.PostID,
+		PostID:   postID,
 		ParentID: req.ParentID,
 		UserID:   userID,
 	}
 
-	if err := s.commentRepo.Create(ctx, &commentEntity); err != nil {
-		return err
+	if err := s.postCommentRepo.Create(ctx, &commentEntity); err != nil {
+		return uuid.Nil, err
 	}
 
-	return nil
+	return commentEntity.ID, nil
 }
 
 // GetDirectChildren implements abstractions.ICommentService.
-func (s *commentService) GetDirectChildren(
+func (s *postCommentService) GetDirectChildren(
 	ctx context.Context, parentID uuid.UUID, orderByCreatedAtDesc bool,
-) ([]comment.CommentViewRes, error) {
+) ([]post.PostCommentViewRes, error) {
 	// check parent exists
-	if _, err := s.commentRepo.GetByID(ctx, parentID); err != nil {
+	if _, err := s.postCommentRepo.GetByID(ctx, parentID); err != nil {
 		if errors.Is(err, errorcode.ErrNotFound) {
 			return nil, errorcode.ErrCommentNotFound
 		}
 		return nil, err
 	}
 
-	comments, err := s.commentRepo.GetDirectChildren(ctx, parentID, orderByCreatedAtDesc)
+	comments, err := s.postCommentRepo.GetDirectChildren(ctx, parentID, orderByCreatedAtDesc)
 	if err != nil {
 		return nil, err
 	}
 
-	commentViews := make([]comment.CommentViewRes, len(comments))
+	commentViews := make([]post.PostCommentViewRes, len(comments))
 	for i, c := range comments {
-		commentViews[i] = *mapper.MapCommentToContractCommentResponse(&c)
+		commentViews[i] = *mapper.MapPostCommentToContractViewResponse(&c)
 	}
 
 	return commentViews, nil
 }
 
 // GetRootCommentsByPostID implements abstractions.ICommentService.
-func (s *commentService) GetRootCommentsByPostID(
+func (s *postCommentService) GetRootCommentsByPostID(
 	ctx context.Context, postID uuid.UUID, orderByCreatedAtDesc bool,
-) ([]comment.CommentViewRes, error) {
+) ([]post.PostCommentViewRes, error) {
 	// check parent exists
 	if _, err := s.postRepo.GetByID(ctx, postID); err != nil {
 		if errors.Is(err, errorcode.ErrNotFound) {
@@ -101,26 +101,26 @@ func (s *commentService) GetRootCommentsByPostID(
 		return nil, err
 	}
 
-	comments, err := s.commentRepo.GetRootComments(ctx, postID, orderByCreatedAtDesc)
+	comments, err := s.postCommentRepo.GetRootComments(ctx, postID, orderByCreatedAtDesc)
 	if err != nil {
 		return nil, err
 	}
 
-	commentViews := make([]comment.CommentViewRes, len(comments))
+	commentViews := make([]post.PostCommentViewRes, len(comments))
 	for i, c := range comments {
-		commentViews[i] = *mapper.MapCommentToContractCommentResponse(&c)
+		commentViews[i] = *mapper.MapPostCommentToContractViewResponse(&c)
 	}
 
 	return commentViews, nil
 }
 
 // Update implements abstractions.ICommentService.
-func (s *commentService) Update(ctx context.Context, userID, commentID uuid.UUID, req comment.UpdateCommentReq) error {
+func (s *postCommentService) Update(ctx context.Context, userID, commentID uuid.UUID, req post.UpdatePostCommentReq) error {
 	if _, err := s.getOwnedComment(ctx, userID, commentID); err != nil {
 		return err
 	}
 
-	if err := s.commentRepo.Update(ctx, commentID, map[string]any{
+	if err := s.postCommentRepo.Update(ctx, commentID, map[string]any{
 		"content": req.Content,
 	}); err != nil {
 		return err
@@ -130,12 +130,12 @@ func (s *commentService) Update(ctx context.Context, userID, commentID uuid.UUID
 }
 
 // Delete implements abstractions.ICommentService.
-func (s *commentService) Delete(ctx context.Context, userID, commentID uuid.UUID) error {
+func (s *postCommentService) Delete(ctx context.Context, userID, commentID uuid.UUID) error {
 	if _, err := s.getOwnedComment(ctx, userID, commentID); err != nil {
 		return err
 	}
 
-	if err := s.commentRepo.Update(ctx, commentID, map[string]any{
+	if err := s.postCommentRepo.Update(ctx, commentID, map[string]any{
 		"is_deleted": true,
 	}); err != nil {
 		return err
@@ -145,8 +145,8 @@ func (s *commentService) Delete(ctx context.Context, userID, commentID uuid.UUID
 }
 
 // helper
-func (s *commentService) getOwnedComment(ctx context.Context, userID, commentID uuid.UUID) (*entities.Comment, error) {
-	commentEntity, err := s.commentRepo.GetByID(ctx, commentID)
+func (s *postCommentService) getOwnedComment(ctx context.Context, userID, commentID uuid.UUID) (*entities.PostComment, error) {
+	commentEntity, err := s.postCommentRepo.GetByID(ctx, commentID)
 	if err != nil {
 		if errors.Is(err, errorcode.ErrNotFound) {
 			return nil, errorcode.ErrCommentNotFound

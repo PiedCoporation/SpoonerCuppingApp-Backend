@@ -9,35 +9,35 @@ import (
 	"gorm.io/gorm"
 )
 
-type commentPgRepo struct {
-	*genericRepository[entities.Comment]
+type postCommentPgRepo struct {
+	*genericRepository[entities.PostComment]
 }
 
-func NewCommentRepo(db *gorm.DB) abstractions.ICommentRepository {
-	return &commentPgRepo{
-		genericRepository: NewGenericRepository[entities.Comment](db),
+func NewPostCommentRepo(db *gorm.DB) abstractions.IPostCommentRepository {
+	return &postCommentPgRepo{
+		genericRepository: NewGenericRepository[entities.PostComment](db),
 	}
 }
 
 // GetDirectChildren implements abstractions.ICommentRepository.
-func (r *commentPgRepo) GetDirectChildren(
+func (r *postCommentPgRepo) GetDirectChildren(
 	ctx context.Context,
 	parentID uuid.UUID, orderByCreatedAtDesc bool,
-) ([]entities.Comment, error) {
+) ([]entities.PostComment, error) {
 	return r.FindByQuery(ctx, "parent_id = ?", []any{parentID}, orderByCreatedAtDesc, "User")
 }
 
 // GetRootComments implements abstractions.ICommentRepository.
-func (r *commentPgRepo) GetRootComments(
+func (r *postCommentPgRepo) GetRootComments(
 	ctx context.Context,
 	postID uuid.UUID, orderByCreatedAtDesc bool,
-) ([]entities.Comment, error) {
+) ([]entities.PostComment, error) {
 	return r.FindByQuery(ctx, "parent_id IS NULL AND post_id = ?", []any{postID}, orderByCreatedAtDesc, "User")
 }
 
 // DeleteByPostID implements abstractions.ICommentRepository.
-func (r *commentPgRepo) DeleteByPostID(ctx context.Context, postID uuid.UUID) error {
-	var entity entities.Comment
+func (r *postCommentPgRepo) DeleteByPostID(ctx context.Context, postID uuid.UUID) error {
+	var entity entities.PostComment
 	if err := r.db.WithContext(ctx).
 		Model(&entity).
 		Where("post_id = ?", postID).

@@ -18,7 +18,7 @@ type Post struct {
 	UserID uuid.UUID `gorm:"not null;index"`
 	User   User      `gorm:"foreignKey:UserID"`
 
-	Images   []PostImage `gorm:"foreignKey:PostID"`
-	Likes    []PostLike  `gorm:"foreignKey:PostID"`
-	Comments []Comment   `gorm:"foreignKey:PostID"`
+	Images   []PostImage   `gorm:"foreignKey:PostID"`
+	Likes    []PostLike    `gorm:"foreignKey:PostID"`
+	Comments []PostComment `gorm:"foreignKey:PostID"`
 }
