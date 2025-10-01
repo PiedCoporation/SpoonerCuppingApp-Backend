@@ -1,6 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { MainTabParamList } from "../types/navigation";
 import ProfileScreen from "../screens/main/ProfileScreen";
 import FriendScreen from "../screens/main/FriendScreen";
@@ -36,32 +36,32 @@ export default function MainTabNavigator() {
           paddingHorizontal: 2, // Reduce horizontal padding
         },
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
+          let iconName: keyof typeof MaterialIcons.glyphMap;
 
           switch (route.name) {
             case "Home":
-              iconName = focused ? "home" : "home-outline";
+              iconName = "home";
               break;
             case "Event":
-              iconName = focused ? "cafe" : "cafe-outline";
+              iconName = "local-cafe";
               break;
             case "Friend":
-              iconName = focused ? "people" : "people-outline";
+              iconName = "people";
               break;
             case "Market":
-              iconName = focused ? "storefront" : "storefront-outline";
+              iconName = "storefront";
               break;
             case "Notification":
-              iconName = focused ? "notifications" : "notifications-outline";
+              iconName = "notifications";
               break;
             case "Profile":
-              iconName = focused ? "person" : "person-outline";
+              iconName = "person";
               break;
             default:
-              iconName = "home-outline";
+              iconName = "home";
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <MaterialIcons name={iconName} size={size} color={color} />;
         },
       })}
     >
@@ -76,7 +76,7 @@ export default function MainTabNavigator() {
         name="Event"
         component={EventScreen}
         options={{
-          tabBarLabel: "Events",
+          tabBarLabel: "Samples",
         }}
       />
       <Tab.Screen

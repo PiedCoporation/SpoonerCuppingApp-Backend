@@ -17,6 +17,7 @@ export const APP_ROUTES = {
   SETTINGS: "Settings" as const,
   ACCOUNT_SECURITY: "AccountSecurity" as const,
   CUPPING_STYLE: "CuppingStyle" as const,
+  CREATE_CUPPING_EVENT: "CreateCuppingEvent" as const,
   CUPPING_EVENT_DETAIL: "CuppingEventDetail" as const,
   CUPPING_REGISTRATION_MINIMALIST: "CuppingRegistrationMinimalist" as const,
   CUPPING_REGISTRATION_OVERVIEW: "CuppingRegistrationOverview" as const,

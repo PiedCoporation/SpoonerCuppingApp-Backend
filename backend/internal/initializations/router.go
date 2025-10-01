@@ -10,11 +10,16 @@ import (
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+
+	wsConfig "backend/internal/presentations/ws/configs"
 )
 
 
 func InitRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
+
+	hub := wsConfig.NewHub()
+	go hub.InitialHub()
 
 	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {
@@ -24,12 +29,17 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 		})
 	})
 
+	r.GET("/ws", func(c *gin.Context) {
+		// TODO: validate token/JWT/etc if needed
+		ServeWS(hub, c.Writer, c.Request)
+	})
+
 	// Swagger docs configuration
 	docs.SwaggerInfo.BasePath = "/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	eventRouter := routers.RouterGroupApp.Event
-	userRouter := routers.RouterGroupApp.User
+    eventRouter := routers.RouterGroupApp.Event
+    userRouter := routers.RouterGroupApp.User
 
 	MainGroup := r.Group("/v1")
 	{
