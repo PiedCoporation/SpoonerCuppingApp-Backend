@@ -46,18 +46,18 @@ func (u *userAuthUow) Rollback() error {
 // ===== RepoProvider =====
 type userAuthRepoProvider struct {
 	tx               *gorm.DB
-	userRepo         abstractions.UserRepository
-	refreshTokenRepo abstractions.RefreshTokenRepository
+	userRepo         abstractions.IUserRepository
+	refreshTokenRepo abstractions.IRefreshTokenRepository
 }
 
-func (r *userAuthRepoProvider) UserRepository() abstractions.UserRepository {
+func (r *userAuthRepoProvider) UserRepository() abstractions.IUserRepository {
 	if r.userRepo == nil {
 		r.userRepo = NewUserRepo(r.tx)
 	}
 	return r.userRepo
 }
 
-func (r *userAuthRepoProvider) RefreshTokenRepository() abstractions.RefreshTokenRepository {
+func (r *userAuthRepoProvider) RefreshTokenRepository() abstractions.IRefreshTokenRepository {
 	if r.refreshTokenRepo == nil {
 		r.refreshTokenRepo = NewRefreshTokenRepo(r.tx)
 	}

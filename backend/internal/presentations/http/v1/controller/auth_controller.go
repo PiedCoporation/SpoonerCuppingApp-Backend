@@ -12,11 +12,11 @@ import (
 )
 
 type UserAuthController struct {
-	auth abstractions.UserAuthService
+	auth abstractions.IUserAuthService
 }
 
 func NewUserAuthController(
-	auth abstractions.UserAuthService,
+	auth abstractions.IUserAuthService,
 ) *UserAuthController {
 	return &UserAuthController{
 		auth: auth,
@@ -109,7 +109,7 @@ func (uc *UserAuthController) ResendEmailVerifyRegister(c *gin.Context) {
 func (uc *UserAuthController) VerifyRegister(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing userID in token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
 		return
 	}
 
@@ -196,7 +196,7 @@ func (uc *UserAuthController) Logout(c *gin.Context) {
 	// get userID from middlewares
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing userID in token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
 		return
 	}
 	ctx := c.Request.Context()
@@ -268,7 +268,7 @@ func (uc *UserAuthController) ChangePassword(c *gin.Context) {
 	// get userID from middlewares
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing userID in token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
 		return
 	}
 	ctx := c.Request.Context()

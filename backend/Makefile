@@ -5,6 +5,8 @@ BINARY_NAME=main
 MIGRATIONS_PATH=./migrations
 WIRE_PATH=./internal/infrastructures/wire
 
+POSTGRES_DB_URL = postgres://$(POSTGRES_USERNAME):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DBNAME)?sslmode=disable
+
 .PHONY: build
 build:
 	@go build -o ./bin/$(BINARY_NAME).exe cmd/app/main.go

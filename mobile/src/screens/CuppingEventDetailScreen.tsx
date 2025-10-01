@@ -1,32 +1,12 @@
 import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
-
-interface CuppingEventDetailProps {
-  route: {
-    params: {
-      eventId: string;
-      eventTitle: string;
-      eventDescription: string;
-      eventDate: string;
-      participants: string;
-      status: string;
-      eventIcon: string;
-    };
-  };
-}
+import { EventDetail } from "@/types/event";
 
 const CuppingEventDetailScreen: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const {
-    eventTitle,
-    eventDescription,
-    eventDate,
-    participants,
-    status,
-    eventIcon,
-  } = route.params as any;
+  const { event, samples } = route.params as unknown as EventDetail;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -47,28 +27,41 @@ const CuppingEventDetailScreen: React.FC = () => {
     <ScrollView className="flex-1 bg-gray-50">
       {/* Header Image Section */}
       <View className="h-48 bg-amber-100 items-center justify-center">
-        <Text className="text-6xl">{eventIcon}</Text>
+        {Boolean(event.event_image) ? (
+          // @ts-ignore className support by NativeWind
+          <Image
+            source={{ uri: event.event_image as string }}
+            className="w-full h-48"
+            resizeMode="cover"
+          />
+        ) : (
+          <Text className="text-6xl">☕</Text>
+        )}
       </View>
 
       {/* Event Info Section */}
       <View className="px-6 py-6 bg-white">
         <View className="flex-row justify-between items-start mb-4">
           <Text className="text-2xl font-bold text-gray-800 flex-1 mr-4">
-            {eventTitle}
+            {event.name}
           </Text>
-          <View className={`px-3 py-1 rounded-full ${getStatusColor(status)}`}>
+          <View
+            className={`px-3 py-1 rounded-full ${getStatusColor(
+              event.register_status
+            )}`}
+          >
             <Text
               className={`text-sm font-medium ${
-                getStatusColor(status).split(" ")[1]
+                getStatusColor(event.register_status).split(" ")[1]
               }`}
             >
-              {status}
+              {event.register_status}
             </Text>
           </View>
         </View>
 
         <Text className="text-gray-600 text-base leading-6 mb-6">
-          {eventDescription}
+          {event.name} • {event.number_samples} samples
         </Text>
 
         {/* Event Details */}
@@ -77,7 +70,9 @@ const CuppingEventDetailScreen: React.FC = () => {
             <Text className="text-2xl mr-4">📅</Text>
             <View>
               <Text className="text-gray-800 font-semibold">Date & Time</Text>
-              <Text className="text-gray-600">{eventDate}</Text>
+              <Text className="text-gray-600">
+                {event.date_of_event} {event.start_time} - {event.end_time}
+              </Text>
             </View>
           </View>
 
@@ -85,7 +80,7 @@ const CuppingEventDetailScreen: React.FC = () => {
             <Text className="text-2xl mr-4">👥</Text>
             <View>
               <Text className="text-gray-800 font-semibold">Participants</Text>
-              <Text className="text-gray-600">{participants}</Text>
+              <Text className="text-gray-600">Limit {event.limit}</Text>
             </View>
           </View>
 
@@ -94,7 +89,9 @@ const CuppingEventDetailScreen: React.FC = () => {
             <View>
               <Text className="text-gray-800 font-semibold">Location</Text>
               <Text className="text-gray-600">
-                Coffee Cupping Lab, 2nd Floor
+                {event.event_address?.[0]?.street},{" "}
+                {event.event_address?.[0]?.district},{" "}
+                {event.event_address?.[0]?.province}
               </Text>
             </View>
           </View>
@@ -181,52 +178,36 @@ const CuppingEventDetailScreen: React.FC = () => {
         </Text>
 
         <View className="space-y-3">
-          <View className="bg-gray-50 rounded-xl p-4">
-            <View className="flex-row items-center mb-2">
-              <Text className="text-lg font-semibold text-gray-800">
-                Ethiopian Yirgacheffe
-              </Text>
-              <View className="ml-auto bg-amber-100 px-2 py-1 rounded">
-                <Text className="text-amber-700 text-xs font-medium">
-                  Single Origin
+          {samples && samples.length > 0 ? (
+            samples.map((s) => (
+              <View key={s.id} className="bg-gray-50 rounded-xl p-4">
+                <View className="flex-row items-center mb-2">
+                  <Text className="text-lg font-semibold text-gray-800">
+                    {s.name}
+                  </Text>
+                  <View className="ml-auto bg-amber-100 px-2 py-1 rounded">
+                    <Text className="text-amber-700 text-xs font-medium">
+                      {s.grow_nation}
+                    </Text>
+                  </View>
+                </View>
+                <Text className="text-gray-600 text-sm mb-2">
+                  {s.pre_processing} • Roast: {s.roast_level}
                 </Text>
+                <View className="flex-row items-center">
+                  <Text className="text-gray-500 text-sm">
+                    Altitude: {s.altitude_grow}
+                  </Text>
+                  <Text className="text-gray-400 mx-2">•</Text>
+                  <Text className="text-gray-500 text-sm">
+                    Roastery: {s.roastery_name}
+                  </Text>
+                </View>
               </View>
-            </View>
-            <Text className="text-gray-600 text-sm mb-2">
-              Floral, citrusy notes with bright acidity and tea-like body
-            </Text>
-            <View className="flex-row items-center">
-              <Text className="text-gray-500 text-sm">
-                Altitude: 1,800-2,200m
-              </Text>
-              <Text className="text-gray-400 mx-2">•</Text>
-              <Text className="text-gray-500 text-sm">Process: Washed</Text>
-            </View>
-          </View>
-
-          <View className="bg-gray-50 rounded-xl p-4">
-            <View className="flex-row items-center mb-2">
-              <Text className="text-lg font-semibold text-gray-800">
-                Ethiopian Sidamo
-              </Text>
-              <View className="ml-auto bg-amber-100 px-2 py-1 rounded">
-                <Text className="text-amber-700 text-xs font-medium">
-                  Single Origin
-                </Text>
-              </View>
-            </View>
-            <Text className="text-gray-600 text-sm mb-2">
-              Wine-like characteristics with complex fruit flavors and medium
-              body
-            </Text>
-            <View className="flex-row items-center">
-              <Text className="text-gray-500 text-sm">
-                Altitude: 1,400-2,200m
-              </Text>
-              <Text className="text-gray-400 mx-2">•</Text>
-              <Text className="text-gray-500 text-sm">Process: Natural</Text>
-            </View>
-          </View>
+            ))
+          ) : (
+            <Text className="text-gray-500">No samples provided.</Text>
+          )}
         </View>
       </View>
 
@@ -269,16 +250,6 @@ const CuppingEventDetailScreen: React.FC = () => {
             Join This Event
           </Text>
         </TouchableOpacity>
-
-        <View className="flex-row space-x-3">
-          <TouchableOpacity className="flex-1 bg-gray-100 rounded-xl py-3 items-center">
-            <Text className="text-gray-700 font-medium">Add to Calendar</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity className="flex-1 bg-gray-100 rounded-xl py-3 items-center">
-            <Text className="text-gray-700 font-medium">Share Event</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </ScrollView>
   );

@@ -1,8 +1,16 @@
 package controller
 
+import "github.com/google/uuid"
+
 // MessageResponse represents a simple message payload.
 type MessageResponse struct {
 	Message string `json:"message"`
+}
+
+// IdMessageResponse represents a simple id and message payload.
+type IdMessageResponse struct {
+	Id      uuid.UUID `json:"id"`
+	Message string    `json:"message"`
 }
 
 // ErrorResponse represents a simple error payload.

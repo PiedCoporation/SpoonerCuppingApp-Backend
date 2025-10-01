@@ -4,6 +4,6 @@ import (
 	"backend/internal/domains/entities"
 )
 
-type RoleRepository interface {
-	GenericRepository[entities.Role]
+type IRoleRepository interface {
+	IGenericRepository[entities.Role]
 }

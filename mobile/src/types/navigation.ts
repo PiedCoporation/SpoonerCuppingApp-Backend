@@ -26,6 +26,7 @@ export type AppStackParamList = {
   AccountSecurity: undefined;
   CuppingStyle: undefined;
   // Cupping screens
+  CreateCuppingEvent: undefined;
   CuppingEventDetail: {
     eventId: string;
     eventTitle: string;

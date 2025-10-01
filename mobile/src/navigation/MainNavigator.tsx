@@ -1,21 +1,22 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import HomeScreen from "../screens/HomeScreen";
 import UsersScreen from "../screens/UsersScreen";
 import CuppingEventDetailScreen from "../screens/CuppingEventDetailScreen";
 import CuppingRegistrationMinimalist from "@/screens/CuppingRegistrationMinimalist";
 import CuppingRegistrationOverview from "@/screens/CuppingRegistrationOverview";
+import CreateCuppingEvent from "@/screens/CreateCuppingEvent";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
+import MainTabNavigator from "./MainTabNavigator";
 
 const Stack = createNativeStackNavigator();
 
 const MainNavigator: React.FC = () => {
   return (
-    <Stack.Navigator initialRouteName="Home">
+    <Stack.Navigator initialRouteName="MainTabs">
       <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ title: "Coffee Cupping Mall" }}
+        name="MainTabs"
+        component={MainTabNavigator}
+        options={{ headerShown: false }}
       />
       <Stack.Screen name="Users" options={{ title: "Users List" }}>
         {() => (
@@ -27,7 +28,22 @@ const MainNavigator: React.FC = () => {
       <Stack.Screen
         name="CuppingEventDetail"
         component={CuppingEventDetailScreen}
-        options={{ title: "Event Details" }}
+        options={({ route }) => ({
+          title: (route.params as any)?.event?.name ?? "Event Details",
+          headerBackTitle: "Home",
+          headerStyle: { backgroundColor: "#552507" },
+          headerTintColor: "#fff",
+        })}
+      />
+      <Stack.Screen
+        name="CreateCuppingEvent"
+        component={CreateCuppingEvent}
+        options={{
+          title: "Create Event",
+          headerBackTitle: "Profile",
+          headerStyle: { backgroundColor: "#552507" },
+          headerTintColor: "#fff",
+        }}
       />
       <Stack.Screen
         name="CuppingRegistrationMinimalist"

@@ -13,7 +13,7 @@ type refreshTokenPgRepo struct {
 	*genericRepository[entities.RefreshToken]
 }
 
-func NewRefreshTokenRepo(db *gorm.DB) abstractions.RefreshTokenRepository {
+func NewRefreshTokenRepo(db *gorm.DB) abstractions.IRefreshTokenRepository {
 	return &refreshTokenPgRepo{
 		genericRepository: NewGenericRepository[entities.RefreshToken](db),
 	}
