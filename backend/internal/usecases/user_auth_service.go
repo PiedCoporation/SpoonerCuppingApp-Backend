@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"backend/global"
+	"backend/internal/constants/enums/circlestyle"
 	"backend/internal/constants/enums/jwtpurpose"
 	"backend/internal/constants/enums/rolename"
 	"backend/internal/constants/errorcode"
@@ -25,15 +26,15 @@ import (
 
 type userAuthService struct {
 	uow      repoAbstractions.UserAuthUow
-	userRepo repoAbstractions.UserRepository
-	rtRepo   repoAbstractions.RefreshTokenRepository
+	userRepo repoAbstractions.IUserRepository
+	rtRepo   repoAbstractions.IRefreshTokenRepository
 }
 
 func NewUserAuthService(
 	uow repoAbstractions.UserAuthUow,
-	userRepo repoAbstractions.UserRepository,
-	rtRepo repoAbstractions.RefreshTokenRepository,
-) serviceAbstractions.UserAuthService {
+	userRepo repoAbstractions.IUserRepository,
+	rtRepo repoAbstractions.IRefreshTokenRepository,
+) serviceAbstractions.IUserAuthService {
 	return &userAuthService{
 		uow:      uow,
 		userRepo: userRepo,
@@ -41,7 +42,7 @@ func NewUserAuthService(
 	}
 }
 
-// Register implements user.UserAuthService.
+// Register implements user.IUserAuthService.
 func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO) error {
 	g, gCtx := errgroup.WithContext(ctx)
 
@@ -94,15 +95,16 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 	// create user
 	now := time.Now()
 	user := &entities.User{
-		Entity:     commons.Entity{ID: uuid.New(), IsDeleted: false},
-		FirstName:  vo.FirstName,
-		LastName:   vo.LastName,
-		Email:      vo.Email,
-		Phone:      vo.Phone,
-		Password:   hashedPassword,
-		IsVerified: false,
-		Auditable:  commons.Auditable{CreatedAt: now, UpdatedAt: now},
-		RoleID:     defaultRole.ID,
+		Entity:      commons.Entity{ID: uuid.New(), IsDeleted: false},
+		FirstName:   vo.FirstName,
+		LastName:    vo.LastName,
+		Email:       vo.Email,
+		Phone:       vo.Phone,
+		Password:    hashedPassword,
+		CircleStyle: circlestyle.Default,
+		IsVerified:  false,
+		Auditable:   commons.Auditable{CreatedAt: now, UpdatedAt: now},
+		RoleID:      defaultRole.ID,
 	}
 
 	// insert user into db
@@ -131,7 +133,7 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 	return nil
 }
 
-// ResendEmailVerifyRegister implements user.UserAuthService.
+// ResendEmailVerifyRegister implements user.IUserAuthService.
 func (us *userAuthService) ResendEmailVerifyRegister(ctx context.Context, email string) error {
 	// get user from db
 	user, err := us.userRepo.GetByEmail(ctx, email)
@@ -164,7 +166,7 @@ func (us *userAuthService) ResendEmailVerifyRegister(ctx context.Context, email 
 	return nil
 }
 
-// VerifyRegister implements user.UserAuthService.
+// VerifyRegister implements user.IUserAuthService.
 func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID) (string, string, error) {
 	// get user from db
 	user, err := us.userRepo.GetByID(ctx, userID)
@@ -215,7 +217,7 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	return accessToken, refreshToken, nil
 }
 
-// Login implements user.UserAuthService.
+// Login implements user.IUserAuthService.
 func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserVO) (string, string, error) {
 	// get user from db
 	user, err := us.userRepo.GetByEmail(ctx, vo.Email)
@@ -251,7 +253,7 @@ func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserVO) (stri
 	return accessToken, refreshToken, nil
 }
 
-// Logout implements user.UserAuthService.
+// Logout implements user.IUserAuthService.
 func (us *userAuthService) Logout(ctx context.Context, userID uuid.UUID, refreshToken string) error {
 	// decode rt
 	claims, err := jwt.ValidateToken([]byte(global.Config.JWT.RefreshTokenKey),
@@ -281,7 +283,7 @@ func (us *userAuthService) Logout(ctx context.Context, userID uuid.UUID, refresh
 	return nil
 }
 
-// ForgotPassword implements abstractions.UserAuthService.
+// ForgotPassword implements abstractions.IUserAuthService.
 func (us *userAuthService) ForgotPassword(ctx context.Context, email string) error {
 	// get user from db
 	user, err := us.userRepo.GetByEmail(ctx, email)
@@ -318,7 +320,7 @@ func (us *userAuthService) ForgotPassword(ctx context.Context, email string) err
 	return nil
 }
 
-// ChangePassword implements abstractions.UserAuthService.
+// ChangePassword implements abstractions.IUserAuthService.
 func (us *userAuthService) ChangePassword(ctx context.Context, vo user.ChangePasswordVO) error {
 	g, gCtx := errgroup.WithContext(ctx)
 
@@ -388,7 +390,7 @@ func (us *userAuthService) ChangePassword(ctx context.Context, vo user.ChangePas
 	return nil
 }
 
-// RefreshToken implements user.UserAuthService.
+// RefreshToken implements user.IUserAuthService.
 func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 	// validate token
 	claims, err := jwt.ValidateToken([]byte(global.Config.JWT.RefreshTokenKey),
@@ -447,7 +449,7 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 // insertRefreshToken
 func insertRefreshToken(
 	ctx context.Context, userID uuid.UUID,
-	rtRepo repoAbstractions.RefreshTokenRepository,
+	rtRepo repoAbstractions.IRefreshTokenRepository,
 	refreshToken string, rtSecret []byte,
 ) error {
 	claims, err := jwt.ValidateToken(rtSecret,

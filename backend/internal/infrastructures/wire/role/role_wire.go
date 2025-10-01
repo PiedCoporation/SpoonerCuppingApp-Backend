@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewRoleService(db *gorm.DB) abstractions.RoleService {
+func NewRoleService(db *gorm.DB) abstractions.IRoleService {
 	wire.Build(
 		postgres.NewRoleRepo,
 		roleImpl.NewRoleService,

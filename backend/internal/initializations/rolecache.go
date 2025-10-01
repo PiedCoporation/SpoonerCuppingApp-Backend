@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewRolesCache(roleService abstractions.RoleService) {
+func NewRolesCache(roleService abstractions.IRoleService) {
 	roles, err := roleService.GetAll(context.Background())
 	if err != nil {
 		global.Logger.Fatal("Roles initializations failed", zap.Error(err))

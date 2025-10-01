@@ -11,7 +11,7 @@ type rolePgRepo struct {
 	*genericRepository[entities.Role]
 }
 
-func NewRoleRepo(db *gorm.DB) abstractions.RoleRepository {
+func NewRoleRepo(db *gorm.DB) abstractions.IRoleRepository {
 	return &rolePgRepo{
 		genericRepository: NewGenericRepository[entities.Role](db),
 	}

@@ -11,6 +11,6 @@ type UserAuthUow interface {
 }
 
 type UserAuthRepoProvider interface {
-	UserRepository() UserRepository
-	RefreshTokenRepository() RefreshTokenRepository
+	UserRepository() IUserRepository
+	RefreshTokenRepository() IRefreshTokenRepository
 }

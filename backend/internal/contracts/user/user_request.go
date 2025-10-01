@@ -1,5 +1,7 @@
 package user
 
+import "backend/internal/constants/enums/circlestyle"
+
 type RegisterUserReq struct {
 	FirstName       string `json:"first_name" binding:"required"`
 	LastName        string `json:"last_name" binding:"required"`
@@ -33,4 +35,8 @@ type ForgotPasswordReq struct {
 type ChangePasswordReq struct {
 	Password        string `json:"password" binding:"required,min=8,max=30"`
 	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
+}
+
+type UpdateUserSettingReq struct {
+	CircleStyle *circlestyle.CircleStyleEnum `json:"circle_style"`
 }

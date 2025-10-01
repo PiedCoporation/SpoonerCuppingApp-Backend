@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 
 	"go.uber.org/zap"
@@ -16,7 +15,7 @@ import (
 func NewServer(handler http.Handler) *http.Server {
 	httpCfg := global.Config.HTTP
 	return &http.Server{
-		Addr:         ":" + strconv.Itoa(httpCfg.Port),
+		Addr:         ":8080", //strconv.Itoa(httpCfg.Port),
 		Handler:      handler,
 		ReadTimeout:  httpCfg.ReadTimeout,
 		WriteTimeout: httpCfg.WriteTimeout,

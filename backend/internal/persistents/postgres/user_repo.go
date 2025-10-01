@@ -15,13 +15,13 @@ type userPgRepo struct {
 	*genericRepository[entities.User]
 }
 
-func NewUserRepo(db *gorm.DB) abstractions.UserRepository {
+func NewUserRepo(db *gorm.DB) abstractions.IUserRepository {
 	return &userPgRepo{
 		genericRepository: NewGenericRepository[entities.User](db),
 	}
 }
 
-// GetByEmail implements abstractions.UserRepository.
+// GetByEmail implements abstractions.IUserRepository.
 func (ur *userPgRepo) GetByEmail(ctx context.Context, email string) (*entities.User, error) {
 	var user entities.User
 	err := ur.db.WithContext(ctx).
@@ -37,7 +37,7 @@ func (ur *userPgRepo) GetByEmail(ctx context.Context, email string) (*entities.U
 	return &user, nil
 }
 
-// IsPhoneTaken implements abstractions.UserRepository.
+// IsPhoneTaken implements abstractions.IUserRepository.
 func (ur *userPgRepo) IsPhoneTaken(ctx context.Context, phone string, excludeUserID uuid.UUID) (bool, error) {
 	var user entities.User
 	err := ur.db.WithContext(ctx).
@@ -57,7 +57,7 @@ func (ur *userPgRepo) IsPhoneTaken(ctx context.Context, phone string, excludeUse
 	return true, nil
 }
 
-// IsEmailTaken implements abstractions.UserRepository.
+// IsEmailTaken implements abstractions.IUserRepository.
 func (ur *userPgRepo) IsEmailTaken(ctx context.Context, email string, excludeUserID uuid.UUID) (bool, error) {
 	var user entities.User
 	err := ur.db.WithContext(ctx).

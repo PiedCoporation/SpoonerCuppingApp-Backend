@@ -15,6 +15,17 @@ import (
 
 func InitUserRouterHandler(
 	db *gorm.DB,
+) (*controller.UserController, error) {
+	wire.Build(
+		postgres2.NewUserRepo,
+		userImpl.NewUserSettingService,
+		controller.NewUserController,
+	)
+	return &controller.UserController{}, nil
+}
+
+func InitUserAuthRouterHandler(
+	db *gorm.DB,
 ) (*controller.UserAuthController, error) {
 	wire.Build(
 		postgres2.NewUserAuthUow,

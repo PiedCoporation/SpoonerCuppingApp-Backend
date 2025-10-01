@@ -5,6 +5,6 @@ import (
 	"context"
 )
 
-type RoleService interface {
+type IRoleService interface {
 	GetAll(ctx context.Context) ([]entities.Role, error)
 }
