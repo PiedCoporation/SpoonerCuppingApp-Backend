@@ -1,11 +1,12 @@
 package configs
 
 import (
-	"backend/internal/presentations/ws/constants"
+	"backend/internal/presentations/ws/v1/constants"
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -14,19 +15,27 @@ var (
 	pingInterval = (pongWait * 9) / 10
 )
 
+type ClientLists map[*Client]bool
+
 type Client struct {
+	Id string
 	hub  *Hub
 	conn *websocket.Conn
 
 	room string
+	isLeader bool
+	leaderID string
+
 	egress chan constants.Event
 }
 
 // NewClient creates a new websocket client with initialized fields.
 func NewClient(hub *Hub, conn *websocket.Conn) *Client {
 	return &Client{
+		Id: uuid.New().String(),
 		hub:  hub,
 		conn: conn,
+		room: "lobby", // Default room for new connections
 		egress:     make(chan constants.Event),
 	}
 }
@@ -127,3 +136,34 @@ func (c *Client) Close() {
 	_ = c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 }
 
+func (c *Client) Hub() *Hub {
+    return c.hub
+}
+
+func (c *Client) Room() string {
+    return c.room
+}
+
+func (c *Client) SetRoom(room string) {
+    c.room = room
+}
+
+func (c *Client) Egress() chan constants.Event {
+    return c.egress
+}
+
+func (c *Client) IsLeader() bool {
+    return c.isLeader
+}
+
+func (c *Client) LeaderID() string {
+    return c.leaderID
+}
+
+func (c *Client) SetLeaderId(leaderID string) {
+    c.leaderID = leaderID
+}
+
+func (c *Client) SetIsLeader(isLeader bool) {
+    c.isLeader = isLeader
+}
