@@ -109,7 +109,7 @@ func (c *Client) WriteMessages() {
 			fmt.Printf("Message sent")
 
 		case <-ticker.C:
-			fmt.Printf("ping \n")
+			fmt.Printf("ping client_id=%s time=%s\n", c.Id, time.Now().Format(time.RFC3339))
 
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				fmt.Printf("Error: %v\n", err)
@@ -120,8 +120,9 @@ func (c *Client) WriteMessages() {
 	}
 }
 
+
 func (c *Client) pongHandler(pongMsg string) error {
-	fmt.Printf("pong \n")
+	fmt.Printf("pong client_id=%s time=%s\n", c.Id, time.Now().Format(time.RFC3339))
 	return c.conn.SetReadDeadline(time.Now().Add(pongWait))
 }
 

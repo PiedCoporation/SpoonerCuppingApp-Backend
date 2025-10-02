@@ -17,12 +17,13 @@ type WSRouter struct{}
 func (w *WSRouter) InitWS(router *gin.RouterGroup, hub *configs.Hub) {
 
     wsGroup := router.Group("/ws")
-    wsGroup.GET("/ws", func(c *gin.Context) {
+    wsGroup.GET("/", func(c *gin.Context) {
         ServeWS(hub, c.Writer, c.Request)
     })
     hub.RegisterHandler(constants.EventSendMessage, wsControllers.SendMessageEventController)
-    hub.RegisterHandler(constants.EventCreateEvent, wsControllers.CreateEventEventController)
-    hub.RegisterHandler(constants.EventLeaveEvent, wsControllers.LeaveEventEventController)
+	hub.RegisterHandler(constants.EventCreateEvent, wsControllers.CreateEventEventController)
+    hub.RegisterHandler(constants.EventJoinEvent, wsControllers.JoinEventEventController)
+	hub.RegisterHandler(constants.EventLeaveEvent, wsControllers.LeaveEventEventController)
     hub.RegisterHandler(constants.EventStartEvent, wsControllers.StartEventEventController)
     hub.RegisterHandler(constants.EventEndEvent, wsControllers.EndEventEventController)
     hub.RegisterHandler(constants.EventMarkRound, wsControllers.MarkRoundEventController)
