@@ -30,6 +30,7 @@ type Message struct {
 func NewHub() *Hub {
 	h := &Hub{
         rooms:      make(map[string]ClientLists),
+        clients:    make(ClientLists),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		createNewRoom: make(chan *Client),
@@ -64,17 +65,20 @@ func (h *Hub) InitialHub() {
 		case c := <-h.register:
 			h.mu.Lock()
 			h.clients[c] = true
+			fmt.Printf("client registered: %s\n", c.Id)
 			h.mu.Unlock()
 
 		case c := <-h.unregister:
 			h.mu.Lock()
 			delete(h.clients, c)
+			fmt.Printf("client unregistered: %s\n", c.Id)
 			h.mu.Unlock()
 		
 		case c := <-h.createNewRoom:
 			h.mu.Lock()
 			h.rooms[c.room] = make(map[*Client]bool)
 			h.rooms[c.room][c] = true
+			fmt.Printf("client created new room: %s\n", c.Id)
 			h.mu.Unlock()
 
 		case c := <-h.joinNewRoom:
@@ -82,6 +86,7 @@ func (h *Hub) InitialHub() {
 			if _, ok := h.rooms[c.room]; ok {
 				h.rooms[c.room][c] = true
 			}
+			fmt.Printf("client joined new room: %s\n", c.Id)
 			h.mu.Unlock()
 
 		case c := <-h.leaveNewRoom:
@@ -89,6 +94,7 @@ func (h *Hub) InitialHub() {
 			if _, ok := h.rooms[c.room]; ok {
 				delete(h.rooms[c.room], c)
 			}
+			fmt.Printf("client left new room: %s\n", c.Id)
 			h.mu.Unlock()
 
 		}
@@ -102,6 +108,7 @@ func (h *Hub) Broadcast(room string, event constants.Event) {
         for client := range set {
             if client.room == room {
                 client.egress <- event
+                fmt.Printf("client broadcasted event: %s\n", event.Type)
             }
         }
     }
