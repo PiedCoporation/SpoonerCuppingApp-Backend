@@ -53,13 +53,17 @@ func (ec *EventController) CreateEvent(c *gin.Context) {
 
 	ctx := c.Request.Context()
 	ctx = context.WithValue(ctx, "userID", userID.(uuid.UUID))
-	err := ec.EventService.Create(ctx, req)
-	if err != nil {
-		errorcode.JSONError(c, err)
-		return
-	}
+	result := ec.EventService.Create(ctx, req)
+	// if result.IsFailure {
+	// 	errorcode.JSONError(c, result.Error)
+	// 	return
+	// }
+	// if err != nil {
+	// 	errorcode.JSONError(c, err)
+	// 	return
+	// }
 
-	c.JSON(http.StatusCreated, gin.H{"message": "event created"})
+	c.JSON(http.StatusCreated, result)
 }
 
 // GetEvents godoc
@@ -99,11 +103,11 @@ func (ec *EventController) GetEvents(c *gin.Context) {
 
 	searchTerm := c.Query("search_term")
 	ctx := c.Request.Context()
-	events, err := ec.EventService.GetAll(ctx, pageSize, pageNumber, searchTerm)
-	if err != nil {
-		errorcode.JSONError(c, err)
-		return
-	}
+	events:= ec.EventService.GetAll(ctx, pageSize, pageNumber, searchTerm)
+	// if err != nil {
+	// 	errorcode.JSONError(c, err)
+	// 	return
+	// }
 
 	c.JSON(http.StatusOK, events)
 }
@@ -131,11 +135,11 @@ func (ec *EventController) GetEventByID(c *gin.Context) {
 	}
 	ctx := c.Request.Context()
 
-	event, err := ec.EventService.GetByID(ctx, id)
-	if err != nil {
-		errorcode.JSONError(c, err)
-		return
-	}
+	event := ec.EventService.GetByID(ctx, id)
+	// if err != nil {
+	// 	errorcode.JSONError(c, err)
+	// 	return
+	// }
 	c.JSON(http.StatusOK, event)
 }
 

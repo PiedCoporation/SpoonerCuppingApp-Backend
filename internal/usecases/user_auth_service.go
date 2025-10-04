@@ -6,10 +6,12 @@ import (
 	"backend/internal/constants/enums/jwtpurpose"
 	"backend/internal/constants/enums/rolename"
 	"backend/internal/constants/errorcode"
+	"backend/internal/contracts/common"
 	"backend/internal/contracts/user"
 	"backend/internal/domains/commons"
 	"backend/internal/domains/entities"
 	"backend/internal/infrastructures/cache/rolecache"
+	"backend/internal/mapper"
 	repoAbstractions "backend/internal/persistents/abstractions"
 	serviceAbstractions "backend/internal/usecases/abstractions"
 	"backend/pkg/utils/jwt"
@@ -218,39 +220,41 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 }
 
 // Login implements user.IUserAuthService.
-func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserVO) (string, string, error) {
+func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserReq) (*common.Result[user.LoginUserRes]) {
 	// get user from db
-	user, err := us.userRepo.GetByEmail(ctx, vo.Email)
+	dbUser, err := us.userRepo.GetByEmail(ctx, vo.Email)
 	if err != nil {
-		return "", "", err
+		return common.Failure[user.LoginUserRes](&common.Error{Code: "404", Message: "User not found"})
 	}
 
 	// check if user is verified or not
-	if !user.IsVerified {
-		return "", "", errorcode.ErrAccountIsNotVerified
+	if !dbUser.IsVerified {
+		return common.Failure[user.LoginUserRes](&common.Error{Code: "403", Message: "Account is not verified"})
 	}
 	// check if user is deleted or not
-	if user.IsDeleted {
-		return "", "", errorcode.ErrAccountIsDeleted
+	if dbUser.IsDeleted {
+		return common.Failure[user.LoginUserRes](&common.Error{Code: "403", Message: "Account is deleted"})
 	}
 
 	// check password
-	if !password.ComparePasswords(user.Password, vo.Password) {
-		return "", "", errorcode.ErrInvalidPassword
+	if !password.ComparePasswords(dbUser.Password, vo.Password) {
+		return common.Failure[user.LoginUserRes](&common.Error{Code: "401", Message: "Invalid password"})
 	}
 
 	// gene ac and rt
-	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(user.ID)
+	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(dbUser.ID)
 	if err != nil {
-		return "", "", err
+		return common.Failure[user.LoginUserRes](&common.Error{Code: "500", Message: "Generate token error"})
 	}
 
-	if err := insertRefreshToken(ctx, user.ID,
+	if err := insertRefreshToken(ctx, dbUser.ID,
 		us.rtRepo, refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
-		return "", "", err
+		return common.Failure[user.LoginUserRes](&common.Error{Code: "500", Message: "Insert refresh token error"})
 	}
 
-	return accessToken, refreshToken, nil
+	userRes := mapper.MapUserToContractUserLoginResponse(dbUser)
+
+	return common.Success(&user.LoginUserRes{AccessToken: accessToken, RefreshToken: refreshToken, User: *userRes})
 }
 
 // Logout implements user.IUserAuthService.

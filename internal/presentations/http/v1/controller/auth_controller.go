@@ -151,24 +151,18 @@ func (uc *UserAuthController) Login(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	vo := user.LoginUserVO{
-		Email:    req.Email,
-		Password: req.Password,
-	}
+	// vo := user.LoginUserReq{
+	// 	Email:    req.Email,
+	// 	Password: req.Password,
+	// }
 
-	accessToken, refreshToken, err := uc.auth.Login(ctx, vo)
-	if err != nil {
-		errorcode.JSONError(c, err)
-		return
-	}
+	result := uc.auth.Login(ctx, req)
+	// if result.IsFailure {
+	// 	errorcode.JSONError(c, err)
+	// 	return
+	// }
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "login success",
-		"data": gin.H{
-			"access_token":  accessToken,
-			"refresh_token": refreshToken,
-		},
-	})
+	c.JSON(http.StatusOK, result)
 }
 
 // Logout godoc
