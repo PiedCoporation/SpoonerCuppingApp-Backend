@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE event_users 
+	DROP COLUMN IF EXISTS is_host;
+
+COMMIT;

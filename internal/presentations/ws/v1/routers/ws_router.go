@@ -5,8 +5,10 @@ import (
 	"backend/internal/presentations/ws/v1/constants"
 	wsControllers "backend/internal/presentations/ws/v1/controllers"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -60,6 +62,8 @@ func ServeWS(hub *configs.Hub, w http.ResponseWriter, r *http.Request) {
 
 func checkOrigin(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
+	
+	// Allow empty origin (Postman, curl, etc.)
 	if origin == "" {
 		return true
 	}
@@ -69,12 +73,22 @@ func checkOrigin(r *http.Request) bool {
 		return false
 	}
 
-	switch u.Hostname() {
-	case "localhost", "127.0.0.1":
+	hostname := u.Hostname()
+	
+	// Allow localhost variants
+	if hostname == "localhost" || hostname == "127.0.0.1" {
 		return true
 	}
-
-	return false
+	
+	// Allow local network IPs (192.168.x.x, 10.x.x.x, etc.)
+	if strings.HasPrefix(hostname, "192.168.") ||
+	   strings.HasPrefix(hostname, "10.") ||
+	   strings.HasPrefix(hostname, "172.16.") {
+		return true
+	}
+	
+	// For development: log and accept all origins
+	log.Printf("⚠️  Accepting origin: %s (development mode)", origin)
+	return true
 }
-
 

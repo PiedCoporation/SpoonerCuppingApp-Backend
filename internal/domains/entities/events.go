@@ -14,6 +14,8 @@ type Event struct {
 	DateOfEvent    time.Time                              `gorm:"not null"`
 	StartTime      time.Time                              `gorm:"not null"`
 	EndTime        time.Time                              `gorm:"not null"`
+	IsStart        bool                                   `gorm:"not null"`
+	IsEnd          bool                                   `gorm:"not null"`
 	Limit          int                                    `gorm:"not null"`
 	TotalCurrent   int                                    `gorm:"not null"`
 	NumberSamples  int                                    `gorm:"not null"`

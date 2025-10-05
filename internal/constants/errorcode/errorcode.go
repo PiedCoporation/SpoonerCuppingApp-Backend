@@ -1,6 +1,7 @@
 package errorcode
 
 import (
+	"backend/internal/contracts/common"
 	"errors"
 	"net/http"
 
@@ -92,11 +93,34 @@ var errorStatusMap = map[error]int{
 
 // utils write error
 func JSONError(c *gin.Context, err error) {
-	status, ok := errorStatusMap[err]
-	if !ok {
-		status = http.StatusInternalServerError
-	}
-	c.JSON(status, gin.H{
-		"error": err.Error(),
-	})
+    // If it's our common.Error, map Code to HTTP status and return Message
+    if ce, ok := err.(*common.Error); ok && ce != nil {
+        // Default to 500 if unknown code
+        status := http.StatusInternalServerError
+        switch ce.Code {
+        case "400":
+            status = http.StatusBadRequest
+        case "401":
+            status = http.StatusUnauthorized
+        case "403":
+            status = http.StatusForbidden
+        case "404":
+            status = http.StatusNotFound
+        case "409":
+            status = http.StatusConflict
+        case "500":
+            status = http.StatusInternalServerError
+        }
+        c.JSON(status, gin.H{"error": ce.Message})
+        return
+    }
+
+    // Fallback: map known sentinel errors, else 500
+    status, ok := errorStatusMap[err]
+    if !ok {
+        status = http.StatusInternalServerError
+    }
+    c.JSON(status, gin.H{
+        "error": err.Error(),
+    })
 }
