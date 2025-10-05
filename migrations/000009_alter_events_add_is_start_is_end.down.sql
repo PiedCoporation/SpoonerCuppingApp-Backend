@@ -1,0 +1,9 @@
+BEGIN;
+
+ALTER TABLE events 
+    DROP COLUMN IF EXISTS is_start,
+    DROP COLUMN IF EXISTS is_end;
+
+COMMIT;
+
+

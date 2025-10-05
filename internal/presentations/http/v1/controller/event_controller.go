@@ -112,6 +112,53 @@ func (ec *EventController) GetEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, events)
 }
 
+// GetEventsByUserID godoc
+// @Summary Get paginated events by user ID
+// @Description Retrieve a paginated list of events by user ID
+// @Tags events
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param page_size query int false "Number of events per page (default: 10, max: 100)" default(10) minimum(1) maximum(100)
+// @Param page_number query int false "Page number (default: 1)" default(1) minimum(1)
+// @Success 200 {object} event.EventPageResult "Paginated list of events"
+// @Failure 400 {object} controller.ErrorResponse "Bad request - invalid parameters"
+// @Failure 401 {object} controller.ErrorResponse "Unauthorized - invalid or missing token"
+// @Failure 500 {object} controller.ErrorResponse "Internal server error"
+// @Router /events/user [get]
+func (ec *EventController) GetEventsByUserID(c *gin.Context) {
+	pageSize, err := strconv.Atoi(c.Query("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+	pageNumber, err := strconv.Atoi(c.Query("page_number"))
+	if err != nil {
+		pageNumber = 1
+	}
+
+	if pageSize < 1 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	if pageNumber < 1 {
+		pageNumber = 1
+	}
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	ctx = context.WithValue(ctx, "userID", userID.(uuid.UUID))
+
+	events := ec.EventService.GetEventByUserID(ctx, pageSize, pageNumber)
+	c.JSON(http.StatusOK, events)
+}
+
 // GetEventByID godoc
 // @Summary Get event by ID
 // @Description Retrieve a specific event by its ID
@@ -174,10 +221,31 @@ func (ec *EventController) RegisterEvent(c *gin.Context) {
 	ctx := c.Request.Context()
 	ctx = context.WithValue(ctx, "userID", userID.(uuid.UUID))
 
-	err = ec.EventService.Register(ctx, id)
+    result := ec.EventService.Register(ctx, id)
+    if result.IsFailure {
+        errorcode.JSONError(c, result.Error)
+        return
+    }
+    c.JSON(http.StatusOK, result)
+}
+
+func (ec *EventController) StartEvent(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		errorcode.JSONError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Registration successful"})
+	
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	ctx = context.WithValue(ctx, "userID", userID.(uuid.UUID))
+
+	result := ec.EventService.StartEvent(ctx, id)
+	c.JSON(http.StatusOK, result)
 }

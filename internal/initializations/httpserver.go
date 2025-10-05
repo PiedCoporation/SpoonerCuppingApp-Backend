@@ -15,7 +15,7 @@ import (
 func NewServer(handler http.Handler) *http.Server {
 	httpCfg := global.Config.HTTP
 	return &http.Server{
-		Addr:         ":8080", //strconv.Itoa(httpCfg.Port),
+		Addr:         "0.0.0.0:8080", //strconv.Itoa(httpCfg.Port),
 		Handler:      handler,
 		ReadTimeout:  httpCfg.ReadTimeout,
 		WriteTimeout: httpCfg.WriteTimeout,

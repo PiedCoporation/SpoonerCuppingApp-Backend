@@ -94,6 +94,8 @@ func MapEventToContractGetEventByIDResponse(e *entities.Event) eventContract.Get
 			RegisterDate:   e.RegisterDate,
 			RegisterStatus: eventregisterstatus.RegisterStatusEnum(e.RegisterStatus),
 			EventAddress:   addresses,
+			IsStart: e.IsStart,
+			IsEnd: e.IsEnd,
 			HostBy: eventContract.HostBy{
 				ID: e.HostBy.ID,
 				FirstName: e.HostBy.FirstName,

@@ -18,6 +18,9 @@ import (
 func InitRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 
+	r.RedirectTrailingSlash = false
+    r.RedirectFixedPath = false
+
     hub := wsConfig.NewHub()
 
 	// Health check endpoint

@@ -16,6 +16,7 @@ type EventUser struct {
 	User    User      `gorm:"foreignKey:UserID"`
 	EventID uuid.UUID `gorm:"not null;index"`
 	Event   Event     `gorm:"foreignKey:EventID"`
+	IsHost   bool      `gorm:"not null"`
 
 	UserTastings []UserTasting `gorm:"foreignKey:EventUserID"`
 }

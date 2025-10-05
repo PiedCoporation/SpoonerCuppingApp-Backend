@@ -26,6 +26,8 @@ type Event struct{
 	RegisterDate time.Time `json:"register_date" example:"2024-01-10T00:00:00Z"`
 	RegisterStatus eventregisterstatus.RegisterStatusEnum `json:"register_status" example:"PENDING" enums:"PENDING,ACCEPTED,FULL"`
 	EventAddress []EventAddress `json:"event_address"`
+	IsStart bool `json:"is_start" example:"false"`
+	IsEnd bool `json:"is_end" example:"false"`
 	HostBy HostBy `json:"host_by"`
 }
 

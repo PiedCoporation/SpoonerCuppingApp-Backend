@@ -60,10 +60,13 @@ func (r *genericRepository[T]) GetSingle(ctx context.Context, query string, prel
 	for _, p := range preloads {
 		db = db.Preload(p)
 	}
-	err := db.Where(query).First(&entity).Error
-	if err != nil {
-		return nil, err
-	}
+    err := db.Where(query).First(&entity).Error
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, nil
+        }
+        return nil, err
+    }
 	return &entity, nil
 }
 
