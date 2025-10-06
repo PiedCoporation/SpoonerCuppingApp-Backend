@@ -109,6 +109,7 @@ func (h *Hub) Broadcast(room string, event constants.Event) {
             if client.room == room {
                 client.egress <- event
                 fmt.Printf("client broadcasted event: %s\n", event.Type)
+				fmt.Printf("client: %s\n", client.Id)
             }
         }
     }

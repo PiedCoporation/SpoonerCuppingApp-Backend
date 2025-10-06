@@ -19,7 +19,7 @@ type WSRouter struct{}
 func (w *WSRouter) InitWS(router *gin.RouterGroup, hub *configs.Hub) {
 
     wsGroup := router.Group("/ws")
-    wsGroup.GET("/", func(c *gin.Context) {
+    wsGroup.GET("", func(c *gin.Context) {
         ServeWS(hub, c.Writer, c.Request)
     })
     hub.RegisterHandler(constants.EventSendMessage, wsControllers.SendMessageEventController)
@@ -45,6 +45,13 @@ func ServeWS(hub *configs.Hub, w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("New WebSocket connection")
 
+	user_id := r.URL.Query().Get("user_id")
+
+	if user_id == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	conn, err := webSocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println("Failed to upgrade to WebSocket:", err)
@@ -52,7 +59,7 @@ func ServeWS(hub *configs.Hub, w http.ResponseWriter, r *http.Request) {
 	}
 	//defer conn.Close()
 
-    client := configs.NewClient(hub, conn)
+    client := configs.NewClient(hub, conn, user_id)
     hub.Register(client)
 
     // Client Start Read and Write

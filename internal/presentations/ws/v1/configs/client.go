@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -30,9 +29,9 @@ type Client struct {
 }
 
 // NewClient creates a new websocket client with initialized fields.
-func NewClient(hub *Hub, conn *websocket.Conn) *Client {
+func NewClient(hub *Hub, conn *websocket.Conn, user_id string) *Client {
 	return &Client{
-		Id: uuid.New().String(),
+		Id: user_id,
 		hub:  hub,
 		conn: conn,
 		room: "lobby", // Default room for new connections
