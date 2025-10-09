@@ -20,6 +20,7 @@ jobs:
   deploy-api-dev:
     name: Deploy / Dev / API
     needs: build-application
+    if: ${{ github.ref == 'refs/heads/dev' }}
     uses: ./.github/workflows/deploy-application.yaml
     with:
       actor: ${{ github.actor }}
@@ -67,9 +68,12 @@ jobs:
 
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      TAG: dev-latest
+
   deploy-api-prod:
     name: Deploy / Prod / API
     needs: build-application
+    if: ${{ github.ref == 'refs/heads/main' }}
     uses: ./.github/workflows/deploy-application.yaml
     with:
       actor: ${{ github.actor }}
@@ -115,3 +119,7 @@ jobs:
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
       SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      TAG: prod-latest

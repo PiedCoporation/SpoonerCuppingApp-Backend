@@ -25,10 +25,17 @@ jobs:
               registry: ghcr.io
               username: ${{ inputs.actor }}
               password: ${{ secrets.GITHUB_TOKEN }}
-          - name: Set TAG environment variable
-            run: echo "TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          - name: Set TAG environment variable base on commit brand
+            run: |
+              if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+                echo "TAG=dev-latest" >> $GITHUB_ENV
+                echo "PROFILE=api-dev" >> $GITHUB_ENV
+              else
+                echo "TAG=prod-latest" >> $GITHUB_ENV
+                echo "PROFILE=api-prod" >> $GITHUB_ENV
+              fi
           - name: Build and Push Image
             run: |
-              docker compose -f compose.yaml --profile build build
-              docker compose -f compose.yaml --profile build push
+              docker compose -f compose.yaml --profile $PROFILE build
+              docker compose -f compose.yaml --profile $PROFILE push
         
