@@ -1,0 +1,173 @@
+name: Deploy Production Server
+on:
+  workflow_call:
+    inputs:
+      profile:
+        required: true
+        type: string
+      actor:
+        required: true
+        type: string
+      repository:
+        required: true
+        type: string
+      run-on:
+        required: false
+        default: self-hosted
+        type: string
+    secrets:
+      HTTP_URL:
+        required: true
+      HTTP_PORT:
+        required: true
+      HTTP_READ_TIMEOUT:
+        required: true
+      HTTP_WRITE_TIMEOUT:
+        required: true
+      HTTP_IDLE_TIMEOUT:
+        required: true
+      HTTP_SHUTDOWN_TIMEOUT:
+        required: true
+
+      # Postgres
+      POSTGRES_PORT:
+        required: true
+      POSTGRES_USERNAME:
+        required: true
+      POSTGRES_PASSWORD:
+        required: true
+      POSTGRES_DBNAME:
+        required: true
+      POSTGRES_MAX_IDLE_CONNS:
+        required: true
+      POSTGRES_MAX_OPEN_CONNS:
+        required: true
+      POSTGRES_CONN_MAX_LIFETIME:
+        required: true
+
+      # Logger
+      LOGGER_LOG_LEVEL:
+        required: true
+      LOGGER_FILE_LOG_NAME:
+        required: true
+      LOGGER_MAX_BACKUPS:
+        required: true
+      LOGGER_MAX_AGE:
+        required: true
+      LOGGER_MAX_SIZE:
+        required: true
+      LOGGER_COMPRESS:
+        required: true
+
+      # JWT
+      JWT_ACCESS_TOKEN_KEY:
+        required: true
+      JWT_ACCESS_TOKEN_EXPIRES_IN:
+        required: true
+      JWT_REFRESH_TOKEN_KEY:
+        required: true
+      JWT_REFRESH_TOKEN_EXPIRES_IN:
+        required: true
+      JWT_REGISTER_TOKEN_KEY:
+        required: true
+      JWT_REGISTER_TOKEN_EXPIRES_IN:
+        required: true
+      JWT_LOGIN_TOKEN_KEY:
+        required: true
+      JWT_LOGIN_TOKEN_EXPIRES_IN:
+        required: true
+
+      # SMTP
+      SMTP_HOST:
+        required: true
+      SMTP_PORT:
+        required: true
+      SMTP_USERNAME:
+        required: true
+      SMTP_APP_PASSWORD:
+        required: true
+
+      TAG:
+        required: true
+jobs:
+  deploy-application:
+    runs-on: ${{ inputs.run-on }}
+    env:
+      REGISTRY: ghcr.io/${{ inputs.repository }}
+      # HTTP
+      HTTP_URL: ${{ secrets.HTTP_URL }}
+      HTTP_PORT: ${{ secrets.HTTP_PORT }}
+      HTTP_READ_TIMEOUT: ${{ secrets.HTTP_READ_TIMEOUT }}
+      HTTP_WRITE_TIMEOUT: ${{ secrets.HTTP_WRITE_TIMEOUT }}
+      HTTP_IDLE_TIMEOUT: ${{ secrets.HTTP_IDLE_TIMEOUT }}
+      HTTP_SHUTDOWN_TIMEOUT: ${{ secrets.HTTP_SHUTDOWN_TIMEOUT }}
+
+      # Postgres
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DBNAME: ${{ secrets.POSTGRES_DBNAME }}
+      POSTGRES_MAX_IDLE_CONNS: ${{ secrets.POSTGRES_MAX_IDLE_CONNS }}
+      POSTGRES_MAX_OPEN_CONNS: ${{ secrets.POSTGRES_MAX_OPEN_CONNS }}
+      POSTGRES_CONN_MAX_LIFETIME: ${{ secrets.POSTGRES_CONN_MAX_LIFETIME }}
+
+      # Logger
+      LOGGER_LOG_LEVEL: ${{ secrets.LOGGER_LOG_LEVEL }}
+      LOGGER_FILE_LOG_NAME: ${{ secrets.LOGGER_FILE_LOG_NAME }}
+      LOGGER_MAX_BACKUPS: ${{ secrets.LOGGER_MAX_BACKUPS }}
+      LOGGER_MAX_AGE: ${{ secrets.LOGGER_MAX_AGE }}
+      LOGGER_MAX_SIZE: ${{ secrets.LOGGER_MAX_SIZE }}
+      LOGGER_COMPRESS: ${{ secrets.LOGGER_COMPRESS }}
+
+      # JWT
+      JWT_ACCESS_TOKEN_KEY: ${{ secrets.JWT_ACCESS_TOKEN_KEY }}
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN }}
+      JWT_REFRESH_TOKEN_KEY: ${{ secrets.JWT_REFRESH_TOKEN_KEY }}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN }}
+      JWT_REGISTER_TOKEN_KEY: ${{ secrets.JWT_REGISTER_TOKEN_KEY }}
+      JWT_REGISTER_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REGISTER_TOKEN_EXPIRES_IN }}
+      JWT_LOGIN_TOKEN_KEY: ${{ secrets.JWT_LOGIN_TOKEN_KEY }}
+      JWT_LOGIN_TOKEN_EXPIRES_IN: ${{ secrets.JWT_LOGIN_TOKEN_EXPIRES_IN }}
+
+      # SMTP
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+
+      TAG: ${{ secrets.TAG }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Database Started
+        run: |
+          if [ "$(docker inspect -f '{{.State.Running}}' coffee-cupping-postgres-${{ inputs.profile }} 2>/dev/null)" = "true" ]; then
+            echo "Container is running"
+          else
+            echo "Container is not running"
+            docker compose -f compose.yaml -p coffee-cupping-${{ inputs.profile }} --profile database-${{ inputs.profile }} up -d
+          fi
+      - name: Pull New Image From Registry
+        run: docker compose -f compose.yaml -p coffee-cupping-${{ inputs.profile }} --profile api-${{ inputs.profile }} pull
+
+      - name: Deploy New Image
+        run: docker compose -f compose.yaml -p coffee-cupping-${{ inputs.profile }} --profile api-${{ inputs.profile }} up -d
+
+      - name: Prune Old Image
+        run: docker image prune -af
+
+      - name: Notify Deployment Success
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo "API is running and healthy"
