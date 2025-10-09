@@ -1,0 +1,203 @@
+services:
+  coffee-cupping-postgres-dev:
+    image: postgres:15-alpine
+    container_name: coffee-cupping-postgres-dev
+    hostname: coffee-cupping-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DBNAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "5432:5432"
+    networks:
+      - coffee-cupping-network-dev
+    profiles:
+      - dev
+      - database-dev
+      - database
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+
+  coffee-cupping-postgres-prod:
+    image: postgres:15-alpine
+    container_name: coffee-cupping-postgres-prod
+    hostname: coffee-cupping-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DBNAME}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "5433:5432"
+    networks:
+      - coffee-cupping-network-prod
+    profiles:
+      - prod
+      - database-prod
+      - database
+    volumes:
+      - postgres-data-prod:/var/lib/postgresql/data
+
+  coffee-cupping-api-dev:
+    container_name: coffee-cupping-api-dev
+    image: ${REGISTRY}/coffee-cupping-api:${TAG:-latest}
+    hostname: coffee-cupping-api-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    environment:
+      TZ: UTC
+      # HTTP Configuration
+      HTTP_URL: ${HTTP_URL}
+      HTTP_PORT: ${HTTP_PORT}
+      HTTP_READ_TIMEOUT: ${HTTP_READ_TIMEOUT}
+      HTTP_WRITE_TIMEOUT: ${HTTP_WRITE_TIMEOUT}
+      HTTP_IDLE_TIMEOUT: ${HTTP_IDLE_TIMEOUT}
+      HTTP_SHUTDOWN_TIMEOUT: ${HTTP_SHUTDOWN_TIMEOUT}
+
+      # PostgreSQL Configuration
+      POSTGRES_HOST: coffee-cupping-postgres-dev
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DBNAME: ${POSTGRES_DBNAME}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@coffee-cupping-postgres-dev:5432/${POSTGRES_DBNAME}?sslmode=disable
+      POSTGRES_MAX_IDLE_CONNS: ${POSTGRES_MAX_IDLE_CONNS}
+      POSTGRES_MAX_OPEN_CONNS: ${POSTGRES_MAX_OPEN_CONNS}
+      POSTGRES_CONN_MAX_LIFETIME: ${POSTGRES_CONN_MAX_LIFETIME}
+
+      # JWT Configuration
+      JWT_ACCESS_TOKEN_KEY: ${JWT_ACCESS_TOKEN_KEY}
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${JWT_ACCESS_TOKEN_EXPIRES_IN}
+      JWT_REFRESH_TOKEN_KEY: ${JWT_REFRESH_TOKEN_KEY}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${JWT_REFRESH_TOKEN_EXPIRES_IN}
+      JWT_REGISTER_TOKEN_KEY: ${JWT_REGISTER_TOKEN_KEY}
+      JWT_REGISTER_TOKEN_EXPIRES_IN: ${JWT_REGISTER_TOKEN_EXPIRES_IN}
+      JWT_LOGIN_TOKEN_KEY: ${JWT_LOGIN_TOKEN_KEY}
+      JWT_LOGIN_TOKEN_EXPIRES_IN: ${JWT_LOGIN_TOKEN_EXPIRES_IN}
+
+      # SMTP Configuration
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_APP_PASSWORD: ${SMTP_APP_PASSWORD}
+
+      # Logger Configuration
+      LOGGER_LOG_LEVEL: ${LOGGER_LOG_LEVEL}
+      LOGGER_FILE_LOG_NAME: ${LOGGER_FILE_LOG_NAME}
+      LOGGER_MAX_BACKUPS: ${LOGGER_MAX_BACKUPS}
+      LOGGER_MAX_AGE: ${LOGGER_MAX_AGE}
+      LOGGER_MAX_SIZE: ${LOGGER_MAX_SIZE}
+      LOGGER_COMPRESS: ${LOGGER_COMPRESS}
+    profiles:
+      - prod
+      - api-prod
+      - api
+    networks:
+      - coffee-cupping-network-dev
+    depends_on:
+      - coffee-cupping-postgres-dev
+
+  coffee-cupping-api-prod:
+    container_name: coffee-cupping-api-prod
+    image: ${REGISTRY}/coffee-cupping-api:${TAG:-latest}
+    hostname: coffee-cupping-api-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    environment:
+      TZ: UTC
+      # HTTP Configuration
+      HTTP_URL: ${HTTP_URL}
+      HTTP_PORT: ${HTTP_PORT}
+      HTTP_READ_TIMEOUT: ${HTTP_READ_TIMEOUT}
+      HTTP_WRITE_TIMEOUT: ${HTTP_WRITE_TIMEOUT}
+      HTTP_IDLE_TIMEOUT: ${HTTP_IDLE_TIMEOUT}
+      HTTP_SHUTDOWN_TIMEOUT: ${HTTP_SHUTDOWN_TIMEOUT}
+
+      # PostgreSQL Configuration
+      POSTGRES_HOST: coffee-cupping-postgres-prod
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DBNAME: ${POSTGRES_DBNAME}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_URL: postgres://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@coffee-cupping-postgres-prod:5432/${POSTGRES_DBNAME}?sslmode=disable
+      POSTGRES_MAX_IDLE_CONNS: ${POSTGRES_MAX_IDLE_CONNS}
+      POSTGRES_MAX_OPEN_CONNS: ${POSTGRES_MAX_OPEN_CONNS}
+      POSTGRES_CONN_MAX_LIFETIME: ${POSTGRES_CONN_MAX_LIFETIME}
+
+      # JWT Configuration
+      JWT_ACCESS_TOKEN_KEY: ${JWT_ACCESS_TOKEN_KEY}
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${JWT_ACCESS_TOKEN_EXPIRES_IN}
+      JWT_REFRESH_TOKEN_KEY: ${JWT_REFRESH_TOKEN_KEY}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${JWT_REFRESH_TOKEN_EXPIRES_IN}
+      JWT_REGISTER_TOKEN_KEY: ${JWT_REGISTER_TOKEN_KEY}
+      JWT_REGISTER_TOKEN_EXPIRES_IN: ${JWT_REGISTER_TOKEN_EXPIRES_IN}
+      JWT_LOGIN_TOKEN_KEY: ${JWT_LOGIN_TOKEN_KEY}
+      JWT_LOGIN_TOKEN_EXPIRES_IN: ${JWT_LOGIN_TOKEN_EXPIRES_IN}
+
+      # SMTP Configuration
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_APP_PASSWORD: ${SMTP_APP_PASSWORD}
+
+      # Logger Configuration
+      LOGGER_LOG_LEVEL: ${LOGGER_LOG_LEVEL}
+      LOGGER_FILE_LOG_NAME: ${LOGGER_FILE_LOG_NAME}
+      LOGGER_MAX_BACKUPS: ${LOGGER_MAX_BACKUPS}
+      LOGGER_MAX_AGE: ${LOGGER_MAX_AGE}
+      LOGGER_MAX_SIZE: ${LOGGER_MAX_SIZE}
+      LOGGER_COMPRESS: ${LOGGER_COMPRESS}
+    profiles:
+      - prod
+      - aoi-prod
+      - api
+    networks:
+      - coffee-cupping-network-prod
+    depends_on:
+      - coffee-cupping-postgres-prod
+
+volumes:
+  postgres-data-dev:
+    name: postgres-data-dev
+    driver: local
+  postgres-data-prod:
+    name: postgres-data-prod
+    driver: local
+
+networks:
+  coffee-cupping-network-prod:
+    name: coffee-cupping-network-prod
+    driver: bridge
+    ipam:
+      driver: default
+
+  coffee-cupping-network-dev:
+    name: coffee-cupping-network-dev
+    driver: bridge
+    ipam:
+      driver: default
