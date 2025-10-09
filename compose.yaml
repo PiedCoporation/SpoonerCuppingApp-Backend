@@ -109,8 +109,6 @@ services:
       - api
     networks:
       - coffee-cupping-network-dev
-    depends_on:
-      - coffee-cupping-postgres-dev
 
   coffee-cupping-api-prod:
     container_name: coffee-cupping-api-prod
@@ -178,8 +176,6 @@ services:
       - api
     networks:
       - coffee-cupping-network-prod
-    depends_on:
-      - coffee-cupping-postgres-prod
 
 volumes:
   postgres-data-dev:
