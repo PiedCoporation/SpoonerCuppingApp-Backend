@@ -87,8 +87,6 @@ on:
       SMTP_APP_PASSWORD:
         required: true
 
-      GITHUB_TOKEN:
-        required: true
       TAG:
         required: true
 jobs:
