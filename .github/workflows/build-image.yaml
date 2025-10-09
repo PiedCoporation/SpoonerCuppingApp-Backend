@@ -36,6 +36,6 @@ jobs:
               fi
           - name: Build and Push Image
             run: |
-              docker compose -f compose.yaml --profile $PROFILE build
-              docker compose -f compose.yaml --profile $PROFILE push
+              docker compose -f compose.yaml --profile ${{env.PROFILE}} build --parallel
+              docker compose -f compose.yaml --profile ${{env.PROFILE}} push
         
