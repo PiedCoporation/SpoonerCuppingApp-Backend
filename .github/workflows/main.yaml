@@ -15,7 +15,7 @@ jobs:
     secrets: inherit
     with:
       actor: ${{ github.actor }}
-      repository: ${{ github.event.repository.name }}
+      repository: ${{ github.repository }}
 
   deploy-api-dev:
     name: Deploy / Dev / API
@@ -24,7 +24,7 @@ jobs:
     uses: ./.github/workflows/deploy-application.yaml
     with:
       actor: ${{ github.actor }}
-      repository: ${{ github.event.repository.name }}
+      repository: ${{ github.repository }}
       profile: dev
     secrets:
       HTTP_URL: ${{ secrets.HTTP_URL_DEV }}
@@ -75,7 +75,7 @@ jobs:
     uses: ./.github/workflows/deploy-application.yaml
     with:
       actor: ${{ github.actor }}
-      repository: ${{ github.event.repository.name }}
+      repository: ${{ github.repository }}
       profile: prod
     secrets:
       HTTP_URL: ${{ secrets.HTTP_URL }}
