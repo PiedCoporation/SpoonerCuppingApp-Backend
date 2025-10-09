@@ -172,7 +172,7 @@ services:
       LOGGER_COMPRESS: ${LOGGER_COMPRESS}
     profiles:
       - prod
-      - aoi-prod
+      - api-prod
       - api
     networks:
       - coffee-cupping-network-prod
