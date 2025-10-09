@@ -33,10 +33,10 @@ jobs:
             run: |
               if [ "${GITHUB_REF_NAME}" = "dev" ]; then
                 echo "TAG=dev-latest" >> $GITHUB_ENV
-                echo "PROFILE=api-dev" >> $GITHUB_ENV
+                echo "PROFILE=dev" >> $GITHUB_ENV
               else
                 echo "TAG=prod-latest" >> $GITHUB_ENV
-                echo "PROFILE=api-prod" >> $GITHUB_ENV
+                echo "PROFILE=prod" >> $GITHUB_ENV
               fi
           - name: Build and Push Image
             env:
