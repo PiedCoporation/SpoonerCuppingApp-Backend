@@ -158,6 +158,10 @@ jobs:
             echo "Container is not running"
             docker compose -f compose.yaml -p coffee-cupping-${{ inputs.profile }} --profile database-${{ inputs.profile }} up -d
           fi
+      - name: Lowercase Repository Name
+        run: |
+          REPO_LOWER=$(echo "${{ inputs.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "REGISTRY=ghcr.io/$REPO_LOWER" >> $GITHUB_ENV
       - name: Pull New Image From Registry
         run: docker compose -f compose.yaml -p coffee-cupping-${{ inputs.profile }} --profile api-${{ inputs.profile }} pull
 
