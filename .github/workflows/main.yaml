@@ -1,0 +1,125 @@
+name: Deploy Application
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+jobs:
+  build-application:
+    name: Build / API
+    uses: ./.github/workflows/build-image.yaml
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
+    with:
+      actor: ${{ github.actor }}
+      repository: ${{ github.event.repository.name }}
+
+  deploy-api-dev:
+    name: Deploy / Dev / API
+    needs: build-application
+    if: ${{ github.ref == 'refs/heads/dev' }}
+    uses: ./.github/workflows/deploy-application.yaml
+    with:
+      actor: ${{ github.actor }}
+      repository: ${{ github.event.repository.name }}
+      profile: dev
+    secrets:
+      HTTP_URL: ${{ secrets.HTTP_URL_DEV }}
+      HTTP_PORT: ${{ secrets.HTTP_PORT_DEV }}
+      HTTP_READ_TIMEOUT: ${{ secrets.HTTP_READ_TIMEOUT }}
+      HTTP_WRITE_TIMEOUT: ${{ secrets.HTTP_WRITE_TIMEOUT }}
+      HTTP_IDLE_TIMEOUT: ${{ secrets.HTTP_IDLE_TIMEOUT }}
+      HTTP_SHUTDOWN_TIMEOUT: ${{ secrets.HTTP_SHUTDOWN_TIMEOUT }}
+
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT_DEV }}
+      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME_DEV }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_DEV }}
+      POSTGRES_DBNAME: ${{ secrets.POSTGRES_DBNAME_DEV }}
+      POSTGRES_MAX_IDLE_CONNS: ${{ secrets.POSTGRES_MAX_IDLE_CONNS }}
+      POSTGRES_MAX_OPEN_CONNS: ${{ secrets.POSTGRES_MAX_OPEN_CONNS }}
+      POSTGRES_CONN_MAX_LIFETIME: ${{ secrets.POSTGRES_CONN_MAX_LIFETIME }}
+
+      # Logger
+      LOGGER_LOG_LEVEL: debug
+      LOGGER_FILE_LOG_NAME: ${{ secrets.LOGGER_FILE_LOG_NAME }}
+      LOGGER_MAX_BACKUPS: ${{ secrets.LOGGER_MAX_BACKUPS }}
+      LOGGER_MAX_AGE: ${{ secrets.LOGGER_MAX_AGE }}
+      LOGGER_MAX_SIZE: ${{ secrets.LOGGER_MAX_SIZE }}
+      LOGGER_COMPRESS: ${{ secrets.LOGGER_COMPRESS }}
+
+      # JWT
+      JWT_ACCESS_TOKEN_KEY: ${{ secrets.JWT_ACCESS_TOKEN_KEY }}
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN }}
+      JWT_REFRESH_TOKEN_KEY: ${{ secrets.JWT_REFRESH_TOKEN_KEY }}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN }}
+      JWT_REGISTER_TOKEN_KEY: ${{ secrets.JWT_REGISTER_TOKEN_KEY }}
+      JWT_REGISTER_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REGISTER_TOKEN_EXPIRES_IN }}
+      JWT_LOGIN_TOKEN_KEY: ${{ secrets.JWT_LOGIN_TOKEN_KEY }}
+      JWT_LOGIN_TOKEN_EXPIRES_IN: ${{ secrets.JWT_LOGIN_TOKEN_EXPIRES_IN }}
+
+      # SMTP
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      TAG: dev-latest
+
+  deploy-api-prod:
+    name: Deploy / Prod / API
+    needs: build-application
+    if: ${{ github.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/deploy-application.yaml
+    with:
+      actor: ${{ github.actor }}
+      repository: ${{ github.event.repository.name }}
+      profile: prod
+    secrets:
+      HTTP_URL: ${{ secrets.HTTP_URL }}
+      HTTP_PORT: ${{ secrets.HTTP_PORT }}
+      HTTP_READ_TIMEOUT: ${{ secrets.HTTP_READ_TIMEOUT }}
+      HTTP_WRITE_TIMEOUT: ${{ secrets.HTTP_WRITE_TIMEOUT }}
+      HTTP_IDLE_TIMEOUT: ${{ secrets.HTTP_IDLE_TIMEOUT }}
+      HTTP_SHUTDOWN_TIMEOUT: ${{ secrets.HTTP_SHUTDOWN_TIMEOUT }}
+
+      # Postgres
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DBNAME: ${{ secrets.POSTGRES_DBNAME }}
+      POSTGRES_MAX_IDLE_CONNS: ${{ secrets.POSTGRES_MAX_IDLE_CONNS }}
+      POSTGRES_MAX_OPEN_CONNS: ${{ secrets.POSTGRES_MAX_OPEN_CONNS }}
+      POSTGRES_CONN_MAX_LIFETIME: ${{ secrets.POSTGRES_CONN_MAX_LIFETIME }}
+
+      # Logger
+      LOGGER_LOG_LEVEL: ${{ secrets.LOGGER_LOG_LEVEL }}
+      LOGGER_FILE_LOG_NAME: ${{ secrets.LOGGER_FILE_LOG_NAME }}
+      LOGGER_MAX_BACKUPS: ${{ secrets.LOGGER_MAX_BACKUPS }}
+      LOGGER_MAX_AGE: ${{ secrets.LOGGER_MAX_AGE }}
+      LOGGER_MAX_SIZE: ${{ secrets.LOGGER_MAX_SIZE }}
+      LOGGER_COMPRESS: ${{ secrets.LOGGER_COMPRESS }}
+
+      # JWT
+      JWT_ACCESS_TOKEN_KEY: ${{ secrets.JWT_ACCESS_TOKEN_KEY }}
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN }}
+      JWT_REFRESH_TOKEN_KEY: ${{ secrets.JWT_REFRESH_TOKEN_KEY }}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN }}
+      JWT_REGISTER_TOKEN_KEY: ${{ secrets.JWT_REGISTER_TOKEN_KEY }}
+      JWT_REGISTER_TOKEN_EXPIRES_IN: ${{ secrets.JWT_REGISTER_TOKEN_EXPIRES_IN }}
+      JWT_LOGIN_TOKEN_KEY: ${{ secrets.JWT_LOGIN_TOKEN_KEY }}
+      JWT_LOGIN_TOKEN_EXPIRES_IN: ${{ secrets.JWT_LOGIN_TOKEN_EXPIRES_IN }}
+
+      # SMTP
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      TAG: prod-latest

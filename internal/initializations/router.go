@@ -1,0 +1,52 @@
+package initializations
+
+import (
+	"backend/internal/presentations/http/v1/routers"
+	wsRouters "backend/internal/presentations/ws/v1/routers"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
+	docs "backend/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	wsConfig "backend/internal/presentations/ws/v1/configs"
+)
+
+func InitRouter(db *gorm.DB) *gin.Engine {
+	r := gin.Default()
+
+	r.RedirectTrailingSlash = false
+    r.RedirectFixedPath = false
+
+    hub := wsConfig.NewHub()
+
+	// Health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "healthy",
+			"service": "coffee-cupping-backend",
+		})
+	})
+
+	// Swagger docs configuration
+	docs.SwaggerInfo.BasePath = "/v1"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	eventRouter := routers.RouterGroupApp.Event
+	userRouter := routers.RouterGroupApp.User
+	postRouter := routers.RouterGroupApp.Post
+	wsRouter := wsRouters.RouterGroupApp.WS
+
+	MainGroup := r.Group("/v1")
+	{
+		eventRouter.InitEventRouter(MainGroup, db)
+		userRouter.InitUserRouter(MainGroup, db)
+		postRouter.InitPostRouter(MainGroup, db)
+		wsRouter.InitWS(MainGroup, hub)
+	}
+
+	return r
+}

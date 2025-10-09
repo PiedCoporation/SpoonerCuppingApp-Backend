@@ -1,0 +1,9 @@
+BEGIN;
+
+ALTER TABLE events 
+    ADD COLUMN IF NOT EXISTS is_start boolean NOT NULL DEFAULT false,
+    ADD COLUMN IF NOT EXISTS is_end boolean NOT NULL DEFAULT false;
+
+COMMIT;
+
+
