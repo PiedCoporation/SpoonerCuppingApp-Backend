@@ -104,8 +104,8 @@ services:
       LOGGER_MAX_SIZE: ${LOGGER_MAX_SIZE}
       LOGGER_COMPRESS: ${LOGGER_COMPRESS}
     profiles:
-      - prod
-      - api-prod
+      - dev
+      - api-dev
       - api
     networks:
       - coffee-cupping-network-dev

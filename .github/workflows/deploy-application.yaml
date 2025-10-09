@@ -93,7 +93,7 @@ jobs:
   deploy-application:
     runs-on: ${{ inputs.run-on }}
     env:
-      REGISTRY: ghcr.io/${{ inputs.actor }}/${{ inputs.repository }}
+      REGISTRY: ghcr.io/${{ inputs.repository }}
       # HTTP
       HTTP_URL: ${{ secrets.HTTP_URL }}
       HTTP_PORT: ${{ secrets.HTTP_PORT }}

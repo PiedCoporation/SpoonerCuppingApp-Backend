@@ -13,7 +13,7 @@ jobs:
         name: Build Service Image
         runs-on: [ubuntu-latest]
         env:
-          REGISTRY: ghcr.io/${{ inputs.actor }}/${{ inputs.repository }}
+          REGISTRY: ghcr.io/${{ inputs.repository }}
         steps:
           - name: Checkout Repository
             uses: actions/checkout@v4
@@ -25,6 +25,10 @@ jobs:
               registry: ghcr.io
               username: ${{ inputs.actor }}
               password: ${{ secrets.GITHUB_TOKEN }}
+          - name: Lowercase Repository Name
+            run: |
+              REPO_LOWER=$(echo "${{ inputs.repository }}" | tr '[:upper:]' '[:lower:]')
+              echo "REGISTRY=ghcr.io/$REPO_LOWER" >> $GITHUB_ENV
           - name: Set TAG environment variable base on commit brand
             run: |
               if [ "${GITHUB_REF_NAME}" = "dev" ]; then
@@ -35,7 +39,10 @@ jobs:
                 echo "PROFILE=api-prod" >> $GITHUB_ENV
               fi
           - name: Build and Push Image
+            env:
+              PROFILE: ${{ env.PROFILE }}
+              TAG: ${{ env.TAG }}
             run: |
-              docker compose -f compose.yaml --profile ${{env.PROFILE}} build --parallel
-              docker compose -f compose.yaml --profile ${{env.PROFILE}} push
+              docker compose -f compose.yaml --profile "$PROFILE" build --parallel
+              docker compose -f compose.yaml --profile "$PROFILE" push
         
