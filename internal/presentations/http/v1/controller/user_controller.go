@@ -5,6 +5,7 @@ import (
 	"backend/internal/contracts/user"
 	"backend/internal/usecases/abstractions"
 	"backend/pkg/utils/validation"
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -68,8 +69,8 @@ func (uc *UserController) GetUserSetting(c *gin.Context) {
 // @Failure 404 {object} controller.ErrorResponse "Not found"
 // @Failure 500 {object} controller.ErrorResponse "Internal server error"
 // @Router /users/settings [patch]
-func (uc *UserController) UpdateUserSetting(c *gin.Context) {
-	var req user.UpdateUserSettingReq
+func (uc *UserController) UpdateUser(c *gin.Context) {
+	var req user.UpdateUserReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": validation.TranslateValidationError(err),
@@ -84,10 +85,9 @@ func (uc *UserController) UpdateUserSetting(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	if err := uc.userSettingService.Update(ctx, userID.(uuid.UUID), req); err != nil {
-		errorcode.JSONError(c, err)
-		return
-	}
+	ctx = context.WithValue(ctx, "userID", userID.(uuid.UUID))
+	
+	res := uc.userSettingService.Update(ctx, userID.(uuid.UUID), req)
 
-	c.JSON(http.StatusOK, gin.H{"message": "setting updated"})
+	c.JSON(http.StatusOK, res)
 }

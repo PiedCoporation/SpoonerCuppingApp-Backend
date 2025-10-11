@@ -2,7 +2,9 @@ package usecases
 
 import (
 	"backend/internal/constants/errorcode"
+	"backend/internal/contracts/common"
 	"backend/internal/contracts/user"
+	"backend/internal/mapper"
 	repoAbstractions "backend/internal/persistents/abstractions"
 	serviceAbstractions "backend/internal/usecases/abstractions"
 	"context"
@@ -40,33 +42,51 @@ func (s userSettingService) GetByID(ctx context.Context, userID uuid.UUID) (*use
 	}, nil
 }
 
-// UpdateUserSetting implements abstractions.IUserSettingService.
-func (s userSettingService) Update(ctx context.Context, userID uuid.UUID, req user.UpdateUserSettingReq) error {
+// UpdateUser implements abstractions.IUserSettingService.
+func (s userSettingService) Update(ctx context.Context, userID uuid.UUID, req user.UpdateUserReq) (*common.Result[user.UserRes]) {
 	// get user from db
-	user, err := s.userRepo.GetByID(ctx, userID)
+	userEntity, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, errorcode.ErrNotFound) {
-			return errorcode.ErrUserNotFound
+			return common.Failure[user.UserRes](&common.Error{Code: "404", Message: "User not found"})
 		}
-		return err
+		return common.Failure[user.UserRes](&common.Error{Code: "500", Message: "Failed to get user"})
 	}
 
 	if req.CircleStyle != nil && !req.CircleStyle.IsValid() {
-		return errorcode.ErrInvalidCircleStyle
+		return common.Failure[user.UserRes](&common.Error{Code: "400", Message: "Invalid circle style"})
 	}
 
 	fieldMap := make(map[string]any)
-	if req.CircleStyle != nil && *req.CircleStyle != user.CircleStyle {
+	if req.CircleStyle != nil {
 		fieldMap["circle_style"] = *req.CircleStyle
+		userEntity.CircleStyle = *req.CircleStyle
 	}
 
-	// update
+	if req.FirstName != nil {
+		fieldMap["first_name"] = *req.FirstName
+		userEntity.FirstName = *req.FirstName
+	}
+
+	if req.LastName != nil {
+		fieldMap["last_name"] = *req.LastName
+		userEntity.LastName = *req.LastName
+	}
+
+	if req.Phone != nil {
+		fieldMap["phone"] = *req.Phone
+		userEntity.Phone = *req.Phone
+	}
+	
 	if len(fieldMap) == 0 {
-		return nil
-	}
-	if err := s.userRepo.Update(ctx, userID, fieldMap); err != nil {
-		return err
+		userRes := mapper.MapUserToContractUserLoginResponse(userEntity)
+		return common.Success(userRes)
 	}
 
-	return nil
+	if err := s.userRepo.Update(ctx, userID, fieldMap); err != nil {
+		return common.Failure[user.UserRes](&common.Error{Code: "500", Message: "Failed to update user"})
+	}
+
+	userRes := mapper.MapUserToContractUserLoginResponse(userEntity)
+	return common.Success(userRes)
 }

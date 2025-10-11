@@ -36,7 +36,7 @@ func (u *UserRouter) InitUserRouter(
 	// Register
 	registerGroup := publicGroup.Group("/register")
 	{
-		registerGroup.POST("/", uAuthCtrl.Register)
+		registerGroup.POST("", uAuthCtrl.Register)
 		registerGroup.POST("/resend-email", uAuthCtrl.ResendEmailVerifyRegister)
 		registerGroup.POST("/verify",
 			middlewares.AuthHeader([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
@@ -52,12 +52,13 @@ func (u *UserRouter) InitUserRouter(
 	{
 		privateGroup.POST("/logout", uAuthCtrl.Logout)
 		privateGroup.POST("/change-password", uAuthCtrl.ChangePassword)
+		privateGroup.PATCH("", uCtrl.UpdateUser)
 	}
 
-	// Setting group
-	settingGroup := privateGroup.Group("/settings")
-	{
-		settingGroup.GET("/", uCtrl.GetUserSetting)
-		settingGroup.PATCH("/", uCtrl.UpdateUserSetting)
-	}
+	// // Setting group
+	// settingGroup := privateGroup.Group("/settings")
+	// {
+	// 	settingGroup.GET("/", uCtrl.GetUserSetting)
+	// 	settingGroup.PATCH("/", uCtrl.UpdateUser)
+	// }
 }

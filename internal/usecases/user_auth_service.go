@@ -103,7 +103,7 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		Email:       vo.Email,
 		Phone:       vo.Phone,
 		Password:    hashedPassword,
-		CircleStyle: circlestyle.Default,
+		CircleStyle: circlestyle.Minimal,
 		IsVerified:  false,
 		Auditable:   commons.Auditable{CreatedAt: now, UpdatedAt: now},
 		RoleID:      defaultRole.ID,

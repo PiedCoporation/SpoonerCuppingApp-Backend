@@ -3,13 +3,13 @@ package circlestyle
 type CircleStyleEnum string
 
 const (
-	Default CircleStyleEnum = "DEFAULT"
-	Second  CircleStyleEnum = "SECOND"
+	Minimal CircleStyleEnum = "MINIMAL"
+	Expert  CircleStyleEnum = "EXPERT"
 )
 
 func (e CircleStyleEnum) IsValid() bool {
 	switch e {
-	case Default, Second:
+	case Minimal, Expert:
 		return true
 	}
 	return false
