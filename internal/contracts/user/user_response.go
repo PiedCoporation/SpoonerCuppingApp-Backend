@@ -29,5 +29,5 @@ type UserRes struct {
 	Role      string    `json:"role" example:"USER" enums:"USER,ADMIN"`
 	Email     string    `json:"email" example:"john.doe@example.com"`
 	Phone     string    `json:"phone" example:"1234567890"`
-	// CircleStyle circlestyle.CircleStyleEnum `json:"circle_style" example:"DEFAULT" enums:"DEFAULT,SECOND"`
+	CircleStyle circlestyle.CircleStyleEnum `json:"circle_style" example:"MINIMAL" enums:"MINIMAL,EXPERT"`
 }

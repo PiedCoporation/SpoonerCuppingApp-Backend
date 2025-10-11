@@ -21,6 +21,6 @@ func MapUserToContractUserLoginResponse(u *entities.User) *userContract.UserRes 
 		Email:     u.Email,
 		Phone:     u.Phone,
 		Role:      u.Role.Name,
-		// CircleStyle: u.CircleStyle,
+		CircleStyle: u.CircleStyle,
 	}
 }

@@ -318,3 +318,5 @@ func (uc *UserAuthController) RefreshToken(c *gin.Context) {
 		},
 	})
 }
+
+func (uc *UserAuthController) UserUpdate(c *gin.Context) {}

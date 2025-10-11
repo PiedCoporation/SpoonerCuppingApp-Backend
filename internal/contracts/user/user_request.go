@@ -37,6 +37,9 @@ type ChangePasswordReq struct {
 	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
 }
 
-type UpdateUserSettingReq struct {
+type UpdateUserReq struct {
+	FirstName   *string    `json:"first_name" example:"John"`
+	LastName    *string    `json:"last_name" example:"Doe"`
+	Phone      *string    `json:"phone" example:"1234567890"`
 	CircleStyle *circlestyle.CircleStyleEnum `json:"circle_style"`
 }

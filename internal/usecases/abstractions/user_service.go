@@ -22,6 +22,6 @@ type (
 
 	IUserSettingService interface {
 		GetByID(ctx context.Context, userID uuid.UUID) (*user.UserSettingRes, error)
-		Update(ctx context.Context, userID uuid.UUID, req user.UpdateUserSettingReq) error
+		Update(ctx context.Context, userID uuid.UUID, req user.UpdateUserReq) (*common.Result[user.UserRes])
 	}
 )
