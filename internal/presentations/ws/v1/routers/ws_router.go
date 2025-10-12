@@ -19,7 +19,7 @@ type WSRouter struct{}
 func (w *WSRouter) InitWS(router *gin.RouterGroup, hub *configs.Hub) {
 
     wsGroup := router.Group("/ws")
-    wsGroup.GET("/", func(c *gin.Context) {
+    wsGroup.GET("", func(c *gin.Context) {
         ServeWS(hub, c.Writer, c.Request)
     })
     hub.RegisterHandler(constants.EventSendMessage, wsControllers.SendMessageEventController)

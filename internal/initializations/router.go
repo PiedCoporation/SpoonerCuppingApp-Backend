@@ -38,6 +38,7 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	eventRouter := routers.RouterGroupApp.Event
 	userRouter := routers.RouterGroupApp.User
 	postRouter := routers.RouterGroupApp.Post
+	sampleRouter := routers.RouterGroupApp.Sample
 	wsRouter := wsRouters.RouterGroupApp.WS
 
 	MainGroup := r.Group("/v1")
@@ -45,6 +46,7 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 		eventRouter.InitEventRouter(MainGroup, db)
 		userRouter.InitUserRouter(MainGroup, db)
 		postRouter.InitPostRouter(MainGroup, db)
+		sampleRouter.InitSampleRouter(MainGroup, db)
 		wsRouter.InitWS(MainGroup, hub)
 	}
 
