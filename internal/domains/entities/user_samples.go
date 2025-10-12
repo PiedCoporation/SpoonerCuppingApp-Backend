@@ -27,5 +27,7 @@ type UserSample struct {
 	UserID uuid.UUID `gorm:"not null;index"`
 	User   User      `gorm:"foreignKey:UserID"`
 
+	UserSampleTastings []UserSampleTasting `gorm:"foreignKey:UserSampleID"`
+
 	EventSamples []EventSample `gorm:"foreignKey:UserSampleID"`
 }
