@@ -18,6 +18,10 @@ FROM alpine:latest AS application
 # Install curl for health checks
 RUN apk --no-cache add curl
 
-COPY --from=builder /app/cupping.backend.app .
+WORKDIR /app
+
+COPY --from=builder /app/cupping.backend.app ./
+# include email templates used at runtime
+COPY --from=builder /app/templates ./templates
 
 CMD ["./cupping.backend.app"]
