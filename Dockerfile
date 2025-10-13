@@ -15,13 +15,23 @@ RUN go build -o cupping.backend.app ./cmd/app/
 
 FROM alpine:latest AS application
 
-# Install curl for health checks
-RUN apk --no-cache add curl
+# Install curl for health checks, make for Makefile targets, and migrate binary
+RUN apk --no-cache add curl bash ca-certificates libc6-compat make
+
+# Install golang-migrate (static binary)
+ENV MIGRATE_VERSION=v4.17.0
+RUN wget -qO /usr/local/bin/migrate https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.linux-amd64 && \
+    chmod +x /usr/local/bin/migrate
 
 WORKDIR /app
 
 COPY --from=builder /app/cupping.backend.app ./
+# copy Makefile for runtime migrate-up target
+COPY --from=builder /app/Makefile ./Makefile
 # include email templates used at runtime
 COPY --from=builder /app/templates ./templates
+# include migrations used at runtime
+COPY --from=builder /app/migrations ./migrations
 
-CMD ["./cupping.backend.app"]
+# On container start, run migrations via Makefile, then start app
+CMD ["/bin/sh", "-c", "make migrate-up && ./cupping.backend.app"]
