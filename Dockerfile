@@ -18,10 +18,14 @@ FROM alpine:latest AS application
 # Install curl for health checks, make for Makefile targets, and migrate binary
 RUN apk --no-cache add curl bash ca-certificates libc6-compat make
 
-# Install golang-migrate (static binary)
+# Install golang-migrate (download tarball and extract binary)
 ENV MIGRATE_VERSION=v4.17.0
-RUN wget -qO /usr/local/bin/migrate https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.linux-amd64 && \
-    chmod +x /usr/local/bin/migrate
+RUN curl -sSL -o /tmp/migrate.tgz \
+      https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.linux-amd64.tar.gz && \
+    tar -xzf /tmp/migrate.tgz -C /usr/local/bin && \
+    mv /usr/local/bin/migrate.linux-amd64 /usr/local/bin/migrate && \
+    chmod +x /usr/local/bin/migrate && \
+    rm -f /tmp/migrate.tgz
 
 WORKDIR /app
 
