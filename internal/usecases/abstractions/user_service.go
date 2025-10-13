@@ -15,7 +15,8 @@ type (
 		VerifyRegister(ctx context.Context, userID uuid.UUID) (string, string, error)
 		Login(ctx context.Context, vo user.LoginUserReq) (*common.Result[user.LoginUserRes])
 		Logout(ctx context.Context, userID uuid.UUID, refreshToken string) error
-		ForgotPassword(ctx context.Context, email string) error
+		ForgotPassword(ctx context.Context, email string) (*common.Result[string])
+		VerifyForgotPasswordCode(ctx context.Context, code string, email string) (*common.Result[string])
 		ChangePassword(ctx context.Context, vo user.ChangePasswordVO) error
 		RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
 	}
