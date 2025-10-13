@@ -1,7 +1,7 @@
 package common
 
 type Error struct {
-	Code string `json:"code"`
+	Code int    `json:"-"`
 	Message string `json:"message"`
 }
 

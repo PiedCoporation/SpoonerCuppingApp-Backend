@@ -38,10 +38,10 @@ func (u *UserRouter) InitUserRouter(
 	{
 		registerGroup.POST("", uAuthCtrl.Register)
 		registerGroup.POST("/resend-email", uAuthCtrl.ResendEmailVerifyRegister)
-		registerGroup.POST("/verify",
-			middlewares.AuthHeader([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
-			uAuthCtrl.VerifyRegister,
-		)
+        registerGroup.GET("/verify",
+            middlewares.AuthQuery([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
+            uAuthCtrl.VerifyRegister,
+        )
 	}
 
 	// ====== Private group (using access token) ======

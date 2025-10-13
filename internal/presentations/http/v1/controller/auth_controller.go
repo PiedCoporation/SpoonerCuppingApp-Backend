@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"backend/global"
 	"backend/internal/constants/errorcode"
 	"backend/internal/contracts/user"
 	"backend/internal/usecases/abstractions"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type UserAuthController struct {
@@ -48,18 +50,19 @@ func (uc *UserAuthController) Register(c *gin.Context) {
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
-		Phone:     req.Phone,
 		Password:  req.Password,
 	}
 
-	if err := uc.auth.Register(ctx, vo); err != nil {
-		errorcode.JSONError(c, err)
+	result := uc.auth.Register(ctx, vo)
+	if result.IsFailure {
+		c.JSON(result.Error.Code, gin.H{
+			"error": result.Error.Message,
+		})
+		global.Logger.Error("Register error", zap.Error(result.Error))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Please check your email to verify account.",
-	})
+	c.JSON(http.StatusOK, result)
 }
 
 // ResendEmailVerifyRegister godoc

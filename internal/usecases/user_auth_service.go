@@ -45,10 +45,59 @@ func NewUserAuthService(
 }
 
 // Register implements user.IUserAuthService.
-func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO) error {
+func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO) (*common.Result[user.UserRes]) {
 	g, gCtx := errgroup.WithContext(ctx)
 
+	fmt.Println("Register user", vo)
+
 	var hashedPassword string
+
+    // if email already exists: for unverified users, update info and resend verify; for verified users, block
+    if existing, err := us.userRepo.GetByEmail(ctx, vo.Email); err == nil {
+        if existing.IsVerified {
+            return common.Failure[user.UserRes](&common.Error{Code: 400, Message: errorcode.ErrEmailExists.Error()})
+        }
+
+        // update latest submitted info
+        newHashed, hashErr := password.HashPassword(vo.Password)
+        if hashErr != nil {
+            return common.Failure[user.UserRes](&common.Error{Code: 500, Message: hashErr.Error()})
+        }
+        if updErr := us.userRepo.Update(ctx, existing.ID, map[string]any{
+            "first_name": vo.FirstName,
+            "last_name":  vo.LastName,
+            "password":   newHashed,
+        }); updErr != nil {
+            return common.Failure[user.UserRes](&common.Error{Code: 500, Message: updErr.Error()})
+        }
+        existing.FirstName = vo.FirstName
+        existing.LastName = vo.LastName
+        existing.Password = newHashed
+
+        // resend verify for existing but unverified account
+        token, genErr := jwt.GenerateEmailToken([]byte(global.Config.JWT.RegisterTokenKey),
+            global.Config.JWT.RegisterTokenExpiresIn, existing.ID, jwtpurpose.Register)
+			
+        if genErr != nil {
+            return common.Failure[user.UserRes](&common.Error{Code: 500, Message: "Failed to generate email verify jwt"})
+        }
+
+        verifyLink := fmt.Sprintf("%s/v1/users/register/verify?token=%s",
+            global.Config.HTTP.Url, token)
+
+        go func(email, vlink string) {
+            if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
+                "register-verify.html", map[string]any{"verifyLink": vlink},
+            ); err != nil {
+                fmt.Println(err)
+            }
+        }(vo.Email, verifyLink)
+
+        mapped := mapper.MapUserToContractUserLoginResponse(existing)
+        return common.Success(mapped)
+    } else if !errors.Is(err, errorcode.ErrUserNotFound) {
+        return common.Failure[user.UserRes](&common.Error{Code: 500, Message: err.Error()})
+    }
 
 	// check if email exists
 	g.Go(func() error {
@@ -58,18 +107,6 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		}
 		if exists {
 			return errorcode.ErrEmailExists
-		}
-		return nil
-	})
-
-	// check if phone exists
-	g.Go(func() error {
-		exists, err := us.userRepo.IsPhoneTaken(gCtx, vo.Phone, uuid.Nil)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return errorcode.ErrPhoneExists
 		}
 		return nil
 	})
@@ -84,24 +121,24 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 		return nil
 	})
 
-	if err := g.Wait(); err != nil {
-		return err
-	}
+    if err := g.Wait(); err != nil {
+        return common.Failure[user.UserRes](&common.Error{Code: 400, Message: err.Error()})
+    }
 
-	// get user role id
+    // get user role id
 	defaultRole, ok := rolecache.Get(string(rolename.User))
-	if !ok {
-		return errorcode.ErrUnexpectedCreatingUser
-	}
+    if !ok {
+        return common.Failure[user.UserRes](&common.Error{Code: 500, Message: "Failed to get default role"})
+    }
 
 	// create user
 	now := time.Now()
-	user := &entities.User{
+    createdUser := &entities.User{
 		Entity:      commons.Entity{ID: uuid.New(), IsDeleted: false},
 		FirstName:   vo.FirstName,
 		LastName:    vo.LastName,
 		Email:       vo.Email,
-		Phone:       vo.Phone,
+		Phone:       "",
 		Password:    hashedPassword,
 		CircleStyle: circlestyle.Minimal,
 		IsVerified:  false,
@@ -110,29 +147,32 @@ func (us *userAuthService) Register(ctx context.Context, vo user.RegisterUserVO)
 	}
 
 	// insert user into db
-	if err := us.userRepo.Create(ctx, user); err != nil {
-		return err
-	}
+    if err := us.userRepo.Create(ctx, createdUser); err != nil {
+        return common.Failure[user.UserRes](&common.Error{Code: 500, Message: "Failed to create user"})
+    }
 
 	// gene email verify jwt
-	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.RegisterTokenKey),
-		global.Config.JWT.RegisterTokenExpiresIn, user.ID, jwtpurpose.Register)
-	if err != nil {
-		return err
-	}
+    token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.RegisterTokenKey),
+        global.Config.JWT.RegisterTokenExpiresIn, createdUser.ID, jwtpurpose.Register)
+    if err != nil {
+        return common.Failure[user.UserRes](&common.Error{Code: 500, Message: "Failed to generate email verify jwt"})
+    }
 
 	verifyLink := fmt.Sprintf("%s/v1/users/register/verify?token=%s",
 		global.Config.HTTP.Url, token)
 
 	// send verify email to activate account
-	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{vo.Email},
-		"register-verify.html", map[string]any{"verifyLink": verifyLink},
-	); err != nil {
-		fmt.Println(err)
-		return err
-	}
+    go func(email, vlink string) {
+        if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
+            "register-verify.html", map[string]any{"verifyLink": vlink},
+        ); err != nil {
+            fmt.Println(err)
+        }
+    }(vo.Email, verifyLink)
 
-	return nil
+    // return user info for UI (no tokens on register)
+    mapped := mapper.MapUserToContractUserLoginResponse(createdUser)
+    return common.Success(mapped)
 }
 
 // ResendEmailVerifyRegister implements user.IUserAuthService.
@@ -224,32 +264,32 @@ func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserReq) (*co
 	// get user from db
 	dbUser, err := us.userRepo.GetByEmail(ctx, vo.Email)
 	if err != nil {
-		return common.Failure[user.LoginUserRes](&common.Error{Code: "404", Message: "User not found"})
+		return common.Failure[user.LoginUserRes](&common.Error{Code: 404, Message: "User not found"})
 	}
 
 	// check if user is verified or not
 	if !dbUser.IsVerified {
-		return common.Failure[user.LoginUserRes](&common.Error{Code: "403", Message: "Account is not verified"})
+		return common.Failure[user.LoginUserRes](&common.Error{Code: 403, Message: "Account is not verified, please check your email for verification"})
 	}
 	// check if user is deleted or not
 	if dbUser.IsDeleted {
-		return common.Failure[user.LoginUserRes](&common.Error{Code: "403", Message: "Account is deleted"})
+		return common.Failure[user.LoginUserRes](&common.Error{Code: 403, Message: "Account is deleted"})
 	}
 
 	// check password
 	if !password.ComparePasswords(dbUser.Password, vo.Password) {
-		return common.Failure[user.LoginUserRes](&common.Error{Code: "401", Message: "Invalid password"})
+		return common.Failure[user.LoginUserRes](&common.Error{Code: 401, Message: "Invalid password"})
 	}
 
 	// gene ac and rt
 	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(dbUser.ID)
 	if err != nil {
-		return common.Failure[user.LoginUserRes](&common.Error{Code: "500", Message: "Generate token error"})
+		return common.Failure[user.LoginUserRes](&common.Error{Code: 500, Message: "Generate token error"})
 	}
 
 	if err := insertRefreshToken(ctx, dbUser.ID,
 		us.rtRepo, refreshToken, []byte(global.Config.JWT.RefreshTokenKey)); err != nil {
-		return common.Failure[user.LoginUserRes](&common.Error{Code: "500", Message: "Insert refresh token error"})
+		return common.Failure[user.LoginUserRes](&common.Error{Code: 500, Message: "Insert refresh token error"})
 	}
 
 	userRes := mapper.MapUserToContractUserLoginResponse(dbUser)
