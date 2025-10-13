@@ -27,27 +27,27 @@ func (s *sampleService) Create(ctx context.Context, req sample.SampleReq) (*comm
 	// Validate userID from context
 	userID, ok := ctx.Value("userID").(uuid.UUID)
 	if !ok || userID == uuid.Nil {
-		return common.Failure[sample.SampleRes](&common.Error{Code: "401", Message: "Invalid user context"})
+		return common.Failure[sample.SampleRes](&common.Error{Code: 401, Message: "Invalid user context"})
 	}
 
 	// Validate required fields
 	if req.Name == "" {
-		return common.Failure[sample.SampleRes](&common.Error{Code: "400", Message: "Sample name is required"})
+		return common.Failure[sample.SampleRes](&common.Error{Code: 400, Message: "Sample name is required"})
 	}
 	if req.RoasteryName == "" {
-		return common.Failure[sample.SampleRes](&common.Error{Code: "400", Message: "Roastery name is required"})
+		return common.Failure[sample.SampleRes](&common.Error{Code: 400, Message: "Roastery name is required"})
 	}
 	if req.BreedName == "" {
-		return common.Failure[sample.SampleRes](&common.Error{Code: "400", Message: "Breed name is required"})
+		return common.Failure[sample.SampleRes](&common.Error{Code: 400, Message: "Breed name is required"})
 	}
 	if req.Price <= 0 {
-		return common.Failure[sample.SampleRes](&common.Error{Code: "400", Message: "Price must be greater than 0"})
+		return common.Failure[sample.SampleRes](&common.Error{Code: 400, Message: "Price must be greater than 0"})
 	}
 
 
 	repoProvider, err := s.sampleUOW.Begin(ctx)
 	if err != nil {
-		return common.Failure[sample.SampleRes](&common.Error{Code: "500", Message: "Failed to begin transaction"})
+		return common.Failure[sample.SampleRes](&common.Error{Code: 500, Message: "Failed to begin transaction"})
 	}
 
 	sampleRepo := repoProvider.SampleRepository()
@@ -72,7 +72,7 @@ func (s *sampleService) Create(ctx context.Context, req sample.SampleReq) (*comm
 	// Create the sample first
 	if err := sampleRepo.Create(ctx, &sampleEntity); err != nil {
 		s.sampleUOW.Rollback()
-		return common.Failure[sample.SampleRes](&common.Error{Code: "500", Message: "Failed to create sample"})
+		return common.Failure[sample.SampleRes](&common.Error{Code: 500, Message: "Failed to create sample"})
 	}
 
 	// Create the tasting records separately
@@ -87,12 +87,12 @@ func (s *sampleService) Create(ctx context.Context, req sample.SampleReq) (*comm
 		
 		if err := sampleTastingRepo.Create(ctx, &tastingEntity); err != nil {
 			s.sampleUOW.Rollback()
-			return common.Failure[sample.SampleRes](&common.Error{Code: "500", Message: "Failed to create sample tasting"})
+			return common.Failure[sample.SampleRes](&common.Error{Code: 500, Message: "Failed to create sample tasting"})
 		}
 	}
 
 	if err := s.sampleUOW.Commit(); err != nil {
-		return common.Failure[sample.SampleRes](&common.Error{Code: "500", Message: "Failed to commit transaction"})
+		return common.Failure[sample.SampleRes](&common.Error{Code: 500, Message: "Failed to commit transaction"})
 	}
 
 	// Use the created entity directly instead of fetching from database
@@ -117,7 +117,7 @@ func (s *sampleService) GetAll(ctx context.Context, pageSize int, pageNumber int
 	// Validate userID from context
 	userID, ok := ctx.Value("userID").(uuid.UUID)
 	if !ok || userID == uuid.Nil {
-		return common.Failure[common.PageResult[sample.SampleRes]](&common.Error{Code: "401", Message: "Invalid user context"})
+		return common.Failure[common.PageResult[sample.SampleRes]](&common.Error{Code: 401, Message: "Invalid user context"})
 	}
 
 	q := s.sampleUOW.GetDB().WithContext(ctx).
@@ -129,7 +129,7 @@ func (s *sampleService) GetAll(ctx context.Context, pageSize int, pageNumber int
 
 	pg, err := postgres.GetPaginated[entities.UserSample](q, ctx, pageSize, pageNumber)
 	if err != nil {
-		return common.Failure[common.PageResult[sample.SampleRes]](&common.Error{Code: "500", Message: "Failed to get samples"})
+		return common.Failure[common.PageResult[sample.SampleRes]](&common.Error{Code: 500, Message: "Failed to get samples"})
 	}
 
 	var samplesPageResult common.PageResult[sample.SampleRes]

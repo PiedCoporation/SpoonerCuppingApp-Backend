@@ -31,6 +31,7 @@ func (u *UserRouter) InitUserRouter(
 		publicGroup.POST("/refresh-token", uAuthCtrl.RefreshToken)
 		publicGroup.POST("/login", uAuthCtrl.Login)
 		publicGroup.POST("/forgot-password", uAuthCtrl.ForgotPassword)
+		publicGroup.POST("/forgot-password/verify-code", uAuthCtrl.VerifyForgotPasswordCode)
 	}
 
 	// Register
@@ -38,10 +39,10 @@ func (u *UserRouter) InitUserRouter(
 	{
 		registerGroup.POST("", uAuthCtrl.Register)
 		registerGroup.POST("/resend-email", uAuthCtrl.ResendEmailVerifyRegister)
-		registerGroup.POST("/verify",
-			middlewares.AuthHeader([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
-			uAuthCtrl.VerifyRegister,
-		)
+        registerGroup.GET("/verify",
+            middlewares.AuthQuery([]byte(cfg.JWT.RegisterTokenKey), jwtpurpose.Register),
+            uAuthCtrl.VerifyRegister,
+        )
 	}
 
 	// ====== Private group (using access token) ======

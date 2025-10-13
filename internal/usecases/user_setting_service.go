@@ -48,13 +48,13 @@ func (s userSettingService) Update(ctx context.Context, userID uuid.UUID, req us
 	userEntity, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, errorcode.ErrNotFound) {
-			return common.Failure[user.UserRes](&common.Error{Code: "404", Message: "User not found"})
+			return common.Failure[user.UserRes](&common.Error{Code: 404, Message: "User not found"})
 		}
-		return common.Failure[user.UserRes](&common.Error{Code: "500", Message: "Failed to get user"})
+		return common.Failure[user.UserRes](&common.Error{Code: 500, Message: "Failed to get user"})
 	}
 
 	if req.CircleStyle != nil && !req.CircleStyle.IsValid() {
-		return common.Failure[user.UserRes](&common.Error{Code: "400", Message: "Invalid circle style"})
+		return common.Failure[user.UserRes](&common.Error{Code: 400, Message: "Invalid circle style"})
 	}
 
 	fieldMap := make(map[string]any)
@@ -84,7 +84,7 @@ func (s userSettingService) Update(ctx context.Context, userID uuid.UUID, req us
 	}
 
 	if err := s.userRepo.Update(ctx, userID, fieldMap); err != nil {
-		return common.Failure[user.UserRes](&common.Error{Code: "500", Message: "Failed to update user"})
+		return common.Failure[user.UserRes](&common.Error{Code: 500, Message: "Failed to update user"})
 	}
 
 	userRes := mapper.MapUserToContractUserLoginResponse(userEntity)

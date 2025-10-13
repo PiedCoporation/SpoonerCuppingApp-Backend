@@ -6,9 +6,7 @@ type RegisterUserReq struct {
 	FirstName       string `json:"first_name" binding:"required"`
 	LastName        string `json:"last_name" binding:"required"`
 	Email           string `json:"email" binding:"required,email"`
-	Phone           string `json:"phone" binding:"required"`
 	Password        string `json:"password" binding:"required,min=8,max=30"`
-	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
 }
 
 type ResendEmailReq struct {
@@ -34,7 +32,6 @@ type ForgotPasswordReq struct {
 
 type ChangePasswordReq struct {
 	Password        string `json:"password" binding:"required,min=8,max=30"`
-	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
 }
 
 type UpdateUserReq struct {
@@ -42,4 +39,9 @@ type UpdateUserReq struct {
 	LastName    *string    `json:"last_name" example:"Doe"`
 	Phone      *string    `json:"phone" example:"1234567890"`
 	CircleStyle *circlestyle.CircleStyleEnum `json:"circle_style"`
+}
+
+type VerifyForgotPasswordCodeReq struct {
+	Code string `json:"code" binding:"required"`
+	Email string `json:"email" binding:"required,email"`
 }

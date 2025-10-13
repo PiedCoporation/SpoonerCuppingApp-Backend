@@ -1,14 +1,19 @@
 package controller
 
 import (
+	"backend/global"
 	"backend/internal/constants/errorcode"
+	"backend/internal/contracts/common"
 	"backend/internal/contracts/user"
 	"backend/internal/usecases/abstractions"
 	"backend/pkg/utils/validation"
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type UserAuthController struct {
@@ -48,18 +53,19 @@ func (uc *UserAuthController) Register(c *gin.Context) {
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
-		Phone:     req.Phone,
 		Password:  req.Password,
 	}
 
-	if err := uc.auth.Register(ctx, vo); err != nil {
-		errorcode.JSONError(c, err)
+	result := uc.auth.Register(ctx, vo)
+	if result.IsFailure {
+		c.JSON(result.Error.Code, gin.H{
+			"error": result.Error.Message,
+		})
+		global.Logger.Error("Register error", zap.Error(result.Error))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Please check your email to verify account.",
-	})
+	c.JSON(http.StatusOK, result)
 }
 
 // ResendEmailVerifyRegister godoc
@@ -114,9 +120,26 @@ func (uc *UserAuthController) VerifyRegister(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
+
+	// If client requests HTML (e.g., clicking link from email in a browser),
+	// render a minimal success page instead of JSON.
+	accept := c.GetHeader("Accept")
+	wantsHTML := strings.Contains(accept, "text/html") || c.Query("view") == "html"
+
 	accessToken, refreshToken, err := uc.auth.VerifyRegister(ctx, userID.(uuid.UUID))
 	if err != nil {
+		if wantsHTML && errors.Is(err, errorcode.ErrAccountIsVerified) {
+			appURL := global.Config.HTTP.Url
+			c.HTML(http.StatusOK, "verify-success.html", gin.H{"AppURL": appURL})
+			return
+		}
 		errorcode.JSONError(c, err)
+		return
+	}
+
+	if wantsHTML {
+		appURL := global.Config.HTTP.Url
+		c.HTML(http.StatusOK, "verify-success.html", gin.H{"AppURL": appURL})
 		return
 	}
 
@@ -227,14 +250,50 @@ func (uc *UserAuthController) ForgotPassword(c *gin.Context) {
 	ctx := c.Request.Context()
 	email := req.Email
 
-	if err := uc.auth.ForgotPassword(ctx, email); err != nil {
-		errorcode.JSONError(c, err)
+	result := uc.auth.ForgotPassword(ctx, email)
+	if result.IsFailure {
+		c.JSON(result.Error.Code, gin.H{
+			"error": result.Error.Message,
+		})
+		global.Logger.Error("Forgot password error", zap.Error(result.Error))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Please check your email to change password.",
-	})
+	c.JSON(http.StatusOK, result)
+}
+
+// VerifyForgotPasswordCode godoc
+// @Summary Verify forgot password code
+// @Description Verify forgot password code
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body user.VerifyForgotPasswordCodeReq true "Verify forgot password code payload"
+// @Success 200 {object} controller.MessageResponse
+// @Failure 400 {object} controller.ErrorResponse
+// @Failure 500 {object} controller.ErrorResponse
+// @Router /users/forgot-password/verify-code [post]
+func (uc *UserAuthController) VerifyForgotPasswordCode(c *gin.Context) {
+	var req user.VerifyForgotPasswordCodeReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": validation.TranslateValidationError(err),
+		})
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	result := uc.auth.VerifyForgotPasswordCode(ctx, req.Code, req.Email)
+	if result.IsFailure {
+		c.JSON(result.Error.Code, gin.H{
+			"error": result.Error.Message,
+		})
+		global.Logger.Error("Verify forgot password code error", zap.Error(result.Error))
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 // ChangePassword godoc
@@ -265,6 +324,7 @@ func (uc *UserAuthController) ChangePassword(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
 		return
 	}
+
 	ctx := c.Request.Context()
 	vo := user.ChangePasswordVO{
 		UserID:   userID.(uuid.UUID),
@@ -276,9 +336,9 @@ func (uc *UserAuthController) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Change password success.",
-	})
+	message := "Change password success."
+	result := common.Success(&message)
+	c.JSON(http.StatusOK, result)
 }
 
 // RefreshToken godoc

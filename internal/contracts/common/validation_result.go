@@ -7,13 +7,13 @@ type ValidationResult[T any] struct {
 
 func CreateValidationResult[T any](errors []Error) *ValidationResult[T] {
 	r := &ValidationResult[T]{}
-	r.Result = Failure[T](&Error{Code: "VALIDATION_ERROR", Message: "Validation error"})
+	r.Result = Failure[T](&Error{Code: 422, Message: "Validation error"})
 	r.Errors = errors
 	return r
 }
 
 func AddError[T any](r *ValidationResult[T], error Error) *ValidationResult[T] {
-	r.Result = Failure[T](&Error{Code: "VALIDATION_ERROR", Message: "Validation error"})
+	r.Result = Failure[T](&Error{Code: 422, Message: "Validation error"})
 	r.Errors = append(r.Errors, error)
 	return r
 }

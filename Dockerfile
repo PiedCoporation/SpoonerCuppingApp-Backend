@@ -15,9 +15,16 @@ RUN go build -o cupping.backend.app ./cmd/app/
 
 FROM alpine:latest AS application
 
-# Install curl for health checks
-RUN apk --no-cache add curl
+WORKDIR /app
 
-COPY --from=builder /app/cupping.backend.app .
+# Copy the built application
+COPY --from=builder /app/cupping.backend.app ./
 
+# include email templates used at runtime
+COPY --from=builder /app/templates ./templates
+
+# include migrations used at runtime
+COPY --from=builder /app/migrations ./migrations
+
+# Start app; migrations run in-app on startup
 CMD ["./cupping.backend.app"]

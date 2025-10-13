@@ -98,17 +98,17 @@ func JSONError(c *gin.Context, err error) {
         // Default to 500 if unknown code
         status := http.StatusInternalServerError
         switch ce.Code {
-        case "400":
+        case 400:
             status = http.StatusBadRequest
-        case "401":
+        case 401:
             status = http.StatusUnauthorized
-        case "403":
+        case 403:
             status = http.StatusForbidden
-        case "404":
+		case 404:
             status = http.StatusNotFound
-        case "409":
+        case 409:
             status = http.StatusConflict
-        case "500":
+        case 500:
             status = http.StatusInternalServerError
         }
         c.JSON(status, gin.H{"error": ce.Message})

@@ -3,11 +3,133 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register Verification</title>
+    <title>Verify your CoffeeCupping account</title>
   </head>
-  <body>
-    <p>Register Verification link:</p>
-    <h3>{{.verifyLink}}</h3>
-    <p>Click the link above to verify your account!</p>
+  <body style="margin: 0; padding: 0; background-color: #f6f7f9">
+    <table
+      role="presentation"
+      cellpadding="0"
+      cellspacing="0"
+      width="100%"
+      style="background-color: #f6f7f9"
+    >
+      <tr>
+        <td align="center" style="padding: 24px">
+          <table
+            role="presentation"
+            cellpadding="0"
+            cellspacing="0"
+            width="100%"
+            style="
+              max-width: 600px;
+              background-color: #ffffff;
+              border-radius: 12px;
+              overflow: hidden;
+              border: 1px solid #e9ebf0;
+            "
+          >
+            <tr>
+              <td
+                style="
+                  padding: 28px 28px 8px 28px;
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                    Roboto, Helvetica, Arial, sans-serif;
+                  color: #111827;
+                "
+              >
+                <div style="font-size: 14px; color: #6b7280">CoffeeCupping</div>
+                <h1
+                  style="
+                    margin: 8px 0 0 0;
+                    font-size: 22px;
+                    line-height: 28px;
+                    font-weight: 700;
+                    color: #111827;
+                  "
+                >
+                  Verify your account
+                </h1>
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 0 28px 16px 28px;
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                    Roboto, Helvetica, Arial, sans-serif;
+                  color: #374151;
+                  font-size: 14px;
+                  line-height: 20px;
+                "
+              >
+                To finish creating your CoffeeCupping account, please confirm
+                your email address.
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding: 8px 28px 24px 28px">
+                <!-- Button -->
+                <a
+                  href="{{.verifyLink}}"
+                  style="
+                    display: inline-block;
+                    background-color: #0ea5e9;
+                    color: #ffffff;
+                    text-decoration: none;
+                    padding: 12px 18px;
+                    border-radius: 8px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                      Roboto, Helvetica, Arial, sans-serif;
+                    font-size: 14px;
+                    font-weight: 600;
+                  "
+                  >Verify Account</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 0 28px 28px 28px;
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                    Roboto, Helvetica, Arial, sans-serif;
+                  color: #6b7280;
+                  font-size: 12px;
+                  line-height: 18px;
+                "
+              >
+                If the button doesn’t work, copy and paste this link into your
+                browser:
+                <br />
+                <a
+                  href="{{.verifyLink}}"
+                  style="
+                    color: #0ea5e9;
+                    word-break: break-all;
+                    text-decoration: none;
+                  "
+                  >{{.verifyLink}}</a
+                >
+              </td>
+            </tr>
+          </table>
+          <div
+            style="
+              max-width: 600px;
+              margin: 12px auto 0 auto;
+              color: #9ca3af;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                Helvetica, Arial, sans-serif;
+              font-size: 12px;
+              line-height: 18px;
+            "
+          >
+            You’re receiving this email because you recently created an account
+            on CoffeeCupping. If this wasn’t you, you can safely ignore this
+            message.
+          </div>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>

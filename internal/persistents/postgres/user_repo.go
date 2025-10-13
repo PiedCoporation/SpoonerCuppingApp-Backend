@@ -39,40 +39,26 @@ func (ur *userPgRepo) GetByEmail(ctx context.Context, email string) (*entities.U
 
 // IsPhoneTaken implements abstractions.IUserRepository.
 func (ur *userPgRepo) IsPhoneTaken(ctx context.Context, phone string, excludeUserID uuid.UUID) (bool, error) {
-	var user entities.User
+	var count int64
 	err := ur.db.WithContext(ctx).
-		Where("phone = ? AND id != ?", phone, excludeUserID).
-		First(&user).Error
+		Model(&entities.User{}).
+		Where("phone = ? AND id != ? AND is_deleted = ?", phone, excludeUserID, false).
+		Count(&count).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
-		}
 		return false, err
 	}
-
-	if user.Entity.IsDeleted {
-		return true, errorcode.ErrPhoneBelongsToDeletedAccount
-	}
-
-	return true, nil
+	return count > 0, nil
 }
 
 // IsEmailTaken implements abstractions.IUserRepository.
 func (ur *userPgRepo) IsEmailTaken(ctx context.Context, email string, excludeUserID uuid.UUID) (bool, error) {
-	var user entities.User
+	var count int64
 	err := ur.db.WithContext(ctx).
-		Where("email = ? AND id != ?", email, excludeUserID).
-		First(&user).Error
+		Model(&entities.User{}).
+		Where("email = ? AND id != ? AND is_deleted = ?", email, excludeUserID, false).
+		Count(&count).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
-		}
 		return false, err
 	}
-
-	if user.Entity.IsDeleted {
-		return true, errorcode.ErrEmailBelongsToDeletedAccount
-	}
-
-	return true, nil
+	return count > 0, nil
 }

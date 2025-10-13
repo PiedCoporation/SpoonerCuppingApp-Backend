@@ -56,7 +56,7 @@ func (s *eventService) GetEventByUserID(ctx context.Context, pageSize int, pageN
 	// Paginate events and preload relations required for mapping
 	pg, err := postgres.GetPaginated[entities.Event](q, ctx, pageSize, pageNumber, "EventAddress", "HostBy")
 	if err != nil {
-		return common.Failure[common.PageResult[event.Event]](&common.Error{Code: "500", Message: "Failed to get events"})
+		return common.Failure[common.PageResult[event.Event]](&common.Error{Code: 500, Message: "Failed to get events"})
 	}
 
 	var eventsPageResult common.PageResult[event.Event]
@@ -80,7 +80,7 @@ func (s *eventService) StartEvent(ctx context.Context, id uuid.UUID) (*common.Re
 	
 	repoProvider, err := s.eventUOW.Begin(ctx)
 	if err != nil {
-		return common.Failure[string](&common.Error{Code: "500", Message: "Failed to begin transaction"})
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to begin transaction"})
 	}
 	
 	eventRepo := repoProvider.EventRepository()
@@ -88,17 +88,17 @@ func (s *eventService) StartEvent(ctx context.Context, id uuid.UUID) (*common.Re
 	eventEntity, err := eventRepo.GetByID(ctx, id)
 	if err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "404", Message: "Event not found"})
+		return common.Failure[string](&common.Error{Code: 404, Message: "Event not found"})
 	}
 
 	if eventEntity.UserID != userID {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "403", Message: "You are not the host of this event"})
+		return common.Failure[string](&common.Error{Code: 403, Message: "You are not the host of this event"})
 	}
 
 	if eventEntity.IsStart {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "400", Message: "Event already started"})
+		return common.Failure[string](&common.Error{Code: 400, Message: "Event already started"})
 	}
 
 	eventEntity.IsStart = true
@@ -106,12 +106,12 @@ func (s *eventService) StartEvent(ctx context.Context, id uuid.UUID) (*common.Re
 		"is_start": eventEntity.IsStart,
 	}); err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "500", Message: "Failed to update event"})
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to update event"})
 	}
 
 	if err := s.eventUOW.Commit(); err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "500", Message: "Failed to commit transaction"})
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to commit transaction"})
 	}
 
 	msg := "Event started"
@@ -126,7 +126,7 @@ func (s *eventService) Register(ctx context.Context, id uuid.UUID) (*common.Resu
 
 	repoProvider, err := s.eventUOW.Begin(ctx)
 	if err != nil {
-		return common.Failure[string](&common.Error{Code: "500", Message: "Failed to begin transaction"})
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to begin transaction"})
 	}
 
 	eventRepo := repoProvider.EventRepository()
@@ -135,7 +135,7 @@ func (s *eventService) Register(ctx context.Context, id uuid.UUID) (*common.Resu
 	eventEntity, err := eventRepo.GetByID(ctx, id)
 	if err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "404", Message: "Event not found"})
+		return common.Failure[string](&common.Error{Code: 404, Message: "Event not found"})
 	}
 
 	// if eventEntity.RegisterStatus == eventregisterstatus.RegisterStatusEnumPending {
@@ -164,11 +164,11 @@ func (s *eventService) Register(ctx context.Context, id uuid.UUID) (*common.Resu
 	existingEventUser, err := eventUserRepo.GetSingle(ctx, query)
 	if err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "500", Message: "Failed to get event user"})
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to get event user"})
 	}
 	if existingEventUser != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "400", Message: "User already registered"})
+		return common.Failure[string](&common.Error{Code: 400, Message: "User already registered"})
 	}
 
 	if err := eventUserRepo.Create(ctx, &entities.EventUser{
@@ -179,7 +179,7 @@ func (s *eventService) Register(ctx context.Context, id uuid.UUID) (*common.Resu
 		IsInvited: false,
 	}); err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "500", Message: "Failed to create event user"})
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to create event user"})
 	}
 
 	eventEntity.TotalCurrent++
@@ -187,12 +187,12 @@ func (s *eventService) Register(ctx context.Context, id uuid.UUID) (*common.Resu
 		"total_current": eventEntity.TotalCurrent,
 	}); err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "500", Message: "Failed to update event"})
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to update event"})
 	}
 
 	if err := s.eventUOW.Commit(); err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[string](&common.Error{Code: "500", Message: "Failed to commit transaction"})
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to commit transaction"})
 	}
 	
 	msg := "Registration successful"	
@@ -205,7 +205,7 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) (*c
 
 	repoProvider, err := s.eventUOW.Begin(ctx)
     if err != nil {
-        return common.Failure[event.Event](&common.Error{Code: "500", Message: "Failed to begin transaction"})
+        return common.Failure[event.Event](&common.Error{Code: 500, Message: "Failed to begin transaction"})
     }
 
 	sampleRepo := repoProvider.SampleRepository()
@@ -216,12 +216,12 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) (*c
 
     if len(req.Samples) == 0 {
         s.eventUOW.Rollback()
-        return common.Failure[event.Event](&common.Error{Code: "400", Message: "Event samples are required"})
+        return common.Failure[event.Event](&common.Error{Code: 400, Message: "Event samples are required"})
     }
 
     if len(req.EventAddress) == 0 {
         s.eventUOW.Rollback()
-        return common.Failure[event.Event](&common.Error{Code: "400", Message: "Event address is required"})
+        return common.Failure[event.Event](&common.Error{Code: 400, Message: "Event address is required"})
     }
 
 	// Create Event
@@ -243,7 +243,7 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) (*c
 
     if err := eventRepo.Create(ctx, &eventEntity); err != nil {
         s.eventUOW.Rollback()
-        return common.Failure[event.Event](&common.Error{Code: "500", Message: "Failed to create event"})
+        return common.Failure[event.Event](&common.Error{Code: 500, Message: "Failed to create event"})
     }
 
 	if err := eventUserRepo.Create(ctx, &entities.EventUser{
@@ -255,7 +255,7 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) (*c
 		IsInvited: false,
 	}); err != nil {
 		s.eventUOW.Rollback()
-		return common.Failure[event.Event](&common.Error{Code: "500", Message: "Failed to create event user"})
+		return common.Failure[event.Event](&common.Error{Code: 500, Message: "Failed to create event user"})
 	}
 
 	var sampleEntities []entities.UserSample
@@ -291,12 +291,12 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) (*c
 
     if err := sampleRepo.CreateRange(ctx, sampleEntities); err != nil {
         s.eventUOW.Rollback()
-        return common.Failure[event.Event](&common.Error{Code: "500", Message: "Failed to create event samples"})
+        return common.Failure[event.Event](&common.Error{Code: 500, Message: "Failed to create event samples"})
     }
 
     if err := eventSampleRepo.CreateRange(ctx, eventSampleEntities); err != nil {
         s.eventUOW.Rollback()
-        return common.Failure[event.Event](&common.Error{Code: "500", Message: "Failed to create event samples"})
+        return common.Failure[event.Event](&common.Error{Code: 500, Message: "Failed to create event samples"})
     }
 
 	var eventAddressesEntities []entities.EventAddress
@@ -318,13 +318,13 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) (*c
 
     if err := eventAddressRepo.CreateRange(ctx, eventAddressesEntities); err != nil {
         s.eventUOW.Rollback()
-        return common.Failure[event.Event](&common.Error{Code: "500", Message: "Failed to create event addresses"})
+        return common.Failure[event.Event](&common.Error{Code: 500, Message: "Failed to create event addresses"})
     }
 
 	// Commit the transaction
     if err := s.eventUOW.Commit(); err != nil {
         s.eventUOW.Rollback()
-        return common.Failure[event.Event](&common.Error{Code: "500", Message: "Failed to commit transaction"})
+        return common.Failure[event.Event](&common.Error{Code: 500, Message: "Failed to commit transaction"})
     }
 
     mapped := mapper.MapEventToContractGetAllEventResponse(&eventEntity)
@@ -348,7 +348,7 @@ func (s *eventService) GetAll(ctx context.Context, pageSize int, pageNumber int,
 
 	events, err := postgres.GetPaginated[entities.Event](q, ctx, pageSize, pageNumber, "EventAddress", "HostBy")
 	if err != nil {
-		return common.Failure[common.PageResult[event.Event]](&common.Error{Code: "500", Message: "Failed to get events"})
+		return common.Failure[common.PageResult[event.Event]](&common.Error{Code: 500, Message: "Failed to get events"})
 	}
 
 	var eventsPageResult common.PageResult[event.Event]
@@ -369,12 +369,12 @@ func (s *eventService) GetByID(ctx context.Context, id uuid.UUID) (*common.Resul
 	// Preload all necessary relationships including nested UserSample
 	eventEntity, err := eventRepo.GetByID(ctx, id, "EventAddress", "HostBy", "EventSamples.UserSample")
 	if err != nil {
-		return common.Failure[event.GetEventByIDResponse](&common.Error{Code: "500", Message: "Failed to get event"})
+		return common.Failure[event.GetEventByIDResponse](&common.Error{Code: 500, Message: "Failed to get event"})
 	}
 	
 	// Validate that we have a valid event entity
 	if eventEntity == nil {
-		return common.Failure[event.GetEventByIDResponse](&common.Error{Code: "404", Message: "Event not found"})
+		return common.Failure[event.GetEventByIDResponse](&common.Error{Code: 404, Message: "Event not found"})
 	}
 	
 	eventContract := mapper.MapEventToContractGetEventByIDResponse(eventEntity)

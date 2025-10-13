@@ -21,6 +21,9 @@ func InitRouter(db *gorm.DB) *gin.Engine {
 	r.RedirectTrailingSlash = false
     r.RedirectFixedPath = false
 
+    // Load HTML templates for simple pages (e.g., verify success)
+    r.LoadHTMLFiles("templates/email/verify-success.html")
+
     hub := wsConfig.NewHub()
 
 	// Health check endpoint
