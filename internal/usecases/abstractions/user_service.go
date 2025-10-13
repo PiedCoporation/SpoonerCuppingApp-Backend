@@ -10,7 +10,7 @@ import (
 
 type (
 	IUserAuthService interface {
-		Register(ctx context.Context, vo user.RegisterUserVO) error
+        Register(ctx context.Context, vo user.RegisterUserVO) (*common.Result[user.UserRes])
 		ResendEmailVerifyRegister(ctx context.Context, email string) error
 		VerifyRegister(ctx context.Context, userID uuid.UUID) (string, string, error)
 		Login(ctx context.Context, vo user.LoginUserReq) (*common.Result[user.LoginUserRes])

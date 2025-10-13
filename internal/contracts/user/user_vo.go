@@ -3,10 +3,9 @@ package user
 import "github.com/google/uuid"
 
 type RegisterUserVO struct {
-	FirstName string
+	FirstName string 
 	LastName  string
 	Email     string
-	Phone     string
 	Password  string
 }
 
