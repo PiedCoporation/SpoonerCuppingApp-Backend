@@ -6,7 +6,9 @@ import (
 	"backend/internal/contracts/user"
 	"backend/internal/usecases/abstractions"
 	"backend/pkg/utils/validation"
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -117,9 +119,26 @@ func (uc *UserAuthController) VerifyRegister(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
+
+	// If client requests HTML (e.g., clicking link from email in a browser),
+	// render a minimal success page instead of JSON.
+	accept := c.GetHeader("Accept")
+	wantsHTML := strings.Contains(accept, "text/html") || c.Query("view") == "html"
+
 	accessToken, refreshToken, err := uc.auth.VerifyRegister(ctx, userID.(uuid.UUID))
 	if err != nil {
+		if wantsHTML && errors.Is(err, errorcode.ErrAccountIsVerified) {
+			appURL := global.Config.HTTP.Url
+			c.HTML(http.StatusOK, "verify-success.html", gin.H{"AppURL": appURL})
+			return
+		}
 		errorcode.JSONError(c, err)
+		return
+	}
+
+	if wantsHTML {
+		appURL := global.Config.HTTP.Url
+		c.HTML(http.StatusOK, "verify-success.html", gin.H{"AppURL": appURL})
 		return
 	}
 
