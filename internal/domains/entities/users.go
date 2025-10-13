@@ -3,6 +3,7 @@ package entities
 import (
 	"backend/internal/constants/enums/circlestyle"
 	"backend/internal/domains/commons"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -17,6 +18,8 @@ type User struct {
 	CircleStyle circlestyle.CircleStyleEnum `gorm:"not null"`
 	IsVerified  bool                        `gorm:"default:false"`
 	commons.Auditable
+	ForgotPasswordCode string `gorm:"null"`
+	ForgotPasswordExpiresAt time.Time `gorm:"null"`
 
 	RoleID uuid.UUID `gorm:"not null;index"`
 	Role   Role      `gorm:"foreignKey:RoleID"`

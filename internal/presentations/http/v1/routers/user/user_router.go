@@ -31,6 +31,7 @@ func (u *UserRouter) InitUserRouter(
 		publicGroup.POST("/refresh-token", uAuthCtrl.RefreshToken)
 		publicGroup.POST("/login", uAuthCtrl.Login)
 		publicGroup.POST("/forgot-password", uAuthCtrl.ForgotPassword)
+		publicGroup.POST("/forgot-password/verify-code", uAuthCtrl.VerifyForgotPasswordCode)
 	}
 
 	// Register

@@ -18,8 +18,10 @@ import (
 	"backend/pkg/utils/password"
 	"backend/pkg/utils/sendto"
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/google/uuid"
@@ -328,40 +330,53 @@ func (us *userAuthService) Logout(ctx context.Context, userID uuid.UUID, refresh
 }
 
 // ForgotPassword implements abstractions.IUserAuthService.
-func (us *userAuthService) ForgotPassword(ctx context.Context, email string) error {
+func (us *userAuthService) ForgotPassword(ctx context.Context, email string) *common.Result[string] {
 	// get user from db
 	user, err := us.userRepo.GetByEmail(ctx, email)
 	if err != nil {
-		return err
+		return common.Failure[string](&common.Error{Code: 500, Message: "Get user error"})
 	}
 
 	// check if user is verified or not
 	if !user.IsVerified {
-		return errorcode.ErrAccountIsNotVerified
+		return common.Failure[string](&common.Error{Code: 403, Message: "Account is not verified, please check your email for verification"})
 	}
 	// check if user is deleted or not
 	if user.IsDeleted {
-		return errorcode.ErrAccountIsDeleted
+		return common.Failure[string](&common.Error{Code: 403, Message: "Account is deleted"})
 	}
 
-	// gene email verify jwt
-	token, err := jwt.GenerateEmailToken([]byte(global.Config.JWT.AccessTokenKey),
-		global.Config.JWT.AccessTokenExpiresIn, user.ID, jwtpurpose.Access)
+	// generate a secure 6-digit numeric code
+	max := big.NewInt(1000000)
+	num, err := rand.Int(rand.Reader, max)
 	if err != nil {
-		return err
+		return common.Failure[string](&common.Error{Code: 500, Message: "Generate code error"})
+	}
+	code := fmt.Sprintf("%06d", num.Int64())
+
+	// set expiry (e.g., 10 minutes)
+	minutes := 3
+	expiresAt := time.Now().Add(time.Duration(minutes) * time.Minute)
+
+	// persist code and expiry
+	if err := us.userRepo.Update(ctx, user.ID, map[string]any{
+		"forgot_password_code":        code,
+		"forgot_password_expires_at": expiresAt,
+	}); err != nil {
+		return common.Failure[string](&common.Error{Code: 500, Message: "Update user error"})
 	}
 
-	verifyLink := fmt.Sprintf("%s/v1/users/change-password?token=%s",
-		global.Config.HTTP.Url, token)
+	// send email with code
+	go func() {
+		if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
+			"forgot-password-verify-code.html", map[string]any{"code": code, "minutes": minutes},
+		); err != nil {
+			fmt.Println(err)
+		}
+	}()
 
-	// send verify email to activate account
-	if err := sendto.SendTemplateEmailOtp(&global.Config.SMTP, []string{email},
-		"register-verify.html", map[string]any{"verifyLink": verifyLink},
-	); err != nil {
-		return err
-	}
-
-	return nil
+	message := "Create code successfully"
+	return common.Success(&message)
 }
 
 // ChangePassword implements abstractions.IUserAuthService.
@@ -432,6 +447,49 @@ func (us *userAuthService) ChangePassword(ctx context.Context, vo user.ChangePas
 	}
 
 	return nil
+}
+
+// VerifyForgotPasswordCode implements abstractions.IUserAuthService.
+func (us *userAuthService) VerifyForgotPasswordCode(ctx context.Context, code string, email string) *common.Result[string] {
+	// get user from db
+	user, err := us.userRepo.GetByEmail(ctx, email)
+	if err != nil {
+		return common.Failure[string](&common.Error{Code: 500, Message: "Get user error"})
+	}
+
+	// check if user is verified or not
+	if !user.IsVerified {
+		return common.Failure[string](&common.Error{Code: 403, Message: "Account is not verified, please check your email for verification"})
+	}
+	// check if user is deleted or not
+	if user.IsDeleted {
+		return common.Failure[string](&common.Error{Code: 403, Message: "Account is deleted"})
+	}
+
+	// check if code is expired
+	if user.ForgotPasswordExpiresAt.Before(time.Now()) {
+		return common.Failure[string](&common.Error{Code: 403, Message: "Code is expired"})
+	}
+
+	// check if code is correct
+	if user.ForgotPasswordCode != code {
+		return common.Failure[string](&common.Error{Code: 403, Message: "Code is incorrect"})
+	}
+
+	// update user forgot password code and expires at
+	if err := us.userRepo.Update(ctx, user.ID, map[string]any{
+		"forgot_password_code":        "",
+		"forgot_password_expires_at": nil,
+	}); err != nil {
+		return common.Failure[string](&common.Error{Code: 500, Message: "Update user error"})
+	}
+
+	accessToken, _, err := jwt.GenerateAcAndRtTokens(user.ID)
+	if err != nil {
+		return common.Failure[string](&common.Error{Code: 500, Message: "Generate token error"})
+	}
+
+	return common.Success(&accessToken)
 }
 
 // RefreshToken implements user.IUserAuthService.
