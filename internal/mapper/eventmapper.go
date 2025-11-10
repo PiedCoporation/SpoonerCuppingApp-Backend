@@ -1,7 +1,6 @@
 package mapper
 
 import (
-	"backend/internal/constants/enums/eventregisterstatus"
 	eventContract "backend/internal/contracts/event"
 	"backend/internal/domains/entities"
 )
@@ -26,15 +25,20 @@ func MapEventToContractGetAllEventResponse(e *entities.Event) eventContract.Even
 		DateOfEvent:    e.DateOfEvent,
 		StartTime:      e.StartTime,
 		EndTime:        e.EndTime,
+		RegisterStartTime: e.RegisterStartTime,
+		RegisterEndTime: e.RegisterEndTime,
 		Limit:          e.Limit,
-		TotalCurrent:   e.TotalCurrent,
+		TotalJoined:   e.TotalJoined,
+		TotalRegistered: e.TotalRegistered,
+		AutoAccept: e.AutoAccept,
 		NumberSamples:  e.NumberSamples,
 		PhoneContact:   e.PhoneContact,
 		EmailContact:   e.EmailContact,
 		IsPublic:       e.IsPublic,
 		RegisterDate:   e.RegisterDate,
-		RegisterStatus: eventregisterstatus.RegisterStatusEnum(e.RegisterStatus),
 		EventAddress:   addresses,
+		IsStart: e.IsStart,
+		IsEnd: e.IsEnd,
 		HostBy: eventContract.HostBy{
 			ID: e.HostBy.ID,
 			FirstName: e.HostBy.FirstName,
@@ -86,13 +90,16 @@ func MapEventToContractGetEventByIDResponse(e *entities.Event) eventContract.Get
 			StartTime:      e.StartTime,
 			EndTime:        e.EndTime,
 			Limit:          e.Limit,
-			TotalCurrent:   e.TotalCurrent,
+			TotalJoined:   e.TotalJoined,
+			TotalRegistered: e.TotalRegistered,
+			AutoAccept: e.AutoAccept,
 			NumberSamples:  e.NumberSamples,
 			PhoneContact:   e.PhoneContact,
 			EmailContact:   e.EmailContact,
 			IsPublic:       e.IsPublic,
 			RegisterDate:   e.RegisterDate,
-			RegisterStatus: eventregisterstatus.RegisterStatusEnum(e.RegisterStatus),
+			RegisterStartTime: e.RegisterStartTime,
+			RegisterEndTime: e.RegisterEndTime,
 			EventAddress:   addresses,
 			IsStart: e.IsStart,
 			IsEnd: e.IsEnd,
