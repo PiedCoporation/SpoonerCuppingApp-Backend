@@ -3,7 +3,6 @@ package event
 import (
 	"time"
 
-	"backend/internal/constants/enums/eventregisterstatus"
 	"backend/internal/constants/enums/processing"
 	"backend/internal/constants/enums/roastinglever"
 
@@ -17,14 +16,17 @@ type Event struct{
 	DateOfEvent time.Time `json:"date_of_event" example:"2024-01-15T10:00:00Z"`
 	StartTime time.Time `json:"start_time" example:"2024-01-15T10:00:00Z"`
 	EndTime time.Time `json:"end_time" example:"2024-01-15T18:00:00Z"`
+	RegisterStartTime time.Time `json:"register_start_time" example:"2024-01-10T00:00:00Z"`
+	RegisterEndTime time.Time `json:"register_end_time" example:"2024-01-15T18:00:00Z"`
 	Limit int `json:"limit" example:"50"`
-	TotalCurrent int `json:"total_current" example:"20"`
+	TotalJoined int `json:"total_joined" example:"20"`
+	TotalRegistered int `json:"total_registered" example:"20"`
+	AutoAccept bool `json:"auto_accept" example:"false"`
 	NumberSamples int `json:"number_samples" example:"5"`
 	PhoneContact string `json:"phone_contact" example:"+1234567890"`
 	EmailContact string `json:"email_contact" example:"contact@example.com"`
 	IsPublic bool `json:"is_public" example:"true"`
 	RegisterDate time.Time `json:"register_date" example:"2024-01-10T00:00:00Z"`
-	RegisterStatus eventregisterstatus.RegisterStatusEnum `json:"register_status" example:"PENDING" enums:"PENDING,ACCEPTED,FULL"`
 	EventAddress []EventAddress `json:"event_address"`
 	IsStart bool `json:"is_start" example:"false"`
 	IsEnd bool `json:"is_end" example:"false"`

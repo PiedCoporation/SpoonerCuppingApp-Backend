@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"backend/global"
-	"backend/internal/constants/enums/eventregisterstatus"
 	"backend/internal/contracts/common"
 	"backend/internal/contracts/event"
 	"backend/internal/domains/commons"
@@ -149,7 +148,7 @@ func (s *eventService) Register(ctx context.Context, id uuid.UUID) (*common.Resu
 		return common.Failure[string](&common.Error{Code: 400, Message: "Event is not end for register"})
 	}
 
-	if eventEntity.TotalCurrent >= eventEntity.Limit {
+	if eventEntity.TotalJoined >= eventEntity.Limit {
 		s.eventUOW.Rollback()
 		return common.Failure[string](&common.Error{Code: 400, Message: "Event is full"})
 	}
@@ -177,9 +176,9 @@ func (s *eventService) Register(ctx context.Context, id uuid.UUID) (*common.Resu
 		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to create event user"})
 	}
 
-	eventEntity.TotalCurrent++
+	eventEntity.TotalRegistered++
 	if err := eventRepo.Update(ctx, eventEntity.ID, map[string]any{
-		"total_current": eventEntity.TotalCurrent,
+		"total_registered": eventEntity.TotalRegistered,
 	}); err != nil {
 		s.eventUOW.Rollback()
 		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to update event"})
@@ -233,7 +232,6 @@ func (s *eventService) Create(ctx context.Context, req event.CreateEventReq) (*c
 		IsPublic: req.IsPublic,
 		UserID: userID,
 		RegisterDate: req.RegisterDate,
-		RegisterStatus: eventregisterstatus.RegisterStatusEnumPending,
 	}
 
     if err := eventRepo.Create(ctx, &eventEntity); err != nil {
