@@ -44,6 +44,7 @@ func AuthHeader(secret []byte, purpose jwtpurpose.JWTPurpose) gin.HandlerFunc {
 			return
 		}
 		c.Set("userID", userID)
+		c.Set("role", claims.Role)
 
 		c.Next()
 	}
@@ -82,4 +83,29 @@ func permissionDenied(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 		"error": "permission denied",
 	})
+}
+
+// RequireRolesFromToken checks allowed roles from token claims (no DB)
+func RequireRolesFromToken(allowedRoles ...string) gin.HandlerFunc {
+	roleSet := map[string]struct{}{}
+	for _, r := range allowedRoles {
+		roleSet[r] = struct{}{}
+	}
+	return func(c *gin.Context) {
+		val, ok := c.Get("role")
+		if !ok {
+			permissionDenied(c)
+			return
+		}
+		roleStr, ok := val.(string)
+		if !ok {
+			permissionDenied(c)
+			return
+		}
+		if _, ok := roleSet[roleStr]; !ok {
+			permissionDenied(c)
+			return
+		}
+		c.Next()
+	}
 }

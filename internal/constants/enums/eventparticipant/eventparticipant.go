@@ -3,8 +3,8 @@ package eventparticipant
 type TypeParticipantEnum string
 
 const (
-	TypeParticipantEnumRegistered TypeParticipantEnum = "JOINED"
-	TypeParticipantEnumJoined TypeParticipantEnum = "REQUESTED"
+	TypeParticipantEnumRequested TypeParticipantEnum = "REQUESTED"
+	TypeParticipantEnumJoined TypeParticipantEnum = "JOINED"
 	TypeParticipantEnumInvited TypeParticipantEnum = "INVITED"
 )
 

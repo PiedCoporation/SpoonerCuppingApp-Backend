@@ -385,20 +385,28 @@ func (s *eventService) GetByID(ctx context.Context, id uuid.UUID) (*common.Resul
 	return common.Success(&eventContract)
 }
 
-func (s *eventService) GetEventParticipant(ctx context.Context, eventID uuid.UUID, pageSize int, pageNumber int, searchTerm string, typeParticipant eventparticipant.TypeParticipantEnum) (*common.Result[common.PageResult[eventContractResponse.GetAllUserEventResponse]]) {
+func (s *eventService) GetEventParticipant(ctx context.Context, userID uuid.UUID, eventID uuid.UUID, pageSize int, pageNumber int, searchTerm string, typeParticipant eventparticipant.TypeParticipantEnum) (*common.Result[common.PageResult[eventContractResponse.GetAllUserEventResponse]]) {
 	db := s.eventUOW.GetDB()
+	
+	isHostEvent, err := s.eventUserRepo.GetSingle(ctx, fmt.Sprintf("event_id = '%s' AND user_id = '%s' AND is_host = %t", eventID.String(), userID.String(), true))
+	if err != nil {
+		return common.Failure[common.PageResult[eventContractResponse.GetAllUserEventResponse]](&common.Error{Code: 500, Message: "Failed to get event participant"})
+	}
+	if isHostEvent == nil {
+		return common.Failure[common.PageResult[eventContractResponse.GetAllUserEventResponse]](&common.Error{Code: 403, Message: "You are not the host of this event"})
+	}
 
 	q := db.WithContext(ctx).
 		Model(&entities.EventUser{}).
 		Where("event_id = ?", eventID).
-		Where("is_deleted = ?", false).
+		Where("event_users.is_deleted = ?", false).
 		Joins("JOIN users u ON u.id = event_users.user_id").
 		Where("u.is_deleted = ?", false)
 
 	switch typeParticipant {
 	case eventparticipant.TypeParticipantEnumJoined:
 		q = q.Where("event_users.is_accepted = ? AND event_users.is_host = ?", true, false)
-	case eventparticipant.TypeParticipantEnumRegistered:
+	case eventparticipant.TypeParticipantEnumRequested:
 		// Requested (awaiting approval, not invited, not host)
 		q = q.Where("event_users.is_accepted = ? AND event_users.is_invited = ? AND event_users.is_host = ?", false, false, false)
 	case eventparticipant.TypeParticipantEnumInvited:
@@ -443,7 +451,22 @@ func (s *eventService) GetEventParticipant(ctx context.Context, eventID uuid.UUI
 	return common.Success(&pageResult)
 }
 
-func (s *eventService) ResponseEvent(ctx context.Context, eventUserID uuid.UUID, isAccept bool) (*common.Result[string]) {
+func (s *eventService) ResponseEvent(ctx context.Context, userID uuid.UUID, eventUserID uuid.UUID, isAccept bool) (*common.Result[string]) {
+	// Load target event user to obtain its event_id
+	targetEventUser, err := s.eventUserRepo.GetByID(ctx, eventUserID)
+	if err != nil || targetEventUser == nil {
+		return common.Failure[string](&common.Error{Code: 404, Message: "Event user not found"})
+	}
+
+	// Verify the caller is the host of the same event
+	isHostEvent, err := s.eventUserRepo.GetSingle(ctx, fmt.Sprintf("event_id = '%s' AND user_id = '%s' AND is_host = %t", targetEventUser.EventID.String(), userID.String(), true))
+	if err != nil {
+		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to get event participant"})
+	}
+	if isHostEvent == nil {
+		return common.Failure[string](&common.Error{Code: 403, Message: "You are not the host of this event"})
+	}
+
 	repoProvider, err := s.eventUOW.Begin(ctx)
 	if err != nil {
 		return common.Failure[string](&common.Error{Code: 500, Message: "Failed to begin transaction"})

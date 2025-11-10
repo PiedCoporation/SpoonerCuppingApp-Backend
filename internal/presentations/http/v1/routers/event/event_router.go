@@ -34,7 +34,7 @@ func (u *EventRouter) InitEventRouter(
 		privateGroup.GET("/:id", eventController.GetEventByID)
 		privateGroup.POST("/:id/register", eventController.RegisterEvent)
 		privateGroup.POST("/:id/start", eventController.StartEvent)
-		privateGroup.GET("/:event_id/participants", eventController.GetEventParticipant)
-		privateGroup.PATCH("/:event_user_id/response", eventController.ResponseEvent)
+		privateGroup.GET("/:id/participants", eventController.GetEventParticipant)
+		privateGroup.PATCH("/:id/participants/:event_user_id/response", eventController.ResponseEvent)
 	}
 }
