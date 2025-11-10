@@ -1,8 +1,9 @@
 package controller
 
 import (
+	"backend/internal/constants/enums/eventparticipant"
 	"backend/internal/constants/errorcode"
-	"backend/internal/contracts/event"
+	eventContractRequest "backend/internal/contracts/event/request"
 	abstractions "backend/internal/usecases/abstractions"
 	"backend/pkg/utils/validation"
 	"context"
@@ -37,7 +38,7 @@ func NewEventController(eventService abstractions.IEventService) *EventControlle
 // @Failure 500 {object} controller.ErrorResponse
 // @Router /events [post]
 func (ec *EventController) CreateEvent(c *gin.Context) {
-	var req event.CreateEventReq
+	var req eventContractRequest.CreateEventReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": validation.TranslateValidationError(err),
@@ -247,5 +248,61 @@ func (ec *EventController) StartEvent(c *gin.Context) {
 	ctx = context.WithValue(ctx, "userID", userID.(uuid.UUID))
 
 	result := ec.EventService.StartEvent(ctx, id)
+	c.JSON(http.StatusOK, result)
+}
+
+func (ec *EventController) GetEventParticipant(c *gin.Context) {
+	eventIDStr := c.Param("event_id")
+
+	eventID, err := uuid.Parse(eventIDStr)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+
+	pageSize, err := strconv.Atoi(c.Query("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+
+	pageNumber, err := strconv.Atoi(c.Query("page_number"))
+	if err != nil {
+		pageNumber = 1
+	}
+
+	typeParticipant := c.Query("type_participant")
+	if typeParticipant == "" {
+		typeParticipant = eventparticipant.TypeParticipantEnumInvited.String()
+	}
+	typeParticipantEnum := eventparticipant.TypeParticipantEnum(typeParticipant)
+
+	searchTerm := c.Query("search_term")
+
+	ctx := c.Request.Context()
+	participants := ec.EventService.GetEventParticipant(ctx, eventID, pageSize, pageNumber, searchTerm, typeParticipantEnum)
+	if participants.IsFailure {
+		errorcode.JSONError(c, participants.Error)
+		return
+	}
+	c.JSON(http.StatusOK, participants)
+}
+
+func (ec *EventController) ResponseEvent(c *gin.Context) {
+	eventUserIDStr := c.Param("event_user_id")
+	eventUserID, err := uuid.Parse(eventUserIDStr)
+	if err != nil {
+		errorcode.JSONError(c, err)
+		return
+	}
+	
+	isAccept := c.Query("is_accept")
+	isAcceptBool := isAccept == "true"
+
+	ctx := c.Request.Context()
+	result := ec.EventService.ResponseEvent(ctx, eventUserID, isAcceptBool)
+	if result.IsFailure {
+		errorcode.JSONError(c, result.Error)
+		return
+	}
 	c.JSON(http.StatusOK, result)
 }
