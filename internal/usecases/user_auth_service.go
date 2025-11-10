@@ -241,7 +241,9 @@ func (us *userAuthService) VerifyRegister(ctx context.Context, userID uuid.UUID)
 	}
 
 	// gene ac and rt
-	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(user.ID)
+	// Ensure role name is available; repo should preload Role for GetByID
+	roleName := user.Role.Name
+	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(user.ID, roleName)
 	if err != nil {
 		return "", "", err
 	}
@@ -284,7 +286,8 @@ func (us *userAuthService) Login(ctx context.Context, vo user.LoginUserReq) (*co
 	}
 
 	// gene ac and rt
-	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(dbUser.ID)
+	roleName := dbUser.Role.Name
+	accessToken, refreshToken, err := jwt.GenerateAcAndRtTokens(dbUser.ID, roleName)
 	if err != nil {
 		return common.Failure[user.LoginUserRes](&common.Error{Code: 500, Message: "Generate token error"})
 	}
@@ -484,7 +487,8 @@ func (us *userAuthService) VerifyForgotPasswordCode(ctx context.Context, code st
 		return common.Failure[string](&common.Error{Code: 500, Message: "Update user error"})
 	}
 
-	accessToken, _, err := jwt.GenerateAcAndRtTokens(user.ID)
+	roleName := user.Role.Name
+	accessToken, _, err := jwt.GenerateAcAndRtTokens(user.ID, roleName)
 	if err != nil {
 		return common.Failure[string](&common.Error{Code: 500, Message: "Generate token error"})
 	}
@@ -513,7 +517,9 @@ func (us *userAuthService) RefreshToken(ctx context.Context, refreshToken string
 	}
 
 	// gene ac and rt
-	accessToken, newRefreshToken, err := jwt.GenerateAcAndRtTokens(userID)
+	// carry role forward from old refresh token claims
+	roleFromRt := claims.Role
+	accessToken, newRefreshToken, err := jwt.GenerateAcAndRtTokens(userID, roleFromRt)
 	if err != nil {
 		return "", "", err
 	}

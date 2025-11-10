@@ -12,6 +12,7 @@ import (
 
 type CustomClaims struct {
 	Purpose jwtpurpose.JWTPurpose `json:"purpose"`
+	Role    string                `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -46,11 +47,12 @@ func ValidateToken(secret []byte, tokenString string, purpose jwtpurpose.JWTPurp
 }
 
 // GenerateAcAndRtTokens creates access token and refresh token
-func GenerateAcAndRtTokens(userID uuid.UUID) (string, string, error) {
+func GenerateAcAndRtTokens(userID uuid.UUID, role string) (string, string, error) {
 	cfg := global.Config.JWT
 
 	accessToken, err := createJWT([]byte(cfg.AccessTokenKey), CustomClaims{
 		Purpose: jwtpurpose.Access,
+		Role:    role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userID.String(),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(cfg.AccessTokenExpiresIn)),
@@ -63,6 +65,7 @@ func GenerateAcAndRtTokens(userID uuid.UUID) (string, string, error) {
 
 	refreshToken, err := createJWT([]byte(cfg.RefreshTokenKey), CustomClaims{
 		Purpose: jwtpurpose.Refresh,
+		Role:    role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userID.String(),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(cfg.RefreshTokenExpiresIn)),

@@ -15,8 +15,8 @@ type IEventService interface {
 	GetAll(ctx context.Context, pageSize int, pageNumber int, searchTerm string) (*common.Result[common.PageResult[eventContractResponse.Event]])
 	GetByID(ctx context.Context, id uuid.UUID) (*common.Result[eventContractResponse.GetEventByIDResponse])
 	Register(ctx context.Context, id uuid.UUID) (*common.Result[string])
-	ResponseEvent(ctx context.Context, eventUserID uuid.UUID, isAccept bool) (*common.Result[string])
-	GetEventParticipant(ctx context.Context, eventID uuid.UUID, pageSize int, pageNumber int, searchTerm string, typeParticipant eventparticipant.TypeParticipantEnum) (*common.Result[common.PageResult[eventContractResponse.GetAllUserEventResponse]])
+	ResponseEvent(ctx context.Context, userID uuid.UUID, eventUserID uuid.UUID, isAccept bool) (*common.Result[string])
+	GetEventParticipant(ctx context.Context, userID uuid.UUID, eventID uuid.UUID, pageSize int, pageNumber int, searchTerm string, typeParticipant eventparticipant.TypeParticipantEnum) (*common.Result[common.PageResult[eventContractResponse.GetAllUserEventResponse]])
 	StartEvent(ctx context.Context, id uuid.UUID) (*common.Result[string])
 	// Update(ctx context.Context, id uuid.UUID, event *entities.Event) error
 	Delete(ctx context.Context, id uuid.UUID) error

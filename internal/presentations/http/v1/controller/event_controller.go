@@ -252,7 +252,7 @@ func (ec *EventController) StartEvent(c *gin.Context) {
 }
 
 func (ec *EventController) GetEventParticipant(c *gin.Context) {
-	eventIDStr := c.Param("event_id")
+	eventIDStr := c.Param("id")
 
 	eventID, err := uuid.Parse(eventIDStr)
 	if err != nil {
@@ -278,8 +278,14 @@ func (ec *EventController) GetEventParticipant(c *gin.Context) {
 
 	searchTerm := c.Query("search_term")
 
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
+		return
+	}
+
 	ctx := c.Request.Context()
-	participants := ec.EventService.GetEventParticipant(ctx, eventID, pageSize, pageNumber, searchTerm, typeParticipantEnum)
+	participants := ec.EventService.GetEventParticipant(ctx, userID.(uuid.UUID), eventID, pageSize, pageNumber, searchTerm, typeParticipantEnum)
 	if participants.IsFailure {
 		errorcode.JSONError(c, participants.Error)
 		return
@@ -298,8 +304,14 @@ func (ec *EventController) ResponseEvent(c *gin.Context) {
 	isAccept := c.Query("is_accept")
 	isAcceptBool := isAccept == "true"
 
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "userID not found in context"})
+		return
+	}
+
 	ctx := c.Request.Context()
-	result := ec.EventService.ResponseEvent(ctx, eventUserID, isAcceptBool)
+	result := ec.EventService.ResponseEvent(ctx, userID.(uuid.UUID), eventUserID, isAcceptBool)
 	if result.IsFailure {
 		errorcode.JSONError(c, result.Error)
 		return
