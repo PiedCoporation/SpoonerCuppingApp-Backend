@@ -13,6 +13,7 @@ import (
 	abstractions "backend/internal/usecases/abstractions"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -138,26 +139,20 @@ func (s *eventService) Register(ctx context.Context, id uuid.UUID) (*common.Resu
 		return common.Failure[string](&common.Error{Code: 404, Message: "Event not found"})
 	}
 
-	// if eventEntity.RegisterStatus == eventregisterstatus.RegisterStatusEnumPending {
-	// 	s.eventUOW.Rollback()
-	// 	return common.Failure[string](&common.Error{Code: "400", Message: "Event is not start for register"})
-	// }
+	if eventEntity.RegisterStartTime.After(time.Now()) {
+		s.eventUOW.Rollback()
+		return common.Failure[string](&common.Error{Code: 400, Message: "Event is not start for register"})
+	}
 
-	// if eventEntity.RegisterStatus == eventregisterstatus.RegisterStatusEnumFull {
-	// 	s.eventUOW.Rollback()
-	// 	return common.Failure[string](&common.Error{Code: "400", Message: "Event is full"})
-	// }
+	if eventEntity.RegisterEndTime.Before(time.Now()) {
+		s.eventUOW.Rollback()
+		return common.Failure[string](&common.Error{Code: 400, Message: "Event is not end for register"})
+	}
 
-	// if eventEntity.RegisterDate.After(time.Now()) {
-	// 	s.eventUOW.Rollback()
-	// 	return common.Failure[string](&common.Error{Code: "400", Message: "Event is not start for register"})
-	// }
-
-	// if eventEntity.TotalCurrent >= eventEntity.Limit {
-	// 	s.eventUOW.Rollback()
-	// 	return common.Failure[string](&common.Error{Code: "400", Message: "Event is full"})
-	// }
-
+	if eventEntity.TotalCurrent >= eventEntity.Limit {
+		s.eventUOW.Rollback()
+		return common.Failure[string](&common.Error{Code: 400, Message: "Event is full"})
+	}
 	query := fmt.Sprintf("user_id = '%s' AND event_id = '%s'", userID.String(), id.String())
 
 	// Check if user is already registered for this event
