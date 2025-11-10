@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	eventContract "backend/internal/contracts/event"
+	eventContract "backend/internal/contracts/event/response"
 	"backend/internal/domains/entities"
 )
 
